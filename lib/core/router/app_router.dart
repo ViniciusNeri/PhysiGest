@@ -7,6 +7,7 @@ import 'package:physigest/features/schedule/presentation/screens/schedule_screen
 import 'package:physigest/features/patients/presentation/screens/patients_list_screen.dart';
 import 'package:physigest/features/patients/presentation/screens/edit_patient_screen.dart';
 import 'package:physigest/features/patients/presentation/screens/patient_profile_screen.dart';
+import 'package:physigest/features/financial/presentation/screens/financial_screen.dart';
 
 class AppRouter {
   static final GoRouter router = GoRouter(
@@ -32,6 +33,10 @@ class AppRouter {
       GoRoute(
         path: '/patients',
         builder: (context, state) => const PatientsListScreen(),
+      ),
+      GoRoute(
+        path: '/financial',
+        builder: (context, state) => const FinancialScreen(),
       ),
       GoRoute(
         path: '/patients/new',

@@ -22,10 +22,15 @@ class _PatientProfileScreenState extends State<PatientProfileScreen> with Single
   late TabController _tabController;
   final ImagePicker _picker = ImagePicker();
 
+  // Cores do Padrão PhysiGest
+  static const Color azulPetroleo = Color(0xFF004D4D);
+  static const Color roxoClaro = Color(0xFF9370DB);
+
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
+    // Expandido para 6 abas conforme solicitado
+    _tabController = TabController(length: 6, vsync: this);
   }
 
   @override
@@ -40,7 +45,6 @@ class _PatientProfileScreenState extends State<PatientProfileScreen> with Single
       value: getIt<PatientBloc>(),
       child: BlocBuilder<PatientBloc, PatientState>(
         builder: (context, state) {
-          // Find the latest version of this patient from state update
           final currentPatient = state.patients.firstWhere(
             (p) => p.id == widget.patient.id,
             orElse: () => widget.patient,
@@ -58,13 +62,17 @@ class _PatientProfileScreenState extends State<PatientProfileScreen> with Single
               iconTheme: const IconThemeData(color: Colors.black87),
               bottom: TabBar(
                 controller: _tabController,
-                labelColor: AppTheme.primaryColor,
+                isScrollable: true, // Necessário para 6 abas
+                labelColor: azulPetroleo,
                 unselectedLabelColor: Colors.grey,
-                indicatorColor: AppTheme.primaryColor,
+                indicatorColor: roxoClaro,
                 tabs: const [
                   Tab(text: 'Dados'),
+                  Tab(text: 'Agendamentos'),
                   Tab(text: 'Anamnese'),
-                  Tab(text: 'Galeria'),
+                  Tab(text: 'Financeiro'),
+                  Tab(text: 'Anexos'),
+                  Tab(text: 'Fotos'),
                 ],
               ),
             ),
@@ -72,7 +80,10 @@ class _PatientProfileScreenState extends State<PatientProfileScreen> with Single
               controller: _tabController,
               children: [
                 _buildDataTab(currentPatient),
+                _buildPlaceholderTab(Icons.calendar_month, 'Próximas Sessões'),
                 _buildAnamnesisTab(context, currentPatient),
+                _buildPlaceholderTab(Icons.payments, 'Histórico de Pagamentos'),
+                _buildPlaceholderTab(Icons.description, 'Documentos em PDF'),
                 _buildGalleryTab(context, currentPatient),
               ],
             ),
@@ -82,6 +93,7 @@ class _PatientProfileScreenState extends State<PatientProfileScreen> with Single
     );
   }
 
+  // --- ABA 1: DADOS ---
   Widget _buildDataTab(Patient patient) {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(24.0),
@@ -89,16 +101,13 @@ class _PatientProfileScreenState extends State<PatientProfileScreen> with Single
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 800),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Center(
-                child: CircleAvatar(
-                  radius: 50,
-                  backgroundColor: AppTheme.primaryColor.withValues(alpha: 0.1),
-                  child: Text(
-                    patient.name[0].toUpperCase(),
-                    style: const TextStyle(fontSize: 40, color: AppTheme.primaryColor, fontWeight: FontWeight.bold),
-                  ),
+              CircleAvatar(
+                radius: 50,
+                backgroundColor: azulPetroleo.withOpacity(0.1),
+                child: Text(
+                  patient.name[0].toUpperCase(),
+                  style: const TextStyle(fontSize: 40, color: azulPetroleo, fontWeight: FontWeight.bold),
                 ),
               ),
               const SizedBox(height: 32),
@@ -116,31 +125,89 @@ class _PatientProfileScreenState extends State<PatientProfileScreen> with Single
     );
   }
 
+  // --- ABA 3: ANAMNESE ---
+  Widget _buildAnamnesisTab(BuildContext context, Patient patient) {
+    final anamnesis = patient.anamnesis;
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(24.0),
+      child: Column(
+        children: [
+          _buildEditableCard('Queixa Principal', anamnesis.mainComplaint, (val) {
+            final newAnamnesis = anamnesis.copyWith(mainComplaint: val);
+            context.read<PatientBloc>().add(UpdatePatient(patient.copyWith(anamnesis: newAnamnesis)));
+          }),
+          const SizedBox(height: 16),
+          _buildEditableCard('Histórico Clínico', anamnesis.historic, (val) {
+            final newAnamnesis = anamnesis.copyWith(historic: val);
+            context.read<PatientBloc>().add(UpdatePatient(patient.copyWith(anamnesis: newAnamnesis)));
+          }),
+        ],
+      ),
+    );
+  }
+
+  // --- ABA 6: FOTOS ---
+  Widget _buildGalleryTab(BuildContext context, Patient patient) {
+    return Column(
+      children: [
+        Expanded(
+          child: patient.photoPaths.isEmpty
+              ? _buildPlaceholderTab(Icons.photo_library, 'Nenhuma foto na galeria')
+              : GridView.builder(
+                  padding: const EdgeInsets.all(16),
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 3,
+                    crossAxisSpacing: 8,
+                    mainAxisSpacing: 8,
+                  ),
+                  itemCount: patient.photoPaths.length,
+                  itemBuilder: (context, index) => ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: Image.file(File(patient.photoPaths[index]), fit: BoxFit.cover),
+                  ),
+                ),
+        ),
+        Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: ElevatedButton.icon(
+            onPressed: () async {
+              final XFile? image = await _picker.pickImage(source: ImageSource.camera);
+              if (image != null && context.mounted) {
+                context.read<PatientBloc>().add(AddPhotoToPatient(patient.id, image.path));
+              }
+            },
+            icon: const Icon(Icons.camera_alt, color: Colors.white),
+            label: const Text('Tirar Foto', style: TextStyle(color: Colors.white)),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: roxoClaro,
+              minimumSize: const Size(double.infinity, 56),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  // --- WIDGETS DE SUPORTE ---
+
   Widget _buildInfoCard(String title, String value, IconData icon) {
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
         border: Border.all(color: Colors.grey.shade100),
       ),
       child: Row(
         children: [
-          Icon(icon, color: AppTheme.primaryColor),
+          Icon(icon, color: azulPetroleo),
           const SizedBox(width: 16),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(title, style: TextStyle(color: Colors.grey.shade600, fontSize: 12)),
-              const SizedBox(height: 4),
-              Text(value, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black87)),
+              Text(title, style: TextStyle(color: Colors.grey.shade600, fontSize: 11)),
+              Text(value, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
             ],
           ),
         ],
@@ -148,145 +215,38 @@ class _PatientProfileScreenState extends State<PatientProfileScreen> with Single
     );
   }
 
-  Widget _buildAnamnesisTab(BuildContext context, Patient patient) {
-    Anamnesis currentAnamnesis = patient.anamnesis;
-
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(24.0),
-      child: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 800),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              _buildAnamnesisCard(
-                title: 'Queixa Principal',
-                initialValue: currentAnamnesis.mainComplaint,
-                onSave: (val) {
-                  final newAnamnesis = currentAnamnesis.copyWith(mainComplaint: val);
-                  context.read<PatientBloc>().add(UpdatePatient(patient.copyWith(anamnesis: newAnamnesis)));
-                },
-              ),
-              const SizedBox(height: 16),
-              _buildAnamnesisCard(
-                title: 'Histórico',
-                initialValue: currentAnamnesis.historic,
-                onSave: (val) {
-                  final newAnamnesis = currentAnamnesis.copyWith(historic: val);
-                  context.read<PatientBloc>().add(UpdatePatient(patient.copyWith(anamnesis: newAnamnesis)));
-                },
-              ),
-              const SizedBox(height: 16),
-              _buildAnamnesisCard(
-                title: 'Diagnóstico Clínico',
-                initialValue: currentAnamnesis.clinicalDiagnosis,
-                onSave: (val) {
-                  final newAnamnesis = currentAnamnesis.copyWith(clinicalDiagnosis: val);
-                  context.read<PatientBloc>().add(UpdatePatient(patient.copyWith(anamnesis: newAnamnesis)));
-                },
-              ),
-              const SizedBox(height: 16),
-              _buildAnamnesisCard(
-                title: 'Medicações',
-                initialValue: currentAnamnesis.medications,
-                onSave: (val) {
-                  final newAnamnesis = currentAnamnesis.copyWith(medications: val);
-                  context.read<PatientBloc>().add(UpdatePatient(patient.copyWith(anamnesis: newAnamnesis)));
-                },
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildAnamnesisCard({required String title, required String initialValue, required Function(String) onSave}) {
-    final controller = TextEditingController(text: initialValue);
-
+  Widget _buildEditableCard(String title, String value, Function(String) onSave) {
     return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-        border: Border.all(color: Colors.grey.shade100),
-      ),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16)),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: AppTheme.primaryColor)),
-          const SizedBox(height: 12),
-          TextField(
-            controller: controller,
-            maxLines: 4,
+          Text(title, style: const TextStyle(fontWeight: FontWeight.bold, color: azulPetroleo)),
+          const SizedBox(height: 8),
+          TextFormField(
+            initialValue: value,
+            maxLines: 3,
             decoration: InputDecoration(
-              hintText: 'Descreva $title...',
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
               filled: true,
               fillColor: const Color(0xFFF8F9FE),
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
             ),
-            onSubmitted: onSave,
-            onEditingComplete: () => onSave(controller.text),
+            onChanged: onSave,
           ),
         ],
       ),
     );
   }
 
-  Widget _buildGalleryTab(BuildContext context, Patient patient) {
-    return Padding(
-      padding: const EdgeInsets.all(24.0),
+  Widget _buildPlaceholderTab(IconData icon, String text) {
+    return Center(
       child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Expanded(
-            child: patient.photoPaths.isEmpty
-                ? const Center(
-                    child: Text('Nenhuma foto adicionada.', style: TextStyle(color: Colors.grey, fontSize: 16)))
-                : GridView.builder(
-                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 3,
-                      crossAxisSpacing: 10,
-                      mainAxisSpacing: 10,
-                    ),
-                    itemCount: patient.photoPaths.length,
-                    itemBuilder: (context, index) {
-                      return ClipRRect(
-                        borderRadius: BorderRadius.circular(12),
-                        child: Image.file(
-                          File(patient.photoPaths[index]),
-                          fit: BoxFit.cover,
-                        ),
-                      );
-                    },
-                  ),
-          ),
+          Icon(icon, size: 64, color: Colors.grey.shade300),
           const SizedBox(height: 16),
-          SizedBox(
-            width: double.infinity,
-            height: 56,
-            child: ElevatedButton.icon(
-              onPressed: () async {
-                final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
-                if (image != null && context.mounted) {
-                  context.read<PatientBloc>().add(AddPhotoToPatient(patient.id, image.path));
-                }
-              },
-              icon: const Icon(Icons.add_a_photo, color: Colors.white),
-              label: const Text('Adicionar Foto',
-                  style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppTheme.primaryColor,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-              ),
-            ),
-          )
+          Text(text, style: TextStyle(color: Colors.grey.shade500)),
         ],
       ),
     );

@@ -61,7 +61,9 @@ class SideMenu extends StatelessWidget {
               icon: Icons.attach_money_outlined,
               title: 'Financeiro',
               iconColor: Colors.orange,
-              onTap: () {},
+               onTap: () {
+                context.go('/financial');
+              },
             ),
             _MenuTile(
               icon: Icons.fitness_center_outlined,
