@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:shimmer/shimmer.dart';
 import 'package:physigest/core/di/injection.dart';
-import 'package:physigest/core/theme/app_theme.dart';
 import 'package:physigest/core/widgets/side_menu.dart';
 import 'package:physigest/features/dashboard/presentation/bloc/dashboard/dashboard_bloc.dart';
 import 'package:physigest/features/dashboard/presentation/bloc/dashboard/dashboard_event.dart';
@@ -22,387 +22,288 @@ class HomeScreen extends StatelessWidget {
 class HomeView extends StatelessWidget {
   const HomeView({super.key});
 
+  // Paleta Premium
+  static const Color primary = Color(0xFF4F46E5);
+  static const Color success = Color(0xFF10B981);
+  static const Color warning = Color(0xFFF59E0B);
+  static const Color info = Color(0xFF0EA5E9);
+  static const Color bg = Color(0xFFF8FAFC);
+
   @override
   Widget build(BuildContext context) {
+    final double width = MediaQuery.of(context).size.width;
+    final bool isDesktop = width > 1000;
+    final double horizontalPadding = isDesktop ? width * 0.08 : 20.0;
+
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FE), // Cinza bem claro e frio para fundo premium
+      backgroundColor: bg,
+      drawer: const SideMenu(),
       appBar: AppBar(
-        title: const Text(
-          'Início',
-          style: TextStyle(fontWeight: FontWeight.w600, color: Colors.black87),
-        ),
         backgroundColor: Colors.white,
         elevation: 0,
-        scrolledUnderElevation: 0,
-        iconTheme: const IconThemeData(color: Colors.black87),
+        iconTheme: const IconThemeData(color: primary, size: 28),
+        title: const Text(
+          "Painel de Gestão",
+          style: TextStyle(color: Color(0xFF1E293B), fontWeight: FontWeight.w800, fontSize: 18),
+        ),
       ),
-      drawer: const SideMenu(),
-      body: SafeArea(
-        child: BlocBuilder<DashboardBloc, DashboardState>(
-          builder: (context, state) {
-            if (state is DashboardLoading) {
-              return const Center(child: CircularProgressIndicator());
-            } else if (state is DashboardError) {
-              return Center(child: Text(state.message));
-            } else if (state is DashboardLoaded) {
-              return RefreshIndicator(
-                onRefresh: () async {
-                  context.read<DashboardBloc>().add(const LoadDashboardData());
-                },
-                child: Center(
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 800),
-                    child: SingleChildScrollView(
-                      physics: const AlwaysScrollableScrollPhysics(),
-                      padding: const EdgeInsets.all(16.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
+      body: BlocBuilder<DashboardBloc, DashboardState>(
+        builder: (context, state) {
+          // --- ESTADO DE CARREGAMENTO (SKELETON) ---
+          if (state is DashboardLoading) {
+            return SingleChildScrollView(
+              padding: EdgeInsets.symmetric(horizontal: horizontalPadding, vertical: 32),
+              child: _buildSkeletonLoader(width, isDesktop),
+            );
+          }
+
+          // --- ESTADO CARREGADO ---
+          if (state is DashboardLoaded) {
+            return SingleChildScrollView(
+              padding: EdgeInsets.symmetric(horizontal: horizontalPadding, vertical: 32),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildHeader(),
+                  const SizedBox(height: 32),
+                  
+                  // Grid de Métricas Coloridas
+                  Wrap(
+                    spacing: 20,
+                    runSpacing: 20,
                     children: [
-                      const Text(
-                        'Dashboard',
-                        style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        'Tela inicial com métricas e calendário semanal interativo',
-                        style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
-                      ),
-                      const SizedBox(height: 32),
-                      const Text(
-                        'CAIXINHAS DE RESUMO',
-                        style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.grey,
-                            letterSpacing: 1.2),
-                      ),
-                      const SizedBox(height: 16),
-                      GridView(
-                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: MediaQuery.of(context).size.width > 800
-                              ? 4
-                              : MediaQuery.of(context).size.width > 600
-                                  ? 2
-                                  : 1,
-                          mainAxisSpacing: 16,
-                          crossAxisSpacing: 16,
-                          mainAxisExtent: 180, // Aumentado para 180 para evitar overflow
-                        ),
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        children: [
-                          _SummaryCard(
-                            title: 'Atendimentos de Hoje',
-                            subtitle: 'Consultas agendadas para hoje',
-                            value: state.atendimentosHoje.toString(),
-                            iconText: '📅', // Simulating icon with emoji for similar look
-                            color: const Color(0xFF9146FF), // Purple
-                          ),
-                          _SummaryCard(
-                            title: 'Mensalidades a Vencer',
-                            subtitle: 'Vencimento nos próximos 7 dias',
-                            value: state.mensalidadesVencer.toString(),
-                            iconText: '💳',
-                            color: const Color(0xFFFF7A00), // Orange
-                          ),
-                          _SummaryCard(
-                            title: 'Atendimentos da Semana',
-                            subtitle: 'Total de consultas na semana',
-                            value: state.atendimentosSemana.toString(),
-                            iconText: '📊',
-                            color: const Color(0xFF3B82F6), // Blue
-                          ),
-                          _SummaryCard(
-                            title: 'Fichas Vencidas',
-                            subtitle: 'Fichas que precisam de atualização',
-                            value: state.fichasVencidas.toString(),
-                            iconText: '📋',
-                            color: const Color(0xFFE11D48), // Red/Pink
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 32),
-                      _WeeklyCalendarCard(agendamentos: state.agendamentosSemana),
+                      _buildMetricCard(width, "Atendimentos da semana", state.atendimentosHoje.toString(), Icons.calendar_today, primary),
+                      _buildMetricCard(width, "Faturamento mês", "R\$ 4.250", Icons.account_balance_wallet, success),
+                      _buildMetricCard(width, "Pacientes ativos", "248", Icons.people_alt, info),
+                      _buildMetricCard(width, "Fichas vencidas", state.fichasVencidas.toString(), Icons.warning_rounded, warning),
                     ],
                   ),
-                ),
-                ),
-                ),
-              );
-            }
-            return const SizedBox.shrink();
-          },
-        ),
+                  
+                  const SizedBox(height: 32),
+
+                  // Seção Principal: Agenda e Coluna Lateral
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(flex: 2, child: _buildAgendaSection()),
+                      const SizedBox(width: 24),
+                      Expanded(
+                        flex: 1,
+                        child: Column(
+                          children: [
+                            _buildQuickActions(),
+                            const SizedBox(height: 24),
+                            _buildNextAppointmentCard(),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            );
+          }
+          return const SizedBox.shrink();
+        },
       ),
     );
   }
-}
 
-class _SummaryCard extends StatelessWidget {
-  final String title;
-  final String subtitle;
-  final String value;
-  final String iconText;
-  final Color color;
+  // --- COMPONENTES DE UI ---
 
-  const _SummaryCard({
-    required this.title,
-    required this.subtitle,
-    required this.value,
-    required this.iconText,
-    required this.color,
-  });
+  Widget _buildHeader() {
+    return const Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text("Olá, Dra. 👋", style: TextStyle(fontSize: 28, fontWeight: FontWeight.w900, color: Color(0xFF0F172A))),
+        Text("Confira o resumo da sua clínica para hoje.", style: TextStyle(color: Colors.black54, fontSize: 14)),
+      ],
+    );
+  }
 
-  @override
-  Widget build(BuildContext context) {
+  Widget _buildMetricCard(double screenWidth, String title, String value, IconData icon, Color color) {
+    double cardWidth = (screenWidth > 1200) ? (screenWidth * 0.84 - 80) / 4 : (screenWidth - 60) / 2;
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 16.0),
+      width: cardWidth,
+      height: 120,
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            color.withValues(alpha: 0.85),
-            color,
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
+        color: color,
         borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: color.withValues(alpha: 0.4),
-            spreadRadius: 0,
-            blurRadius: 12,
-            offset: const Offset(0, 6),
+        boxShadow: [BoxShadow(color: color.withOpacity(0.2), blurRadius: 15, offset: const Offset(0, 8))],
+      ),
+      child: Stack(
+        children: [
+          Positioned(right: -10, bottom: -10, child: Icon(icon, size: 70, color: Colors.white.withOpacity(0.1))),
+          Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(value, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white)),
+                Text(title, style: const TextStyle(color: Colors.white70, fontSize: 12, fontWeight: FontWeight.w500)),
+              ],
+            ),
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildAgendaSection() {
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(24), boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 20)]),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.start,
         children: [
-          Text(
-            iconText,
-            style: const TextStyle(fontSize: 24),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            value,
-            style: const TextStyle(
-              fontSize: 32,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-            ),
-          ),
-          const Spacer(),
-          Text(
-            title,
-            style: const TextStyle(
-              fontSize: 14,
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
-            ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-          Text(
-            subtitle,
-            style: TextStyle(
-              fontSize: 12,
-              color: Colors.white.withValues(alpha: 0.8),
-            ),
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-          ),
+          const Text("Agenda de Hoje", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          const SizedBox(height: 20),
+          _buildAppointmentItem("09:00", "Maria Silva", "Fisioterapia", true),
+          _buildAppointmentItem("10:30", "Ricardo Alves", "Pilates", true),
+          _buildAppointmentItem("14:00", "Carla Dias", "Avaliação", false),
         ],
       ),
     );
   }
-}
 
-class _WeeklyCalendarCard extends StatelessWidget {
-  final Map<DateTime, List<String>> agendamentos;
-
-  const _WeeklyCalendarCard({required this.agendamentos});
-
-  @override
-  Widget build(BuildContext context) {
+  Widget _buildQuickActions() {
     return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
-            blurRadius: 20,
-            offset: const Offset(0, 4),
-          ),
-        ],
-        border: Border.all(color: Colors.grey.shade100, width: 1.5),
-      ),
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(24), boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 20)]),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Padding(
-            padding: const EdgeInsets.all(24.0),
-            child: Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: AppTheme.primaryColor.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: const Icon(Icons.calendar_month_rounded, color: AppTheme.primaryColor),
-                ),
-                const SizedBox(width: 16),
-                const Text(
-                  'Calendário Semanal',
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.black87),
-                ),
-                const Spacer(),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: Colors.orange.shade100,
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Divider(height: 1, color: Colors.grey.shade200),
-          Padding(
-            padding: const EdgeInsets.all(24.0),
-            child: Column(
-              children: [
-                _buildDaysHeader(),
-                const SizedBox(height: 24),
-                _buildAppointmentsList(),
-                const SizedBox(height: 24),
-                Text(
-                  'Horários da semana',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(color: Colors.grey.shade500, fontSize: 12),
-                ),
-              ],
-            ),
+          const Text("Ações Rápidas", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+          const SizedBox(height: 20),
+          GridView.count(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            crossAxisCount: 2,
+            mainAxisSpacing: 12,
+            crossAxisSpacing: 12,
+            childAspectRatio: 1.4,
+            children: [
+              _buildAnimatedActionCard(Icons.person_add_rounded, "Paciente", primary),
+              _buildAnimatedActionCard(Icons.receipt_long_rounded, "Receita", success),
+              _buildAnimatedActionCard(Icons.event_available_rounded, "Agenda", info),
+              _buildAnimatedActionCard(Icons.bar_chart_rounded, "Relatório", warning),
+            ],
           ),
         ],
       ),
     );
   }
 
-  Widget _buildDaysHeader() {
-    final days = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'];
-    final dates = ['24', '25', '26', '27', '28', '29', '30'];
-    final activeIndex = 2; // Fixed Qua 26 to match image
-
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceAround,
-      children: List.generate(7, (index) {
-        final isActive = index == activeIndex;
-        return Column(
-          children: [
-            Text(
-              days[index],
-              style: TextStyle(
-                color: Colors.grey.shade600,
-                fontSize: 14,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Container(
-              width: 36,
-              height: 36,
+  Widget _buildAnimatedActionCard(IconData icon, String label, Color color) {
+    return StatefulBuilder(
+      builder: (context, setState) {
+        bool isPressed = false;
+        return GestureDetector(
+          onTapDown: (_) => setState(() => isPressed = true),
+          onTapUp: (_) => setState(() => isPressed = false),
+          onTapCancel: () => setState(() => isPressed = false),
+          child: AnimatedScale(
+            scale: isPressed ? 0.92 : 1.0,
+            duration: const Duration(milliseconds: 100),
+            child: Container(
               decoration: BoxDecoration(
-                color: isActive ? AppTheme.primaryColor : Colors.transparent,
-                shape: BoxShape.circle,
+                color: color.withOpacity(0.08),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: color.withOpacity(0.1)),
               ),
-              child: Center(
-                child: Text(
-                  dates[index],
-                  style: TextStyle(
-                    color: isActive ? Colors.white : Colors.black87,
-                    fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
-                    fontSize: 16,
-                  ),
-                ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(icon, color: color, size: 24),
+                  const SizedBox(height: 6),
+                  Text(label, style: TextStyle(color: color, fontWeight: FontWeight.bold, fontSize: 12)),
+                ],
               ),
             ),
-          ],
-        );
-      }),
-    );
-  }
-
-  Widget _buildAppointmentsList() {
-    // Hardcoded to perfectly match the mockup
-    final mockAppointments = [
-      {'time': '08:00', 'name': 'Maria Silva', 'type': 'Avaliação Inicial', 'day': 'Seg'},
-      {'time': '09:30', 'name': 'João Santos', 'type': 'Retorno', 'day': 'Ter'},
-      {'time': '10:00', 'name': 'Ana Costa', 'type': 'Fisioterapia Ortopédica', 'day': 'Qua'},
-      {'time': '14:00', 'name': 'Carlos Lima', 'type': 'RPG', 'day': 'Qui'},
-      {'time': '15:30', 'name': 'Paula Mendes', 'type': 'Pilates Clínico', 'day': 'Sex'},
-    ];
-
-    return ListView.separated(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      itemCount: mockAppointments.length,
-      separatorBuilder: (context, index) => const SizedBox(height: 12),
-      itemBuilder: (context, index) {
-        final apt = mockAppointments[index];
-        return Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          decoration: BoxDecoration(
-            color: AppTheme.primaryColor.withValues(alpha: 0.05),
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Row(
-            children: [
-              SizedBox(
-                width: 50,
-                child: Text(
-                  apt['time']!,
-                  style: const TextStyle(
-                    color: AppTheme.primaryColor,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-              Container(
-                width: 6,
-                height: 6,
-                decoration: const BoxDecoration(
-                  color: AppTheme.primaryColor,
-                  shape: BoxShape.circle,
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      apt['name']!,
-                      style: const TextStyle(fontWeight: FontWeight.w600),
-                    ),
-                    Text(
-                      apt['type']!,
-                      style: TextStyle(color: Colors.grey.shade600, fontSize: 12),
-                    ),
-                  ],
-                ),
-              ),
-              Text(
-                apt['day']!,
-                style: const TextStyle(color: AppTheme.primaryColor, fontSize: 12),
-              ),
-            ],
           ),
         );
       },
     );
   }
-}
 
+  Widget _buildNextAppointmentCard() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(colors: [Color(0xFF6366F1), Color(0xFF4338CA)]),
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [BoxShadow(color: const Color(0xFF6366F1).withOpacity(0.3), blurRadius: 15, offset: const Offset(0, 8))],
+      ),
+      child: const Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text("PRÓXIMA CONSULTA", style: TextStyle(color: Colors.white70, fontWeight: FontWeight.bold, fontSize: 10)),
+          SizedBox(height: 10),
+          Text("João Carlos Santos", style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+          Text("Avaliação Funcional • 15:30", style: TextStyle(color: Colors.white70, fontSize: 12)),
+          SizedBox(height: 10),
+          Align(alignment: Alignment.centerRight, child: Icon(Icons.arrow_forward_ios_rounded, color: Colors.white, size: 16)),
+        ],
+      ),
+    );
+  }
+
+  // --- SKELETON LOADER (SHIMMER) ---
+
+  Widget _buildSkeletonLoader(double width, bool isDesktop) {
+    return Shimmer.fromColors(
+      baseColor: Colors.grey[200]!,
+      highlightColor: Colors.grey[50]!,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(height: 30, width: 250, decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(8))),
+          const SizedBox(height: 8),
+          Container(height: 15, width: 350, decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(8))),
+          const SizedBox(height: 32),
+          Row(
+            children: List.generate(4, (i) => Expanded(
+              child: Container(height: 120, margin: const EdgeInsets.only(right: 16), decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20))),
+            )),
+          ),
+          const SizedBox(height: 40),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(flex: 2, child: Container(height: 300, decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(24)))),
+              const SizedBox(width: 24),
+              Expanded(flex: 1, child: Column(
+                children: [
+                  Container(height: 200, decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(24))),
+                  const SizedBox(height: 24),
+                  Container(height: 140, decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(24))),
+                ],
+              )),
+            ],
+          )
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAppointmentItem(String time, String name, String type, bool isConfirmed) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(16)),
+      child: Row(
+        children: [
+          Text(time, style: const TextStyle(fontWeight: FontWeight.w900, color: primary)),
+          const SizedBox(width: 16),
+          Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text(name, style: const TextStyle(fontWeight: FontWeight.bold)),
+            Text(type, style: const TextStyle(fontSize: 11, color: Colors.black54)),
+          ])),
+          Icon(isConfirmed ? Icons.check_circle_rounded : Icons.pending_rounded, color: isConfirmed ? success : warning, size: 20),
+        ],
+      ),
+    );
+  }
+}

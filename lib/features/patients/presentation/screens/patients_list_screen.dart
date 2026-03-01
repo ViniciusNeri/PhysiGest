@@ -33,169 +33,177 @@ class _PatientsListViewState extends State<PatientsListView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FE),
+      backgroundColor: const Color(0xFFF1F5F9), // Cinza leve mais moderno
+      drawer: const SideMenu(),
       appBar: AppBar(
-        title: const Text(
-          'Pacientes',
-          style: TextStyle(fontWeight: FontWeight.w600, color: Colors.black87),
-        ),
         backgroundColor: Colors.white,
         elevation: 0,
-        scrolledUnderElevation: 0,
-        iconTheme: const IconThemeData(color: Colors.black87),
-      ),
-      drawer: const SideMenu(),
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              _buildHeaderAndSearch(context),
-              const SizedBox(height: 24),
-              Expanded(
-                child: BlocBuilder<PatientBloc, PatientState>(
-                  builder: (context, state) {
-                    if (state.status == PatientStatus.loading || state.status == PatientStatus.initial) {
-                      return const Center(child: CircularProgressIndicator());
-                    }
-
-                    if (state.status == PatientStatus.failure) {
-                      return Center(child: Text(state.errorMessage ?? 'Erro desconhecido.'));
-                    }
-
-                    final filteredPatients = state.patients.where((p) {
-                      return p.name.toLowerCase().contains(_searchQuery.toLowerCase());
-                    }).toList();
-
-                    if (filteredPatients.isEmpty) {
-                      return const Center(
-                        child: Text(
-                          'Nenhum paciente encontrado.',
-                          style: TextStyle(color: Colors.grey, fontSize: 16),
-                        ),
-                      );
-                    }
-
-                    return ListView.separated(
-                      itemCount: filteredPatients.length,
-                      separatorBuilder: (context, index) => const SizedBox(height: 16),
-                      itemBuilder: (context, index) {
-                        final patient = filteredPatients[index];
-                        return _PatientCard(
-                          patient: patient,
-                          onTap: () {
-                            context.push('/patients/${patient.id}', extra: patient);
-                          },
-                        );
-                      },
-                    );
-                  },
-                ),
-              ),
-            ],
-          ),
+        centerTitle: false,
+        iconTheme: const IconThemeData(color: Color(0xFF0F172A)),
+        title: const Text(
+          'Pacientes',
+          style: TextStyle(color: Color(0xFF0F172A), fontWeight: FontWeight.w800, fontSize: 22),
         ),
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {
-          context.push('/patients/new');
-        },
-        backgroundColor: AppTheme.primaryColor,
-        icon: const Icon(Icons.person_add, color: Colors.white),
-        label: const Text('Novo Paciente', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(32.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildPageHeader(context),
+            const SizedBox(height: 32),
+            _buildSearchField(),
+            const SizedBox(height: 32),
+            _buildPatientsTable(context),
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildHeaderAndSearch(BuildContext context) {
+  Widget _buildPageHeader(BuildContext context) {
     return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Expanded(
-          child: Container(
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.grey.shade200),
-            ),
-            child: TextField(
-              onChanged: (val) {
-                setState(() {
-                  _searchQuery = val;
-                });
-              },
-              decoration: InputDecoration(
-                hintText: 'Buscar pacientes por nome...',
-                hintStyle: TextStyle(color: Colors.grey.shade400),
-                prefixIcon: Icon(Icons.search, color: Colors.grey.shade400),
-                border: InputBorder.none,
-                contentPadding: const EdgeInsets.all(16),
-              ),
-            ),
+        const Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text("Pacientes", style: TextStyle(fontSize: 28, fontWeight: FontWeight.w900, color: Color(0xFF0F172A))),
+            Text("Gerencie sua base de pacientes.", style: TextStyle(fontSize: 16, color: Color(0xFF64748B))),
+          ],
+        ),
+        ElevatedButton.icon(
+          onPressed: () => context.push('/patients/new'),
+          icon: const Icon(Icons.add_rounded, size: 20, color: Colors.white),
+          label: const Text("Novo Paciente", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: AppTheme.primaryColor,
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           ),
         ),
       ],
     );
   }
+
+  Widget _buildSearchField() {
+    return Container(
+      width: 400, // Largura fixa estilo Desktop/Web
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+      ),
+      child: TextField(
+        onChanged: (val) => setState(() => _searchQuery = val),
+        decoration: const InputDecoration(
+          hintText: "Buscar paciente...",
+          prefixIcon: Icon(Icons.search_rounded, color: Color(0xFF94A3B8)),
+          border: InputBorder.none,
+          contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPatientsTable(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+      ),
+      child: BlocBuilder<PatientBloc, PatientState>(
+        builder: (context, state) {
+          if (state.status == PatientStatus.loading) {
+            return const Padding(padding: EdgeInsets.all(40), child: Center(child: CircularProgressIndicator()));
+          }
+
+          final filtered = state.patients.where((p) => p.name.toLowerCase().contains(_searchQuery.toLowerCase())).toList();
+
+          return Column(
+            children: [
+              // Cabeçalho da "Tabela"
+              _buildTableHeader(),
+              const Divider(height: 1, color: Color(0xFFF1F5F9)),
+              // Lista de itens
+              ListView.separated(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: filtered.length,
+                separatorBuilder: (context, index) => const Divider(height: 1, color: Color(0xFFF1F5F9)),
+                itemBuilder: (context, index) => _PatientRow(patient: filtered[index]),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildTableHeader() {
+    return const Padding(
+      padding: EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+      child: Row(
+        children: [
+          Expanded(flex: 3, child: Text("PACIENTE", style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: Color(0xFF94A3B8), letterSpacing: 0.5))),
+          Expanded(flex: 2, child: Text("IDADE", style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: Color(0xFF94A3B8)))),
+          Expanded(flex: 2, child: Text("TELEFONE", style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: Color(0xFF94A3B8)))),
+          Expanded(flex: 1, child: Text("TRATAMENTOS", style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: Color(0xFF94A3B8)))),
+          SizedBox(width: 48), // Espaço para o menu de ações
+        ],
+      ),
+    );
+  }
 }
 
-class _PatientCard extends StatelessWidget {
+class _PatientRow extends StatelessWidget {
   final dynamic patient;
-  final VoidCallback onTap;
-
-  const _PatientCard({required this.patient, required this.onTap});
+  const _PatientRow({required this.patient});
 
   @override
   Widget build(BuildContext context) {
+    // Cores pastéis baseadas no nome para os avatares
+    final List<Color> avatarColors = [const Color(0xFFCCFBF1), const Color(0xFFFEF3C7), const Color(0xFFF3E8FF), const Color(0xFFDBEAFE)];
+    final Color bgColor = avatarColors[patient.name.length % avatarColors.length];
+    final Color textColor = Color.lerp(bgColor, Colors.black, 0.7)!;
+
     return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(16),
-      child: Container(
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.03),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
-            ),
-          ],
-          border: Border.all(color: Colors.grey.shade100),
-        ),
+      onTap: () => context.push('/patients/${patient.id}', extra: patient),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
         child: Row(
           children: [
-            CircleAvatar(
-              radius: 28,
-              backgroundColor: AppTheme.primaryColor.withValues(alpha: 0.1),
-              child: Text(
-                patient.name[0].toUpperCase(),
-                style: const TextStyle(
-                  color: AppTheme.primaryColor,
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-            const SizedBox(width: 20),
+            // Avatar + Nome
             Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              flex: 3,
+              child: Row(
                 children: [
-                  Text(
-                    patient.name,
-                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87),
+                  CircleAvatar(
+                    radius: 20,
+                    backgroundColor: bgColor,
+                    child: Text(patient.name[0].toUpperCase(), style: TextStyle(color: textColor, fontWeight: FontWeight.bold)),
                   ),
-                  const SizedBox(height: 4),
-                  Text(
-                    '${patient.phone} • ${patient.occupation}',
-                    style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
-                  ),
+                  const SizedBox(width: 16),
+                  Text(patient.name, style: const TextStyle(fontWeight: FontWeight.w700, color: Color(0xFF1E293B), fontSize: 15)),
                 ],
               ),
             ),
-            const Icon(Icons.chevron_right, color: Colors.grey),
+            // Idade (Suposição de campo, ajuste conforme seu modelo)
+            Expanded(flex: 2, child: Text("34 anos", style: TextStyle(color: Color(0xFF64748B)))),
+            // Telefone
+            Expanded(flex: 2, child: Text(patient.phone, style: TextStyle(color: Color(0xFF64748B)))),
+            // Badge de Tratamentos
+            Expanded(
+              flex: 1,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(color: const Color(0xFFF1F5F9), borderRadius: BorderRadius.circular(20)),
+                child: const Text("8 sessões", textAlign: TextAlign.center, style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppTheme.primaryColor)),
+              ),
+            ),
+            // Menu de Ações
+            IconButton(onPressed: () {}, icon: const Icon(Icons.more_horiz_rounded, color: Color(0xFF94A3B8))),
           ],
         ),
       ),

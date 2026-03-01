@@ -10,6 +10,7 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
     on<LoadSchedule>(_onLoadSchedule);
     on<SelectDate>(_onSelectDate);
     on<AddAppointment>(_onAddAppointment);
+    on<UpdateAppointment>(_onUpdateAppointment);
   }
 
   Future<void> _onLoadSchedule(LoadSchedule event, Emitter<ScheduleState> emit) async {
@@ -36,13 +37,15 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
           type: 'Avaliação Inicial',
           date: today,
           time: '08:00',
+          endTime: '09:00',
         ),
         Appointment(
           id: '2',
           patientName: 'João Santos',
           type: 'Retorno',
-          date: today.add(const Duration(days: 1)),
+          date: today.add(const Duration(days: -1)),
           time: '09:30',
+          endTime: '10:30',
         ),
         Appointment(
           id: '3',
@@ -50,6 +53,63 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
           type: 'Fisioterapia',
           date: today,
           time: '14:00',
+          endTime: '15:00',
+        ),
+        Appointment(
+          id: '4',
+          patientName: 'Carlos Lima',
+          type: 'Fisioterapia',
+          date: today.add(const Duration(days: -1)),
+          time: '14:00',
+          endTime: '15:00',
+        ),
+        Appointment(
+          id: '5',
+          patientName: 'Paula Mendes',
+          type: 'Fisioterapia',
+          date: today,
+          time: '16:00',
+          endTime: '17:00',
+        ),  
+        Appointment(
+          id: '6',
+          patientName: 'Roberto Almeida',
+          type: 'Fisioterapia',
+          date: today.add(const Duration(days: -3)),
+          time: '11:00',
+          endTime: '13:00',
+        ),
+        Appointment(
+          id: '7',
+          patientName: 'Roberto Almeida',
+          type: 'Fisioterapia',
+          date: today.add(const Duration(days: -4)),
+          time: '10:00',
+          endTime: '11:00',
+        ),
+        Appointment(
+          id: '8',
+          patientName: 'Roberto Almeida',
+          type: 'Fisioterapia',
+          date: today.add(const Duration(days: -3)),
+          time: '14:00',  
+          endTime: '15:30',
+        ),
+        Appointment(
+          id: '9',
+          patientName: 'Roberto Almeida',
+          type: 'Fisioterapia',
+          date: today.add(const Duration(days: -2)),
+          time: '18:00',  
+          endTime: '20:00',
+        ),
+        Appointment(
+          id: '10',
+          patientName: 'Roberto Almeida',
+          type: 'Fisioterapia',
+          date: today,
+          time: '18:00',
+          endTime: '19:00',
         ),
       ];
 
@@ -71,4 +131,15 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
     final updatedList = List<Appointment>.from(state.appointments)..add(event.appointment);
     emit(state.copyWith(appointments: updatedList));
   }
+
+  void _onUpdateAppointment(UpdateAppointment event, Emitter<ScheduleState> emit) {
+    final updatedList = state.appointments.map((apt) {
+      if (apt.id == event.appointment.id) {
+        return event.appointment; // Substitui pelo novo
+      }
+      return apt;
+    }).toList();
+    emit(state.copyWith(appointments: updatedList));
+  }
+
 }

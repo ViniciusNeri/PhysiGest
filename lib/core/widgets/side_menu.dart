@@ -7,89 +7,128 @@ class SideMenu extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final String location = GoRouterState.of(context).uri.toString();
+
     return Drawer(
+      backgroundColor: Colors.white,
+      elevation: 0,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
       child: SafeArea(
         child: Column(
           children: [
-            const Padding(
-              padding: EdgeInsets.symmetric(vertical: 24.0),
-              child: Column(
-                children: [
-                  Icon(
-                    Icons.monitor_heart,
-                    size: 64,
-                    color: AppTheme.primaryColor,
-                  ),
-                  SizedBox(height: 16),
-                  Text(
-                    'PhysiGest',
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: AppTheme.primaryColor,
+            _buildHeader(),
+            const SizedBox(height: 10),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Column(
+                  children: [
+                    _MenuTile(
+                      icon: Icons.grid_view_rounded,
+                      title: 'Início',
+                      baseColor: Colors.indigo, // Cor do ícone
+                      isSelected: location == '/',
+                      onTap: () => context.go('/'),
                     ),
-                  ),
-                ],
+                    _MenuTile(
+                      icon: Icons.calendar_today_rounded,
+                      title: 'Agenda',
+                      baseColor: Colors.blue, 
+                      isSelected: location.startsWith('/schedule'),
+                      onTap: () => context.go('/schedule'),
+                    ),
+                    _MenuTile(
+                      icon: Icons.people_alt_rounded,
+                      title: 'Pacientes',
+                      baseColor: Colors.teal,
+                      isSelected: location.startsWith('/patients'),
+                      onTap: () => context.go('/patients'),
+                    ),
+                    _MenuTile(
+                      icon: Icons.payments_rounded,
+                      title: 'Financeiro',
+                      baseColor: Colors.orange,
+                      isSelected: location.startsWith('/financial'),
+                      onTap: () => context.go('/financial'),
+                    ),
+                    _MenuTile(
+                      icon: Icons.fitness_center_rounded,
+                      title: 'Exercícios',
+                      baseColor: Colors.purple,
+                      isSelected: false,
+                      onTap: () {},
+                    ),
+                    const Spacer(),
+                    _MenuTile(
+                      icon: Icons.settings_rounded,
+                      title: 'Configurações',
+                      baseColor: Colors.blueGrey,
+                      isSelected: false,
+                      onTap: () {},
+                    ),
+                  ],
+                ),
               ),
             ),
-            const Divider(),
-            _MenuTile(
-              icon: Icons.dashboard_outlined,
-              title: 'Início',
-              iconColor: AppTheme.primaryColor,
-              onTap: () {
-                context.go('/');
-              },
-            ),
-            _MenuTile(
-              icon: Icons.calendar_month_outlined,
-              title: 'Agenda',
-              iconColor: Colors.blue,
-              onTap: () {
-                context.go('/schedule');
-              },
-            ),
-            _MenuTile(
-              icon: Icons.people_outline,
-              title: 'Pacientes',
-              iconColor: Colors.green,
-              onTap: () {
-                context.go('/patients');
-              },
-            ),
-            _MenuTile(
-              icon: Icons.attach_money_outlined,
-              title: 'Financeiro',
-              iconColor: Colors.orange,
-               onTap: () {
-                context.go('/financial');
-              },
-            ),
-            _MenuTile(
-              icon: Icons.fitness_center_outlined,
-              title: 'Exercícios e Planos',
-              iconColor: Colors.purple,
-              onTap: () {},
-            ),
-            _MenuTile(
-              icon: Icons.settings_outlined,
-              title: 'Configurações',
-              iconColor: Colors.grey.shade700,
-              onTap: () {},
-            ),
-            const Spacer(),
-            const Divider(),
-            _MenuTile(
-              icon: Icons.exit_to_app,
-              title: 'Sair',
-              onTap: () {
-                context.go('/login');
-              },
-              isDestructive: true,
-            ),
-            const SizedBox(height: 16),
+            _buildLogoutButton(context),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildHeader() {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(24, 40, 24, 20),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [AppTheme.primaryColor, AppTheme.primaryColor.withOpacity(0.7)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(14),
+              boxShadow: [
+                BoxShadow(
+                  color: AppTheme.primaryColor.withOpacity(0.3),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                )
+              ],
+            ),
+            child: const Icon(Icons.monitor_heart_rounded, color: Colors.white, size: 24),
+          ),
+          const SizedBox(width: 16),
+          const Text(
+            'PhysiGest',
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.w900,
+              color: Color(0xFF0F172A),
+              letterSpacing: -0.5,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLogoutButton(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: const BoxDecoration(
+        border: Border(top: BorderSide(color: Color(0xFFF1F5F9))),
+      ),
+      child: _MenuTile(
+        icon: Icons.logout_rounded,
+        title: 'Sair da conta',
+        baseColor: Colors.red,
+        isSelected: false,
+        isDestructive: true,
+        onTap: () => context.go('/login'),
       ),
     );
   }
@@ -99,32 +138,75 @@ class _MenuTile extends StatelessWidget {
   final IconData icon;
   final String title;
   final VoidCallback onTap;
+  final Color baseColor; // Nova cor obrigatória
+  final bool isSelected;
   final bool isDestructive;
-  final Color? iconColor;
 
   const _MenuTile({
     required this.icon,
     required this.title,
     required this.onTap,
+    required this.baseColor,
+    this.isSelected = false,
     this.isDestructive = false,
-    this.iconColor,
   });
 
   @override
   Widget build(BuildContext context) {
-    return ListTile(
-      leading: Icon(
-        icon,
-        color: isDestructive ? Colors.red : (iconColor ?? Colors.grey.shade700),
-      ),
-      title: Text(
-        title,
-        style: TextStyle(
-          color: isDestructive ? Colors.red : Colors.black87,
-          fontWeight: FontWeight.w500,
+    final Color effectiveColor = isDestructive ? Colors.red.shade600 : baseColor;
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+          decoration: BoxDecoration(
+            color: isSelected ? effectiveColor.withOpacity(0.08) : Colors.transparent,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Row(
+            children: [
+              // Ícone com fundo colorido sutil
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: isSelected 
+                      ? effectiveColor.withOpacity(0.12) 
+                      : effectiveColor.withOpacity(0.05),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(
+                  icon,
+                  size: 20,
+                  color: effectiveColor,
+                ),
+              ),
+              const SizedBox(width: 16),
+              Text(
+                title,
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
+                  color: isSelected ? effectiveColor : const Color(0xFF475569),
+                ),
+              ),
+              if (isSelected) const Spacer(),
+              if (isSelected)
+                Container(
+                  width: 5,
+                  height: 5,
+                  decoration: BoxDecoration(
+                    color: effectiveColor,
+                    shape: BoxShape.circle,
+                  ),
+                )
+            ],
+          ),
         ),
       ),
-      onTap: onTap,
     );
   }
 }

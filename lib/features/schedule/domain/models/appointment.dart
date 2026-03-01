@@ -6,6 +6,7 @@ class Appointment extends Equatable {
   final String type;
   final DateTime date;
   final String time;
+  final String endTime;
 
   const Appointment({
     required this.id,
@@ -13,6 +14,7 @@ class Appointment extends Equatable {
     required this.type,
     required this.date,
     required this.time,
+    required this.endTime,
   });
 
   @override
