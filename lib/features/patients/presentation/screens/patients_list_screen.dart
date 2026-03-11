@@ -52,7 +52,7 @@ class _PatientsListViewState extends State<PatientsListView> {
           children: [
             _buildPageHeader(context),
             const SizedBox(height: 32),
-            _buildSearchField(),
+            _buildSearchField(context),
             const SizedBox(height: 32),
             _buildPatientsTable(context),
           ],
@@ -86,9 +86,10 @@ class _PatientsListViewState extends State<PatientsListView> {
     );
   }
 
-  Widget _buildSearchField() {
+  Widget _buildSearchField(BuildContext context) {
+    final bool isDesktop = MediaQuery.of(context).size.width > 800;
     return Container(
-      width: 400, // Largura fixa estilo Desktop/Web
+      width: isDesktop ? 400 : double.infinity,
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
@@ -124,7 +125,7 @@ class _PatientsListViewState extends State<PatientsListView> {
           return Column(
             children: [
               // Cabeçalho da "Tabela"
-              _buildTableHeader(),
+              _buildTableHeader(context),
               const Divider(height: 1, color: Color(0xFFF1F5F9)),
               // Lista de itens
               ListView.separated(
@@ -141,16 +142,17 @@ class _PatientsListViewState extends State<PatientsListView> {
     );
   }
 
-  Widget _buildTableHeader() {
-    return const Padding(
-      padding: EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+  Widget _buildTableHeader(BuildContext context) {
+    final bool isDesktop = MediaQuery.of(context).size.width > 800;
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
       child: Row(
         children: [
-          Expanded(flex: 3, child: Text("PACIENTE", style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: Color(0xFF94A3B8), letterSpacing: 0.5))),
-          Expanded(flex: 2, child: Text("IDADE", style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: Color(0xFF94A3B8)))),
-          Expanded(flex: 2, child: Text("TELEFONE", style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: Color(0xFF94A3B8)))),
-          Expanded(flex: 1, child: Text("TRATAMENTOS", style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: Color(0xFF94A3B8)))),
-          SizedBox(width: 48), // Espaço para o menu de ações
+          const Expanded(flex: 3, child: Text("PACIENTE", style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: Color(0xFF94A3B8), letterSpacing: 0.5))),
+          if (isDesktop) const Expanded(flex: 2, child: Text("IDADE", style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: Color(0xFF94A3B8)))),
+          if (isDesktop) const Expanded(flex: 2, child: Text("TELEFONE", style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: Color(0xFF94A3B8)))),
+          Expanded(flex: isDesktop ? 1 : 2, child: const Text("TRATAMENTOS", style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: Color(0xFF94A3B8)))),
+          const SizedBox(width: 48), // Espaço para o menu de ações
         ],
       ),
     );
@@ -167,6 +169,7 @@ class _PatientRow extends StatelessWidget {
     final List<Color> avatarColors = [const Color(0xFFCCFBF1), const Color(0xFFFEF3C7), const Color(0xFFF3E8FF), const Color(0xFFDBEAFE)];
     final Color bgColor = avatarColors[patient.name.length % avatarColors.length];
     final Color textColor = Color.lerp(bgColor, Colors.black, 0.7)!;
+    final bool isDesktop = MediaQuery.of(context).size.width > 800;
 
     return InkWell(
       onTap: () => context.push('/patients/${patient.id}', extra: patient),
@@ -190,12 +193,12 @@ class _PatientRow extends StatelessWidget {
               ),
             ),
             // Idade (Suposição de campo, ajuste conforme seu modelo)
-            Expanded(flex: 2, child: Text("34 anos", style: TextStyle(color: Color(0xFF64748B)))),
+            if (isDesktop) Expanded(flex: 2, child: const Text("34 anos", style: TextStyle(color: Color(0xFF64748B)))),
             // Telefone
-            Expanded(flex: 2, child: Text(patient.phone, style: TextStyle(color: Color(0xFF64748B)))),
+            if (isDesktop) Expanded(flex: 2, child: Text(patient.phone, style: TextStyle(color: const Color(0xFF64748B)))),
             // Badge de Tratamentos
             Expanded(
-              flex: 1,
+              flex: isDesktop ? 1 : 2,
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(color: const Color(0xFFF1F5F9), borderRadius: BorderRadius.circular(20)),

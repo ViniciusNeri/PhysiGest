@@ -7,6 +7,7 @@ import 'package:physigest/core/widgets/side_menu.dart';
 import 'package:physigest/features/financial/presentation/bloc/financial_bloc.dart';
 import 'package:physigest/features/financial/presentation/bloc/financial_event.dart';
 import 'package:physigest/features/financial/presentation/bloc/financial_state.dart';
+import 'package:physigest/features/financial/presentation/widgets/add_transaction_dialog.dart';
 
 class FinancialScreen extends StatelessWidget {
   const FinancialScreen({super.key});
@@ -49,7 +50,41 @@ class FinancialView extends StatelessWidget {
       ),
       drawer: const SideMenu(),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {},
+        onPressed: () async {
+          final result = await showGeneralDialog<Map<String, dynamic>>(
+            context: context,
+            barrierDismissible: true,
+            barrierLabel: '',
+            barrierColor: Colors.black.withOpacity(0.4),
+            transitionDuration: const Duration(milliseconds: 300),
+            pageBuilder: (context, anim1, anim2) {
+              return const Center(
+                child: AddTransactionDialog(),
+              );
+            },
+            transitionBuilder: (context, anim1, anim2, child) {
+              return ScaleTransition(
+                scale: Tween<double>(begin: 0.9, end: 1.0)
+                    .animate(CurvedAnimation(parent: anim1, curve: Curves.easeOutBack)),
+                child: FadeTransition(
+                  opacity: anim1,
+                  child: child,
+                ),
+              );
+            },
+          );
+
+          if (result != null && context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+               SnackBar(
+                content: Text('Lançamento salvo: R\$ ${result['amount']} - ${result['description']}'),
+                backgroundColor: FinancialView.azulPetroleo,
+              ),
+            );
+            // Aqui despacharemos o Evento para o FinancialBloc posteriormente
+            // context.read<FinancialBloc>().add(AddTransactionEvent(result));
+          }
+        },
         backgroundColor: roxoClaro,
         child: const Icon(Icons.add, color: Colors.white),
       ),

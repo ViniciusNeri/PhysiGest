@@ -25,6 +25,8 @@ class LoginView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final Color primary = AppTheme.primaryColor;
+    final double width = MediaQuery.of(context).size.width;
+    final bool isMobile = width < 600;
 
     return Scaffold(
       // Fundo com um degradê sutil para profundidade
@@ -58,11 +60,14 @@ class LoginView extends StatelessWidget {
           },
           child: Center(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.all(24.0),
+              padding: EdgeInsets.all(isMobile ? 16.0 : 24.0),
               child: ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 450),
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 50),
+                  padding: EdgeInsets.symmetric(
+                    horizontal: isMobile ? 24 : 40,
+                    vertical: isMobile ? 32 : 50,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(24),
@@ -188,8 +193,9 @@ class LoginView extends StatelessWidget {
                       const SizedBox(height: 32),
 
                       // RODAPÉ
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
+                      Wrap(
+                        alignment: WrapAlignment.center,
+                        crossAxisAlignment: WrapCrossAlignment.center,
                         children: [
                           const Text('Ainda não tem conta?', style: TextStyle(color: Colors.black54)),
                           TextButton(

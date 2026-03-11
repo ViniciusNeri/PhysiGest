@@ -82,23 +82,35 @@ class HomeView extends StatelessWidget {
                   const SizedBox(height: 32),
 
                   // Seção Principal: Agenda e Coluna Lateral
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Expanded(flex: 2, child: _buildAgendaSection()),
-                      const SizedBox(width: 24),
-                      Expanded(
-                        flex: 1,
-                        child: Column(
-                          children: [
-                            _buildQuickActions(),
-                            const SizedBox(height: 24),
-                            _buildNextAppointmentCard(),
-                          ],
+                  if (isDesktop)
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(flex: 2, child: _buildAgendaSection()),
+                        const SizedBox(width: 24),
+                        Expanded(
+                          flex: 1,
+                          child: Column(
+                            children: [
+                              _buildQuickActions(),
+                              const SizedBox(height: 24),
+                              _buildNextAppointmentCard(),
+                            ],
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
+                      ],
+                    )
+                  else
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        _buildAgendaSection(),
+                        const SizedBox(height: 24),
+                        _buildQuickActions(),
+                        const SizedBox(height: 24),
+                        _buildNextAppointmentCard(),
+                      ],
+                    ),
                 ],
               ),
             );
@@ -122,7 +134,7 @@ class HomeView extends StatelessWidget {
   }
 
   Widget _buildMetricCard(double screenWidth, String title, String value, IconData icon, Color color) {
-    double cardWidth = (screenWidth > 1200) ? (screenWidth * 0.84 - 80) / 4 : (screenWidth - 60) / 2;
+    double cardWidth = (screenWidth > 1200) ? (screenWidth * 0.84 - 80) / 4 : (screenWidth > 700 ? (screenWidth - 60) / 2 : screenWidth - 40);
     return Container(
       width: cardWidth,
       height: 120,
@@ -263,26 +275,45 @@ class HomeView extends StatelessWidget {
           const SizedBox(height: 8),
           Container(height: 15, width: 350, decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(8))),
           const SizedBox(height: 32),
-          Row(
-            children: List.generate(4, (i) => Expanded(
-              child: Container(height: 120, margin: const EdgeInsets.only(right: 16), decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20))),
-            )),
+          Wrap(
+            spacing: 16,
+            runSpacing: 16,
+            children: List.generate(4, (i) {
+              double cardWidth = (width > 1200) ? (width * 0.84 - 80) / 4 : (width > 700 ? (width - 60) / 2 : width - 40);
+              return Container(
+                width: cardWidth,
+                height: 120, 
+                decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20))
+              );
+            }),
           ),
           const SizedBox(height: 40),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(flex: 2, child: Container(height: 300, decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(24)))),
-              const SizedBox(width: 24),
-              Expanded(flex: 1, child: Column(
-                children: [
-                  Container(height: 200, decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(24))),
-                  const SizedBox(height: 24),
-                  Container(height: 140, decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(24))),
-                ],
-              )),
-            ],
-          )
+          if (isDesktop)
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(flex: 2, child: Container(height: 300, decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(24)))),
+                const SizedBox(width: 24),
+                Expanded(flex: 1, child: Column(
+                  children: [
+                    Container(height: 200, decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(24))),
+                    const SizedBox(height: 24),
+                    Container(height: 140, decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(24))),
+                  ],
+                )),
+              ],
+            )
+          else
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Container(height: 300, decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(24))),
+                const SizedBox(height: 24),
+                Container(height: 200, decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(24))),
+                const SizedBox(height: 24),
+                Container(height: 140, decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(24))),
+              ],
+            )
         ],
       ),
     );

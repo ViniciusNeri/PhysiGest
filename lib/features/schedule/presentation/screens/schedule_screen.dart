@@ -62,6 +62,8 @@ class ScheduleView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final bool isDesktop = MediaQuery.of(context).size.width > 800;
+
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
       drawer: const SideMenu(),
@@ -88,14 +90,15 @@ class ScheduleView extends StatelessWidget {
       body: Row(
         children: [
           // SIDEBAR FIXA
-          Container(
-            width: 280,
-            decoration: const BoxDecoration(
-              color: Colors.white,
-              border: Border(right: BorderSide(color: Color(0xFFE2E8F0))),
+          if (isDesktop)
+            Container(
+              width: 280,
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                border: Border(right: BorderSide(color: Color(0xFFE2E8F0))),
+              ),
+              child: _buildSidebar(context),
             ),
-            child: _buildSidebar(context),
-          ),
 
           // CONTEÚDO PRINCIPAL (Grade de Horários)
           Expanded(
@@ -133,32 +136,44 @@ class ScheduleView extends StatelessWidget {
   Widget _buildTopBar(BuildContext context) {
     return BlocBuilder<ScheduleBloc, ScheduleState>(
       builder: (context, state) {
-        final monday = state.selectedDate.subtract(Duration(days: state.selectedDate.weekday - 1));
-        final sunday = monday.add(const Duration(days: 6));
-        final rangeLabel = "${DateFormat('d').format(monday)} - ${DateFormat('d').format(sunday)} de ${DateFormat('MMMM, yyyy', 'pt_BR').format(sunday)}";
+        final bool isDesktop = MediaQuery.of(context).size.width > 800;
+        final startDate = isDesktop 
+            ? state.selectedDate.subtract(Duration(days: state.selectedDate.weekday - 1))
+            : state.selectedDate;
+        final endDate = isDesktop ? startDate.add(const Duration(days: 6)) : startDate;
+        
+        final rangeLabel = isDesktop 
+            ? "${DateFormat('d').format(startDate)} - ${DateFormat('d').format(endDate)} de ${DateFormat('MMMM, yyyy', 'pt_BR').format(endDate)}"
+            : "${DateFormat('d', 'pt_BR').format(startDate)} de ${DateFormat('MMMM, yyyy', 'pt_BR').format(startDate)}";
 
         return Container(
           height: 80,
-          padding: const EdgeInsets.symmetric(horizontal: 24),
+          padding: EdgeInsets.symmetric(horizontal: isDesktop ? 24 : 12),
           decoration: const BoxDecoration(color: Colors.white, border: Border(bottom: BorderSide(color: Color(0xFFF1F5F9)))),
           child: Row(
             children: [
-              Text(rangeLabel, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: Color(0xFF1E293B), letterSpacing: -0.5)),
-              const SizedBox(width: 24),
+              if (isDesktop)
+                Text(rangeLabel, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: Color(0xFF1E293B), letterSpacing: -0.5))
+              else
+                Expanded(child: Text(rangeLabel, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: Color(0xFF1E293B), letterSpacing: -0.5), overflow: TextOverflow.ellipsis)),
+              
+              const SizedBox(width: 12),
               _buildNavButton(Icons.chevron_left_rounded, () {
-                context.read<ScheduleBloc>().add(SelectDate(state.selectedDate.subtract(const Duration(days: 7))));
+                context.read<ScheduleBloc>().add(SelectDate(state.selectedDate.subtract(Duration(days: isDesktop ? 7 : 1))));
               }),
               const SizedBox(width: 8),
               _buildNavButton(Icons.chevron_right_rounded, () {
-                context.read<ScheduleBloc>().add(SelectDate(state.selectedDate.add(const Duration(days: 7))));
+                context.read<ScheduleBloc>().add(SelectDate(state.selectedDate.add(Duration(days: isDesktop ? 7 : 1))));
               }),
               const SizedBox(width: 16),
               TextButton(
                 onPressed: () => context.read<ScheduleBloc>().add(SelectDate(DateTime.now())),
                 child: const Text("Hoje", style: TextStyle(fontWeight: FontWeight.bold)),
               ),
-              const Spacer(),
-              _buildViewToggle(),
+              if (isDesktop) ...[
+                const Spacer(),
+                _buildViewToggle(),
+              ],
             ],
           ),
         );
@@ -167,9 +182,11 @@ class ScheduleView extends StatelessWidget {
   }
 
   Widget _buildWeeklyTimeline(BuildContext context, ScheduleState state) {
-    final int daysToSubtract = state.selectedDate.weekday - 1;
-    final DateTime firstDayOfWeek = state.selectedDate.subtract(Duration(days: daysToSubtract));
-    final List<DateTime> weekDays = List.generate(7, (i) => firstDayOfWeek.add(Duration(days: i)));
+    final bool isDesktop = MediaQuery.of(context).size.width > 800;
+    
+    final List<DateTime> weekDays = isDesktop 
+      ? List.generate(7, (i) => state.selectedDate.subtract(Duration(days: state.selectedDate.weekday - 1)).add(Duration(days: i)))
+      : [state.selectedDate];
 
     return Container(
       color: Colors.white,
@@ -465,7 +482,7 @@ class ScheduleView extends StatelessWidget {
     },
   );
 
-  if (result != null) {
+  if (result != null && context.mounted) {
     // Aqui você enviaria um evento de Update em vez de Add
     context.read<ScheduleBloc>().add(UpdateAppointment(result));
   }
