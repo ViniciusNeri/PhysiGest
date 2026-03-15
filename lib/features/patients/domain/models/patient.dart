@@ -49,31 +49,61 @@ class Patient extends Equatable {
 
 class Anamnesis extends Equatable {
   final String mainComplaint;
+  final String currentIllness;
   final String historic;
+  final String familyHistory;
+  final String lifestyleHabits;
+  final String physicalExam;
   final String clinicalDiagnosis;
+  final String treatmentPlan;
   final String medications;
 
   const Anamnesis({
     this.mainComplaint = '',
+    this.currentIllness = '',
     this.historic = '',
+    this.familyHistory = '',
+    this.lifestyleHabits = '',
+    this.physicalExam = '',
     this.clinicalDiagnosis = '',
+    this.treatmentPlan = '',
     this.medications = '',
   });
 
   Anamnesis copyWith({
     String? mainComplaint,
+    String? currentIllness,
     String? historic,
+    String? familyHistory,
+    String? lifestyleHabits,
+    String? physicalExam,
     String? clinicalDiagnosis,
+    String? treatmentPlan,
     String? medications,
   }) {
     return Anamnesis(
       mainComplaint: mainComplaint ?? this.mainComplaint,
+      currentIllness: currentIllness ?? this.currentIllness,
       historic: historic ?? this.historic,
+      familyHistory: familyHistory ?? this.familyHistory,
+      lifestyleHabits: lifestyleHabits ?? this.lifestyleHabits,
+      physicalExam: physicalExam ?? this.physicalExam,
       clinicalDiagnosis: clinicalDiagnosis ?? this.clinicalDiagnosis,
+      treatmentPlan: treatmentPlan ?? this.treatmentPlan,
       medications: medications ?? this.medications,
     );
   }
 
   @override
-  List<Object?> get props => [mainComplaint, historic, clinicalDiagnosis, medications];
+  List<Object?> get props => [
+        mainComplaint,
+        currentIllness,
+        historic,
+        familyHistory,
+        lifestyleHabits,
+        physicalExam,
+        clinicalDiagnosis,
+        treatmentPlan,
+        medications,
+      ];
 }

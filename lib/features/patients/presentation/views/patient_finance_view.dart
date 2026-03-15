@@ -16,153 +16,199 @@ class PatientFinanceView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: bgGrey, // Fundo acinzentado para destacar os cards brancos
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(32),
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 1000), // Dimensão ideal
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildHeader(),
-                const SizedBox(height: 32),
-
-                // Seção de Cards de Saldo
-                Row(
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isDesktop = constraints.maxWidth >= 800;
+        
+        return Scaffold(
+          backgroundColor: bgGrey, // Fundo acinzentado para destacar os cards brancos
+          body: SingleChildScrollView(
+            padding: EdgeInsets.all(isDesktop ? 32 : 16),
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 1000), // Dimensão ideal
+                child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _buildTopCard("Saldo Devedor", "R\$ 350,00", Icons.warning_amber_rounded, Colors.redAccent),
-                    const SizedBox(width: 16),
-                    _buildTopCard("Sessões Restantes", "04", Icons.confirmation_number_outlined, Colors.blueAccent),
-                    const SizedBox(width: 16),
-                    _buildTopCard("Total Investido", "R\$ 4.800", Icons.insights_rounded, Colors.teal),
+                    _buildHeader(isDesktop),
+                    const SizedBox(height: 32),
+
+                    // Seção de Cards de Saldo
+                    if (isDesktop) ...[
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(child: _buildTopCard("Saldo Devedor", "R\$ 350,00", Icons.warning_amber_rounded, Colors.redAccent)),
+                          const SizedBox(width: 16),
+                          Expanded(child: _buildTopCard("Sessões Restantes", "04", Icons.confirmation_number_outlined, Colors.blueAccent)),
+                          const SizedBox(width: 16),
+                          Expanded(child: _buildTopCard("Total Investido", "R\$ 4.800", Icons.insights_rounded, Colors.teal)),
+                        ],
+                      )
+                    ] else ...[
+                      _buildTopCard("Saldo Devedor", "R\$ 350,00", Icons.warning_amber_rounded, Colors.redAccent),
+                      const SizedBox(height: 16),
+                      Row(
+                        children: [
+                          Expanded(child: _buildTopCard("Sessões Restantes", "04", Icons.confirmation_number_outlined, Colors.blueAccent)),
+                          const SizedBox(width: 16),
+                          Expanded(child: _buildTopCard("Total Investido", "R\$ 4.800", Icons.insights_rounded, Colors.teal)),
+                        ],
+                      ),
+                    ],
+
+                    const SizedBox(height: 40),
+                    const Text(
+                      "Pacotes Disponíveis",
+                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: textMain),
+                    ),
+                    const SizedBox(height: 16),
+
+                    // Seção de Pacotes
+                    if (isDesktop) ...[
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(child: _buildPackageCard("Básico", "5 Sessões", "R\$ 750", "R\$ 150/sessão", const Color(0xFF2DD4BF))),
+                          const SizedBox(width: 16),
+                          Expanded(child: _buildPackageCard("Intermediário", "10 Sessões", "R\$ 1.300", "R\$ 130/sessão", const Color(0xFFA78BFA))),
+                          const SizedBox(width: 16),
+                          Expanded(child: _buildPackageCard("Premium", "20 Sessões", "R\$ 2.200", "R\$ 110/sessão", const Color(0xFFF59E0B))),
+                        ],
+                      )
+                    ] else ...[
+                      _buildPackageCard("Básico", "5 Sessões", "R\$ 750", "R\$ 150/sessão", const Color(0xFF2DD4BF)),
+                      const SizedBox(height: 16),
+                      _buildPackageCard("Intermediário", "10 Sessões", "R\$ 1.300", "R\$ 130/sessão", const Color(0xFFA78BFA)),
+                      const SizedBox(height: 16),
+                      _buildPackageCard("Premium", "20 Sessões", "R\$ 2.200", "R\$ 110/sessão", const Color(0xFFF59E0B)),
+                    ],
+                    
+                    const SizedBox(height: 40),
+                    const Text(
+                      "Histórico de Transações",
+                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: textMain),
+                    ),
+                    const SizedBox(height: 16),
+
+                    // Tabela de Histórico
+                    _buildHistoryTable(),
                   ],
                 ),
-                const SizedBox(height: 40),
-
-                const Text(
-                  "Pacotes Disponíveis",
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: textMain),
-                ),
-                const SizedBox(height: 16),
-
-                // Seção de Pacotes
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildPackageCard("Básico", "5 Sessões", "R\$ 750", "R\$ 150/sessão", const Color(0xFF2DD4BF)),
-                    const SizedBox(width: 16),
-                    _buildPackageCard("Intermediário", "10 Sessões", "R\$ 1.300", "R\$ 130/sessão", const Color(0xFFA78BFA)),
-                    const SizedBox(width: 16),
-                    _buildPackageCard("Premium", "20 Sessões", "R\$ 2.200", "R\$ 110/sessão", const Color(0xFFF59E0B)),
-                  ],
-                ),
-                const SizedBox(height: 40),
-
-                const Text(
-                  "Histórico de Transações",
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: textMain),
-                ),
-                const SizedBox(height: 16),
-
-                // Tabela de Histórico
-                _buildHistoryTable(),
-              ],
+              ),
             ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 
   // --- COMPONENTES AUXILIARES ---
 
-  Widget _buildHeader() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        const Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text("Gestão Financeira", style: TextStyle(fontSize: 26, fontWeight: FontWeight.w900, color: textMain)),
-            Text("Controle de saldos e vendas", style: TextStyle(color: textSecondary)),
-          ],
-        ),
-        ElevatedButton.icon(
-          onPressed: () {},
-          icon: const Icon(Icons.receipt_long, color: Colors.white, size: 18),
-          label: const Text("GERAR RECIBO", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFF7C3AED),
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 18),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+  Widget _buildHeader(bool isDesktop) {
+    if (isDesktop) {
+      return Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          const Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text("Gestão Financeira", style: TextStyle(fontSize: 26, fontWeight: FontWeight.w900, color: textMain)),
+              Text("Controle de saldos e vendas", style: TextStyle(color: textSecondary)),
+            ],
           ),
-        ),
-      ],
-    );
+          ElevatedButton.icon(
+            onPressed: () {},
+            icon: const Icon(Icons.receipt_long, color: Colors.white, size: 18),
+            label: const Text("GERAR RECIBO", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF7C3AED),
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 18),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            ),
+          ),
+        ],
+      );
+    } else {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text("Gestão Financeira", style: TextStyle(fontSize: 26, fontWeight: FontWeight.w900, color: textMain)),
+          const Text("Controle de saldos e vendas", style: TextStyle(color: textSecondary)),
+          const SizedBox(height: 16),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: () {},
+              icon: const Icon(Icons.receipt_long, color: Colors.white, size: 18),
+              label: const Text("GERAR RECIBO", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF7C3AED),
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 18),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+            ),
+          )
+        ],
+      );
+    }
   }
 
   Widget _buildTopCard(String title, String value, IconData icon, Color color) {
-    return Expanded(
-      child: Container(
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: borderColor),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, color: color, size: 24),
-            const SizedBox(height: 12),
-            FittedBox(
-              fit: BoxFit.scaleDown,
-              child: Text(value, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w900, color: textMain)),
-            ),
-            Text(title, style: const TextStyle(color: textSecondary, fontSize: 12, fontWeight: FontWeight.w600)),
-          ],
-        ),
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: borderColor),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, color: color, size: 24),
+          const SizedBox(height: 12),
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(value, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w900, color: textMain)),
+          ),
+          Text(title, style: const TextStyle(color: textSecondary, fontSize: 12, fontWeight: FontWeight.w600)),
+        ],
       ),
     );
   }
 
   Widget _buildPackageCard(String name, String sessions, String price, String detail, Color color) {
-    return Expanded(
-      child: Container(
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: color.withOpacity(0.3), width: 2),
-        ),
-        child: Column(
-          children: [
-            Text(name, style: TextStyle(color: color, fontWeight: FontWeight.w900, fontSize: 13)),
-            const SizedBox(height: 8),
-            Text(sessions, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: textMain)),
-            const SizedBox(height: 12),
-            FittedBox(
-              fit: BoxFit.scaleDown,
-              child: Text(price, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w900, color: textMain)),
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: color.withOpacity(0.3), width: 2),
+      ),
+      child: Column(
+        children: [
+          Text(name, style: TextStyle(color: color, fontWeight: FontWeight.w900, fontSize: 13)),
+          const SizedBox(height: 8),
+          Text(sessions, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: textMain)),
+          const SizedBox(height: 12),
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(price, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w900, color: textMain)),
+          ),
+          Text(detail, style: const TextStyle(color: textSecondary, fontSize: 11)),
+          const SizedBox(height: 20),
+          ElevatedButton(
+            onPressed: () {},
+            style: ElevatedButton.styleFrom(
+              backgroundColor: color,
+              elevation: 0,
+              minimumSize: const Size(double.infinity, 45),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
             ),
-            Text(detail, style: const TextStyle(color: textSecondary, fontSize: 11)),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () {},
-              style: ElevatedButton.styleFrom(
-                backgroundColor: color,
-                elevation: 0,
-                minimumSize: const Size(double.infinity, 45),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-              ),
-              child: const Text("VENDER", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13)),
-            ),
-          ],
-        ),
+            child: const Text("VENDER", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13)),
+          ),
+        ],
       ),
     );
   }

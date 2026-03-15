@@ -17,42 +17,52 @@ class PatientSummaryView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.fromLTRB(32, 32, 32, 32), // Ajustado para não colar no topo
-      child: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 1200),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // COLUNA ESQUERDA (SIDEBAR IGUAL À IMAGEM)
-              Expanded(
-                flex: 3,
-                child: _buildSidebarProfile(),
-              ),
-              const SizedBox(width: 32),
-              // COLUNA DIREITA (CONTEÚDO)
-              Expanded(
-                flex: 7,
-                child: Column(
-                  children: [
-                    _buildPremiumStatsRow(),
-                    const SizedBox(height: 32),
-                    _buildQuickViewCard(
-                      "Última Nota de Evolução", 
-                      patient.anamnesis.mainComplaint.isEmpty 
-                        ? "Nenhuma observação registrada." 
-                        : patient.anamnesis.mainComplaint
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isDesktop = constraints.maxWidth >= 800;
+        
+        return SingleChildScrollView(
+          padding: EdgeInsets.fromLTRB(isDesktop ? 32 : 16, isDesktop ? 32 : 16, isDesktop ? 32 : 16, isDesktop ? 32 : 16),
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 1200),
+              child: isDesktop 
+                  ? Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(flex: 3, child: _buildSidebarProfile()),
+                        const SizedBox(width: 32),
+                        Expanded(flex: 7, child: _buildRightColumn(isDesktop)),
+                      ],
+                    )
+                  : Column(
+                      children: [
+                        _buildSidebarProfile(),
+                        const SizedBox(height: 24),
+                        _buildRightColumn(isDesktop),
+                      ],
                     ),
-                    const SizedBox(height: 32),
-                    _buildRecentHistoryCard(),
-                  ],
-                ),
-              ),
-            ],
+            ),
           ),
+        );
+      },
+    );
+  }
+
+  Widget _buildRightColumn(bool isDesktop) {
+    return Column(
+      children: [
+        _buildPremiumStatsRow(isDesktop),
+        const SizedBox(height: 32),
+        _buildQuickViewCard(
+          "Última Nota de Evolução", 
+          patient.anamnesis.mainComplaint.isEmpty 
+            ? "Nenhuma observação registrada." 
+            : patient.anamnesis.mainComplaint
         ),
-      ),
+        const SizedBox(height: 32),
+        _buildRecentHistoryCard(),
+      ],
     );
   }
 
@@ -80,7 +90,7 @@ class PatientSummaryView extends StatelessWidget {
                     radius: 45,
                     backgroundColor: Colors.white,
                     child: Text(
-                      patient.name[0].toUpperCase(),
+                      patient.name.isNotEmpty ? patient.name[0].toUpperCase() : '?',
                       style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: primaryGradEnd),
                     ),
                   ),
@@ -98,7 +108,7 @@ class PatientSummaryView extends StatelessWidget {
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: const Text(
-                      "34 anos • Feminino", // Aqui você pode calcular a idade depois
+                      "Idade N/A", // Pode ser calculado usando data de nascimento depois
                       style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600),
                     ),
                   ),
@@ -113,7 +123,7 @@ class PatientSummaryView extends StatelessWidget {
                   _sidebarTile(Icons.phone_android_rounded, "Telefone", patient.phone, const Color(0xFFE0F2FE), Colors.blue),
                   _sidebarTile(Icons.alternate_email_rounded, "E-mail", patient.email, const Color(0xFFFFF7ED), Colors.orange),
                   _sidebarTile(Icons.work_outline_rounded, "Profissão", patient.occupation, const Color(0xFFF0FDFA), Colors.teal),
-                  _sidebarTile(Icons.cake_outlined, "Nascimento", "15/05/1985", const Color(0xFFF5F3FF), Colors.purple),
+                  _sidebarTile(Icons.cake_outlined, "Nascimento", patient.birthDate, const Color(0xFFF5F3FF), Colors.purple),
                 ],
               ),
             ),
@@ -134,59 +144,83 @@ class PatientSummaryView extends StatelessWidget {
             child: Icon(icon, color: iconCol, size: 20),
           ),
           const SizedBox(width: 16),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(label, style: const TextStyle(fontSize: 11, color: textSecondary, fontWeight: FontWeight.bold)),
-              Text(value, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: textMain)),
-            ],
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(label, style: const TextStyle(fontSize: 11, color: textSecondary, fontWeight: FontWeight.bold)),
+                Text(value, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: textMain)),
+              ],
+            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildPremiumStatsRow() {
-    return Row(
-      children: [
-        _statCard("12", "Total Sessões", Icons.verified_rounded, [primaryGradStart, primaryGradEnd]),
-        const SizedBox(width: 16),
-        _statCard("0", "Faltas", Icons.do_not_disturb_on_rounded, [Colors.redAccent, Colors.red]),
-        const SizedBox(width: 16),
-        _statCard("05/03", "Próxima", Icons.event_available_rounded, [const Color(0xFFFBBF24), const Color(0xFFF59E0B)]),
-      ],
-    );
+  Widget _buildPremiumStatsRow(bool isDesktop) {
+    if (isDesktop) {
+      return Row(
+        children: [
+          Expanded(child: _statCard("12", "Total Sessões", Icons.verified_rounded, [primaryGradStart, primaryGradEnd])),
+          const SizedBox(width: 16),
+          Expanded(child: _statCard("0", "Faltas", Icons.do_not_disturb_on_rounded, [Colors.redAccent, Colors.red])),
+          const SizedBox(width: 16),
+          Expanded(child: _statCard("05/03", "Próxima", Icons.event_available_rounded, [const Color(0xFFFBBF24), const Color(0xFFF59E0B)])),
+        ],
+      );
+    } else {
+      return Column(
+        children: [
+          Row(
+            children: [
+              Expanded(child: _statCard("12", "Total Sessões", Icons.verified_rounded, [primaryGradStart, primaryGradEnd])),
+              const SizedBox(width: 16),
+              Expanded(child: _statCard("0", "Faltas", Icons.do_not_disturb_on_rounded, [Colors.redAccent, Colors.red])),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Expanded(child: _statCard("05/03", "Próxima", Icons.event_available_rounded, [const Color(0xFFFBBF24), const Color(0xFFF59E0B)])),
+              const SizedBox(width: 16),
+              Expanded(child: const SizedBox()),
+            ],
+          ),
+        ],
+      );
+    }
   }
 
   Widget _statCard(String val, String label, IconData icon, List<Color> colors) {
-    return Expanded(
-      child: Container(
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(24),
-          boxShadow: [BoxShadow(color: colors[1].withOpacity(0.1), blurRadius: 10)],
-        ),
-        child: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(colors: colors),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Icon(icon, color: Colors.white, size: 20),
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [BoxShadow(color: colors[1].withOpacity(0.1), blurRadius: 10)],
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(colors: colors),
+              borderRadius: BorderRadius.circular(12),
             ),
-            const SizedBox(width: 16),
-            Column(
+            child: Icon(icon, color: Colors.white, size: 20),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(val, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: textMain)),
                 Text(label, style: const TextStyle(color: textSecondary, fontSize: 12, fontWeight: FontWeight.bold)),
               ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

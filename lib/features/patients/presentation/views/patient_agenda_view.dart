@@ -14,74 +14,79 @@ class PatientAgendaView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(48),
-      child: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 1000),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Cabeçalho da Agenda
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isDesktop = constraints.maxWidth >= 800;
+        return SingleChildScrollView(
+          padding: EdgeInsets.all(isDesktop ? 48 : 16),
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 1000),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    "Agenda do Paciente",
-                    style: TextStyle(fontSize: 26, fontWeight: FontWeight.w900, color: textMain),
+                  // Cabeçalho da Agenda
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        "Agenda do Paciente",
+                        style: TextStyle(fontSize: isDesktop ? 26 : 22, fontWeight: FontWeight.w900, color: textMain),
+                      ),
+                      ElevatedButton.icon(
+                        onPressed: () {},
+                        icon: const Icon(Icons.add_rounded, color: Colors.white),
+                        label: isDesktop ? const Text("AGENDAR", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)) : const Text(""),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF7C3AED),
+                          padding: EdgeInsets.symmetric(horizontal: isDesktop ? 24 : 16, vertical: 16),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        ),
+                      ),
+                    ],
                   ),
-                  ElevatedButton.icon(
-                    onPressed: () {},
-                    icon: const Icon(Icons.add_rounded, color: Colors.white),
-                    label: const Text("AGENDAR", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF7C3AED),
-                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    ),
+                  const SizedBox(height: 48),
+
+                  // Itens da Timeline (Baseado na sua imagem)
+                  _buildTimelineItem(
+                    date: "05 Mar",
+                    time: "14:00",
+                    title: "Reavaliação",
+                    status: "AGENDADO",
+                    color: Colors.orange,
+                    icon: Icons.event_note_rounded,
+                  ),
+                  _buildTimelineItem(
+                    date: "26 Fev",
+                    time: "10:30",
+                    title: "Sessão Fisioterapia",
+                    status: "CONCLUÍDO",
+                    color: primaryTeal,
+                    icon: Icons.check_circle_rounded,
+                  ),
+                  _buildTimelineItem(
+                    date: "19 Fev",
+                    time: "10:30",
+                    title: "Sessão Fisioterapia",
+                    status: "CONCLUÍDO",
+                    color: primaryTeal,
+                    icon: Icons.check_circle_rounded,
+                  ),
+                  _buildTimelineItem(
+                    date: "12 Fev",
+                    time: "09:00",
+                    title: "Avaliação Inicial",
+                    status: "CONCLUÍDO",
+                    color: Colors.purple,
+                    icon: Icons.assignment_turned_in_rounded,
+                    isLast: true,
                   ),
                 ],
               ),
-              const SizedBox(height: 48),
-
-              // Itens da Timeline (Baseado na sua imagem)
-              _buildTimelineItem(
-                date: "05 Mar",
-                time: "14:00",
-                title: "Reavaliação",
-                status: "AGENDADO",
-                color: Colors.orange,
-                icon: Icons.event_note_rounded,
-              ),
-              _buildTimelineItem(
-                date: "26 Fev",
-                time: "10:30",
-                title: "Sessão Fisioterapia",
-                status: "CONCLUÍDO",
-                color: primaryTeal,
-                icon: Icons.check_circle_rounded,
-              ),
-              _buildTimelineItem(
-                date: "19 Fev",
-                time: "10:30",
-                title: "Sessão Fisioterapia",
-                status: "CONCLUÍDO",
-                color: primaryTeal,
-                icon: Icons.check_circle_rounded,
-              ),
-              _buildTimelineItem(
-                date: "12 Fev",
-                time: "09:00",
-                title: "Avaliação Inicial",
-                status: "CONCLUÍDO",
-                color: Colors.purple,
-                icon: Icons.assignment_turned_in_rounded,
-                isLast: true,
-              ),
-            ],
+            ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 
