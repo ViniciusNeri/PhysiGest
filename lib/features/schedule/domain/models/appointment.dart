@@ -7,6 +7,8 @@ class Appointment extends Equatable {
   final DateTime date;
   final String time;
   final String endTime;
+  final String status; // 'agendado', 'realizado', 'falta', 'cancelado'
+  final String? evaluationNote;
 
   const Appointment({
     required this.id,
@@ -15,8 +17,32 @@ class Appointment extends Equatable {
     required this.date,
     required this.time,
     required this.endTime,
+    this.status = 'agendado',
+    this.evaluationNote,
   });
 
+  Appointment copyWith({
+    String? id,
+    String? patientName,
+    String? type,
+    DateTime? date,
+    String? time,
+    String? endTime,
+    String? status,
+    String? evaluationNote,
+  }) {
+    return Appointment(
+      id: id ?? this.id,
+      patientName: patientName ?? this.patientName,
+      type: type ?? this.type,
+      date: date ?? this.date,
+      time: time ?? this.time,
+      endTime: endTime ?? this.endTime,
+      status: status ?? this.status,
+      evaluationNote: evaluationNote ?? this.evaluationNote,
+    );
+  }
+
   @override
-  List<Object?> get props => [id, patientName, type, date, time];
+  List<Object?> get props => [id, patientName, type, date, time, endTime, status, evaluationNote];
 }

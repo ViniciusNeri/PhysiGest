@@ -7,6 +7,7 @@ import 'package:physigest/core/widgets/side_menu.dart';
 import 'package:physigest/features/patients/presentation/bloc/patient_bloc.dart';
 import 'package:physigest/features/patients/presentation/bloc/patient_event.dart';
 import 'package:physigest/features/patients/presentation/bloc/patient_state.dart';
+import 'package:physigest/features/patients/presentation/widgets/edit_patient_dialog.dart';
 
 class PatientsListScreen extends StatelessWidget {
   const PatientsListScreen({super.key});
@@ -73,7 +74,7 @@ class _PatientsListViewState extends State<PatientsListView> {
           ],
         ),
         ElevatedButton.icon(
-          onPressed: () => context.push('/patients/new'),
+          onPressed: () => showDialog(context: context, builder: (_) => const EditPatientDialog()),
           icon: const Icon(Icons.add_rounded, size: 20, color: Colors.white),
           label: const Text("Novo Paciente", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
           style: ElevatedButton.styleFrom(

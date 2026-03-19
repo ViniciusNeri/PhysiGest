@@ -1,5 +1,30 @@
 import 'package:equatable/equatable.dart';
 
+class PaymentTransaction extends Equatable {
+  final String id;
+  final String title;
+  final String serviceType;
+  final int quantity;
+  final String date;
+  final double value;
+  final String paymentMethod;
+  final String status; // 'PAGO' or 'PENDENTE'
+
+  const PaymentTransaction({
+    required this.id,
+    required this.title,
+    required this.serviceType,
+    required this.quantity,
+    required this.date,
+    required this.value,
+    required this.paymentMethod,
+    required this.status,
+  });
+
+  @override
+  List<Object?> get props => [id, title, serviceType, quantity, date, value, paymentMethod, status];
+}
+
 class Patient extends Equatable {
   final String id;
   final String name;
@@ -9,6 +34,7 @@ class Patient extends Equatable {
   final String occupation;
   final Anamnesis anamnesis;
   final List<String> photoPaths; // Lista de caminhos para as fotos locais mockadas
+  final List<PaymentTransaction> financialHistory; // Extrato do paciente
 
   const Patient({
     required this.id,
@@ -19,6 +45,7 @@ class Patient extends Equatable {
     required this.occupation,
     this.anamnesis = const Anamnesis(),
     this.photoPaths = const [],
+    this.financialHistory = const [],
   });
 
   Patient copyWith({
@@ -30,6 +57,7 @@ class Patient extends Equatable {
     String? occupation,
     Anamnesis? anamnesis,
     List<String>? photoPaths,
+    List<PaymentTransaction>? financialHistory,
   }) {
     return Patient(
       id: id ?? this.id,
@@ -40,11 +68,12 @@ class Patient extends Equatable {
       occupation: occupation ?? this.occupation,
       anamnesis: anamnesis ?? this.anamnesis,
       photoPaths: photoPaths ?? this.photoPaths,
+      financialHistory: financialHistory ?? this.financialHistory,
     );
   }
 
   @override
-  List<Object?> get props => [id, name, email, phone, birthDate, occupation, anamnesis, photoPaths];
+  List<Object?> get props => [id, name, email, phone, birthDate, occupation, anamnesis, photoPaths, financialHistory];
 }
 
 class Anamnesis extends Equatable {

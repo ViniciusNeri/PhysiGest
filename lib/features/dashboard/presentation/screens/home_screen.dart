@@ -6,6 +6,11 @@ import 'package:physigest/core/widgets/side_menu.dart';
 import 'package:physigest/features/dashboard/presentation/bloc/dashboard/dashboard_bloc.dart';
 import 'package:physigest/features/dashboard/presentation/bloc/dashboard/dashboard_event.dart';
 import 'package:physigest/features/dashboard/presentation/bloc/dashboard/dashboard_state.dart';
+import 'package:physigest/features/schedule/domain/models/appointment.dart';
+import 'package:physigest/features/schedule/presentation/widgets/appointment_action_dialog.dart';
+
+import 'package:physigest/features/settings/presentation/bloc/settings/settings_bloc.dart';
+import 'package:physigest/features/settings/presentation/bloc/settings/settings_state.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -47,47 +52,65 @@ class HomeView extends StatelessWidget {
           style: TextStyle(color: Color(0xFF1E293B), fontWeight: FontWeight.w800, fontSize: 18),
         ),
       ),
-      body: BlocBuilder<DashboardBloc, DashboardState>(
-        builder: (context, state) {
-          // --- ESTADO DE CARREGAMENTO (SKELETON) ---
-          if (state is DashboardLoading) {
-            return SingleChildScrollView(
-              padding: EdgeInsets.symmetric(horizontal: horizontalPadding, vertical: 32),
-              child: _buildSkeletonLoader(width, isDesktop),
-            );
+      body: BlocBuilder<SettingsBloc, SettingsState>(
+        builder: (context, settingsState) {
+          bool showDaily = true;
+          bool showPending = true;
+          bool showWeekly = true;
+
+          if (settingsState is SettingsLoaded) {
+            final prefs = settingsState.dashboardPreferences;
+            showDaily = prefs.showDailyAppointments;
+            showPending = prefs.showPendingPayments;
+            showWeekly = prefs.showWeeklyAppointments;
           }
 
-          // --- ESTADO CARREGADO ---
-          if (state is DashboardLoaded) {
-            return SingleChildScrollView(
-              padding: EdgeInsets.symmetric(horizontal: horizontalPadding, vertical: 32),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
+          return BlocBuilder<DashboardBloc, DashboardState>(
+            builder: (context, state) {
+              // --- ESTADO DE CARREGAMENTO (SKELETON) ---
+              if (state is DashboardLoading) {
+                return SingleChildScrollView(
+                  padding: EdgeInsets.symmetric(horizontal: horizontalPadding, vertical: 32),
+                  child: _buildSkeletonLoader(width, isDesktop),
+                );
+              }
+
+              // --- ESTADO CARREGADO ---
+              if (state is DashboardLoaded) {
+                return SingleChildScrollView(
+                  padding: EdgeInsets.symmetric(horizontal: horizontalPadding, vertical: 32),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
                   _buildHeader(),
                   const SizedBox(height: 32),
                   
                   // Grid de Métricas Coloridas
-                  Wrap(
-                    spacing: 20,
-                    runSpacing: 20,
-                    children: [
-                      _buildMetricCard(width, "Atendimentos da semana", state.atendimentosHoje.toString(), Icons.calendar_today, primary),
-                      _buildMetricCard(width, "Faturamento mês", "R\$ 4.250", Icons.account_balance_wallet, success),
-                      _buildMetricCard(width, "Pacientes ativos", "248", Icons.people_alt, info),
-                      _buildMetricCard(width, "Fichas vencidas", state.fichasVencidas.toString(), Icons.warning_rounded, warning),
-                    ],
-                  ),
+                  if (showDaily || showPending)
+                    Wrap(
+                      spacing: 20,
+                      runSpacing: 20,
+                      children: [
+                        if (showDaily) ...[
+                          _buildMetricCard(width, "Atendimentos hoje", state.atendimentosHoje.toString(), Icons.calendar_today, primary),
+                          _buildMetricCard(width, "Fichas vencidas", state.fichasVencidas.toString(), Icons.warning_rounded, warning),
+                        ],
+                        if (showPending) ...[
+                          _buildMetricCard(width, "Faturamento mês", "R\$ 4.250", Icons.account_balance_wallet, success),
+                          _buildMetricCard(width, "Pacientes ativos", "248", Icons.people_alt, info),
+                        ],
+                      ],
+                    ),
                   
-                  const SizedBox(height: 32),
+                  if (showDaily || showPending) const SizedBox(height: 32),
 
                   // Seção Principal: Agenda e Coluna Lateral
                   if (isDesktop)
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Expanded(flex: 2, child: _buildAgendaSection()),
-                        const SizedBox(width: 24),
+                        if (showWeekly) Expanded(flex: 2, child: _buildAgendaSection(context, state.atendimentosHojeList)),
+                        if (showWeekly) const SizedBox(width: 24),
                         Expanded(
                           flex: 1,
                           child: Column(
@@ -104,8 +127,10 @@ class HomeView extends StatelessWidget {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        _buildAgendaSection(),
-                        const SizedBox(height: 24),
+                        if (showWeekly) ...[
+                          _buildAgendaSection(context, state.atendimentosHojeList),
+                          const SizedBox(height: 24),
+                        ],
                         _buildQuickActions(),
                         const SizedBox(height: 24),
                         _buildNextAppointmentCard(),
@@ -117,8 +142,10 @@ class HomeView extends StatelessWidget {
           }
           return const SizedBox.shrink();
         },
-      ),
-    );
+      );
+    },
+  ),
+);
   }
 
   // --- COMPONENTES DE UI ---
@@ -162,7 +189,7 @@ class HomeView extends StatelessWidget {
     );
   }
 
-  Widget _buildAgendaSection() {
+  Widget _buildAgendaSection(BuildContext context, List<Appointment> atendimentosHoje) {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(24), boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 20)]),
@@ -171,9 +198,13 @@ class HomeView extends StatelessWidget {
         children: [
           const Text("Agenda de Hoje", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
           const SizedBox(height: 20),
-          _buildAppointmentItem("09:00", "Maria Silva", "Fisioterapia", true),
-          _buildAppointmentItem("10:30", "Ricardo Alves", "Pilates", true),
-          _buildAppointmentItem("14:00", "Carla Dias", "Avaliação", false),
+          if (atendimentosHoje.isEmpty)
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 20),
+              child: Text("Nenhum atendimento para hoje.", style: TextStyle(color: Colors.black54)),
+            )
+          else
+            ...atendimentosHoje.map((apt) => _buildAppointmentItem(context, apt)),
         ],
       ),
     );
@@ -319,21 +350,56 @@ class HomeView extends StatelessWidget {
     );
   }
 
-  Widget _buildAppointmentItem(String time, String name, String type, bool isConfirmed) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(16)),
-      child: Row(
-        children: [
-          Text(time, style: const TextStyle(fontWeight: FontWeight.w900, color: primary)),
-          const SizedBox(width: 16),
-          Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(name, style: const TextStyle(fontWeight: FontWeight.bold)),
-            Text(type, style: const TextStyle(fontSize: 11, color: Colors.black54)),
-          ])),
-          Icon(isConfirmed ? Icons.check_circle_rounded : Icons.pending_rounded, color: isConfirmed ? success : warning, size: 20),
-        ],
+  Widget _buildAppointmentItem(BuildContext context, Appointment apt) {
+    IconData statusIcon = Icons.access_time_rounded;
+    Color statusColor = warning;
+    
+    if (apt.status == 'realizado') {
+      statusIcon = Icons.check_circle_rounded;
+      statusColor = success;
+    } else if (apt.status == 'falta') {
+      statusIcon = Icons.cancel_rounded;
+      statusColor = Colors.redAccent;
+    } else if (apt.status == 'cancelado') {
+      statusIcon = Icons.event_busy_rounded;
+      statusColor = Colors.orangeAccent;
+    }
+
+    return GestureDetector(
+      onTap: () {
+        showDialog(
+          context: context,
+          builder: (dContext) => AppointmentActionDialog(
+            appointment: apt,
+            onSave: (updatedApt) {
+              context.read<DashboardBloc>().add(UpdateDashboardAppointment(updatedApt));
+            },
+          ),
+        );
+      },
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: bg, 
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: Colors.black12.withOpacity(0.05)),
+        ),
+        child: Row(
+          children: [
+            Text(apt.time, style: const TextStyle(fontWeight: FontWeight.w900, color: primary)),
+            const SizedBox(width: 16),
+            Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Text(apt.patientName, style: TextStyle(
+                fontWeight: FontWeight.bold,
+                decoration: (apt.status == 'cancelado' || apt.status == 'falta') ? TextDecoration.lineThrough : null,
+                color: (apt.status == 'cancelado' || apt.status == 'falta') ? Colors.black38 : Colors.black87,
+              )),
+              Text(apt.type, style: const TextStyle(fontSize: 11, color: Colors.black54)),
+            ])),
+            Icon(statusIcon, color: statusColor, size: 20),
+          ],
+        ),
       ),
     );
   }

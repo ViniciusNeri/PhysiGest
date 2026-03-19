@@ -2,6 +2,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:physigest/core/di/injection.dart';
 import 'package:physigest/features/patients/domain/models/patient.dart';
 import 'package:physigest/features/patients/presentation/bloc/patient_bloc.dart';
@@ -13,6 +14,7 @@ import '../views/patient_agenda_view.dart';
 import '../views/patient_anamnesis_view.dart';
 import '../views/patient_finance_view.dart';
 import '../views/patient_gallery_view.dart';
+import '../widgets/edit_patient_dialog.dart';
 
 
 class PatientProfileScreen extends StatefulWidget {
@@ -39,10 +41,11 @@ class _PatientProfileScreenState extends State<PatientProfileScreen> with Single
       child: BlocBuilder<PatientBloc, PatientState>(
         builder: (context, state) {
           final p = state.patients.firstWhere((p) => p.id == widget.patient.id, orElse: () => widget.patient);
+          final isDesktop = MediaQuery.of(context).size.width >= 600;
 
           return Scaffold(
             backgroundColor: const Color(0xFFF1F5F9),
-            appBar: _buildAppBar(p),
+            appBar: _buildAppBar(p, isDesktop),
             body: TabBarView(
               controller: _tabController,
               children: [
@@ -60,7 +63,7 @@ class _PatientProfileScreenState extends State<PatientProfileScreen> with Single
     );
   }
 
-  PreferredSizeWidget _buildAppBar(Patient p) {
+  PreferredSizeWidget _buildAppBar(Patient p, bool isDesktop) {
     return PreferredSize(
       preferredSize: const Size.fromHeight(100),
       child: AppBar(
@@ -73,6 +76,31 @@ class _PatientProfileScreenState extends State<PatientProfileScreen> with Single
             const Text("Prontuário Digital Ativo", style: TextStyle(color: Color(0xFF94A3B8), fontSize: 12)),
           ],
         ),
+        actions: [
+          if (isDesktop)
+            Padding(
+              padding: const EdgeInsets.only(right: 24.0, top: 12.0, bottom: 12.0),
+              child: OutlinedButton.icon(
+                onPressed: () => showDialog(context: context, builder: (_) => EditPatientDialog(patient: p)),
+                icon: const Icon(Icons.edit_outlined, size: 16),
+                label: const Text("Editar Perfil", style: TextStyle(fontWeight: FontWeight.bold)),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: const Color(0xFF64748B),
+                  side: const BorderSide(color: Color(0xFFE2E8F0)),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                ),
+              ),
+            )
+          else
+            Padding(
+              padding: const EdgeInsets.only(right: 8.0),
+              child: IconButton(
+                icon: const Icon(Icons.edit_outlined, color: Color(0xFF64748B)),
+                onPressed: () => showDialog(context: context, builder: (_) => EditPatientDialog(patient: p)),
+              ),
+            ),
+        ],
         bottom: TabBar(
           controller: _tabController,
           isScrollable: true,

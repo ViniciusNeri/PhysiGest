@@ -21,12 +21,40 @@ class FinancialScreen extends StatelessWidget {
   }
 }
 
-class FinancialView extends StatelessWidget {
+class FinancialView extends StatefulWidget {
   const FinancialView({super.key});
 
   // Cores do padrão PhysiGest
   static const Color azulPetroleo = Color(0xFF004D4D);
   static const Color roxoClaro = Color(0xFF9370DB);
+
+  @override
+  State<FinancialView> createState() => _FinancialViewState();
+}
+
+class _FinancialViewState extends State<FinancialView> {
+  // Dropdown states
+  String _selectedMonth = DateTime.now().month.toString().padLeft(2, '0');
+  String _selectedYear = DateTime.now().year.toString();
+
+  final List<String> _months = [
+    '01', '02', '03', '04', '05', '06',
+    '07', '08', '09', '10', '11', '12'
+  ];
+  
+  final List<String> _years = [
+    (DateTime.now().year - 1).toString(),
+    DateTime.now().year.toString(),
+    (DateTime.now().year + 1).toString(),
+  ];
+
+  String _getMonthName(String monthIndex) {
+    const names = [
+      'Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun',
+      'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'
+    ];
+    return names[int.parse(monthIndex) - 1];
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -43,7 +71,7 @@ class FinancialView extends StatelessWidget {
         iconTheme: const IconThemeData(color: Colors.black87),
         actions: [
           IconButton(
-            icon: const Icon(Icons.visibility_outlined, color: azulPetroleo),
+            icon: const Icon(Icons.visibility_outlined, color: FinancialView.azulPetroleo),
             onPressed: () {}, // Funcionalidade para ocultar valores sensíveis
           ),
         ],
@@ -85,7 +113,7 @@ class FinancialView extends StatelessWidget {
             // context.read<FinancialBloc>().add(AddTransactionEvent(result));
           }
         },
-        backgroundColor: roxoClaro,
+        backgroundColor: FinancialView.roxoClaro,
         child: const Icon(Icons.add, color: Colors.white),
       ),
       body: SafeArea(
@@ -102,15 +130,33 @@ class FinancialView extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        const Text(
-                          'Gestão de Caixa',
-                          style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text(
+                                    'Gestão de Caixa',
+                                    style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    'Controle de faturamento, despesas e repasses',
+                                    style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            if (MediaQuery.of(context).size.width > 600)
+                              _buildFilters(),
+                          ],
                         ),
-                        const SizedBox(height: 4),
-                        Text(
-                          'Controle de faturamento, despesas e repasses',
-                          style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
-                        ),
+                        if (MediaQuery.of(context).size.width <= 600) ...[
+                          const SizedBox(height: 16),
+                          _buildFilters(),
+                        ],
                         const SizedBox(height: 32),
                         
                         // CARDS DE RESUMO FINANCEIRO
@@ -139,14 +185,14 @@ class FinancialView extends StatelessWidget {
                               subtitle: 'Total bruto recebido no mês',
                               value: 'R\$ 12.450', // Exemplo: vindo do state
                               iconText: '💰',
-                              color: azulPetroleo,
+                              color: FinancialView.azulPetroleo,
                             ),
                             _FinancialSummaryCard(
                               title: 'Contas a Receber',
                               subtitle: 'Sessões realizadas não pagas',
                               value: 'R\$ 2.180',
                               iconText: '⏳',
-                              color: roxoClaro,
+                              color: FinancialView.roxoClaro,
                             ),
                             _FinancialSummaryCard(
                               title: 'Despesas Fixas',
@@ -178,6 +224,73 @@ class FinancialView extends StatelessWidget {
             return const SizedBox.shrink();
           },
         ),
+      ),
+    );
+  }
+  Widget _buildFilters() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.grey.shade200),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.02),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(Icons.calendar_month_rounded, size: 20, color: FinancialView.azulPetroleo),
+          const SizedBox(width: 12),
+          DropdownButtonHideUnderline(
+            child: DropdownButton<String>(
+              value: _selectedMonth,
+              dropdownColor: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.black87),
+              items: _months.map((m) {
+                return DropdownMenuItem<String>(
+                  value: m,
+                  child: Text(_getMonthName(m)),
+                );
+              }).toList(),
+              onChanged: (val) {
+                if (val != null) {
+                  setState(() => _selectedMonth = val);
+                  // Load data via event if necessary
+                }
+              },
+            ),
+          ),
+          const SizedBox(width: 8),
+          const Text("/", style: TextStyle(color: Colors.black26, fontWeight: FontWeight.bold)),
+          const SizedBox(width: 8),
+          DropdownButtonHideUnderline(
+            child: DropdownButton<String>(
+              value: _selectedYear,
+              dropdownColor: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.black87),
+              items: _years.map((y) {
+                return DropdownMenuItem<String>(
+                  value: y,
+                  child: Text(y),
+                );
+              }).toList(),
+              onChanged: (val) {
+                if (val != null) {
+                  setState(() => _selectedYear = val);
+                  // Load data via event if necessary
+                }
+              },
+            ),
+          ),
+        ],
       ),
     );
   }

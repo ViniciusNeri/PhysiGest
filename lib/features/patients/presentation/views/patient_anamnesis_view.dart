@@ -1,13 +1,100 @@
-// lib/features/patients/presentation/views/patient_anamnesis_view.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../domain/models/patient.dart';
 import '../bloc/patient_bloc.dart';
 import '../bloc/patient_event.dart';
 
-class PatientAnamnesisView extends StatelessWidget {
+class PatientAnamnesisView extends StatefulWidget {
   final Patient patient;
   const PatientAnamnesisView({super.key, required this.patient});
+
+  @override
+  State<PatientAnamnesisView> createState() => _PatientAnamnesisViewState();
+}
+
+class _PatientAnamnesisViewState extends State<PatientAnamnesisView> {
+  late TextEditingController _mainComplaintCtrl;
+  late TextEditingController _currentIllnessCtrl;
+  late TextEditingController _historicCtrl;
+  late TextEditingController _familyHistoryCtrl;
+  late TextEditingController _lifestyleHabitsCtrl;
+  late TextEditingController _medicationsCtrl;
+  late TextEditingController _physicalExamCtrl;
+  late TextEditingController _clinicalDiagnosisCtrl;
+  late TextEditingController _treatmentPlanCtrl;
+
+  @override
+  void initState() {
+    super.initState();
+    final anamnesis = widget.patient.anamnesis;
+    _mainComplaintCtrl = TextEditingController(text: anamnesis.mainComplaint);
+    _currentIllnessCtrl = TextEditingController(text: anamnesis.currentIllness);
+    _historicCtrl = TextEditingController(text: anamnesis.historic);
+    _familyHistoryCtrl = TextEditingController(text: anamnesis.familyHistory);
+    _lifestyleHabitsCtrl = TextEditingController(text: anamnesis.lifestyleHabits);
+    _medicationsCtrl = TextEditingController(text: anamnesis.medications);
+    _physicalExamCtrl = TextEditingController(text: anamnesis.physicalExam);
+    _clinicalDiagnosisCtrl = TextEditingController(text: anamnesis.clinicalDiagnosis);
+    _treatmentPlanCtrl = TextEditingController(text: anamnesis.treatmentPlan);
+  }
+
+  @override
+  void didUpdateWidget(covariant PatientAnamnesisView oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Evita recriar ou sobrescrever os controllers enquanto o usuário digita
+    // a menos que o paciente seja um paciente completamente diferente
+    if (oldWidget.patient.id != widget.patient.id) {
+       final anamnesis = widget.patient.anamnesis;
+      _mainComplaintCtrl.text = anamnesis.mainComplaint;
+      _currentIllnessCtrl.text = anamnesis.currentIllness;
+      _historicCtrl.text = anamnesis.historic;
+      _familyHistoryCtrl.text = anamnesis.familyHistory;
+      _lifestyleHabitsCtrl.text = anamnesis.lifestyleHabits;
+      _medicationsCtrl.text = anamnesis.medications;
+      _physicalExamCtrl.text = anamnesis.physicalExam;
+      _clinicalDiagnosisCtrl.text = anamnesis.clinicalDiagnosis;
+      _treatmentPlanCtrl.text = anamnesis.treatmentPlan;
+    }
+  }
+
+  @override
+  void dispose() {
+    _mainComplaintCtrl.dispose();
+    _currentIllnessCtrl.dispose();
+    _historicCtrl.dispose();
+    _familyHistoryCtrl.dispose();
+    _lifestyleHabitsCtrl.dispose();
+    _medicationsCtrl.dispose();
+    _physicalExamCtrl.dispose();
+    _clinicalDiagnosisCtrl.dispose();
+    _treatmentPlanCtrl.dispose();
+    super.dispose();
+  }
+
+  void _saveAnamnesis() {
+    final updatedAnamnesis = Anamnesis(
+      mainComplaint: _mainComplaintCtrl.text,
+      currentIllness: _currentIllnessCtrl.text,
+      historic: _historicCtrl.text,
+      familyHistory: _familyHistoryCtrl.text,
+      lifestyleHabits: _lifestyleHabitsCtrl.text,
+      medications: _medicationsCtrl.text,
+      physicalExam: _physicalExamCtrl.text,
+      clinicalDiagnosis: _clinicalDiagnosisCtrl.text,
+      treatmentPlan: _treatmentPlanCtrl.text,
+    );
+
+    context.read<PatientBloc>().add(
+      UpdatePatient(widget.patient.copyWith(anamnesis: updatedAnamnesis)),
+    );
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text("A Anamnese foi salva com sucesso no Prontuário."),
+        backgroundColor: Colors.green,
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -30,21 +117,38 @@ class PatientAnamnesisView extends StatelessWidget {
                   
                   // Seções de Anamnese Profissional
                   _buildSectionTitle("História Médica"),
-                  _buildEditor(context, "Queixa Principal (QP)", patient.anamnesis.mainComplaint, (v) => _update(context, patient.anamnesis.copyWith(mainComplaint: v))),
-                  _buildEditor(context, "História da Moléstia Atual (HMA)", patient.anamnesis.currentIllness, (v) => _update(context, patient.anamnesis.copyWith(currentIllness: v))),
-                  _buildEditor(context, "História Médica Pregressa (HMP)", patient.anamnesis.historic, (v) => _update(context, patient.anamnesis.copyWith(historic: v))),
-                  _buildEditor(context, "Histórico Familiar", patient.anamnesis.familyHistory, (v) => _update(context, patient.anamnesis.copyWith(familyHistory: v))),
+                  _buildEditor("Queixa Principal (QP)", _mainComplaintCtrl),
+                  _buildEditor("História da Moléstia Atual (HMA)", _currentIllnessCtrl),
+                  _buildEditor("História Médica Pregressa (HMP)", _historicCtrl),
+                  _buildEditor("Histórico Familiar", _familyHistoryCtrl),
                   
                   _buildSectionTitle("Estilo de Vida e Medicamentos"),
-                  _buildEditor(context, "Hábitos de Vida", patient.anamnesis.lifestyleHabits, (v) => _update(context, patient.anamnesis.copyWith(lifestyleHabits: v))),
-                  _buildEditor(context, "Medicamentos em Uso", patient.anamnesis.medications, (v) => _update(context, patient.anamnesis.copyWith(medications: v))),
+                  _buildEditor("Hábitos de Vida", _lifestyleHabitsCtrl),
+                  _buildEditor("Medicamentos em Uso", _medicationsCtrl),
                   
                   _buildSectionTitle("Exame e Diagnóstico"),
-                  _buildEditor(context, "Exame Físico", patient.anamnesis.physicalExam, (v) => _update(context, patient.anamnesis.copyWith(physicalExam: v))),
-                  _buildEditor(context, "Diagnóstico Clínico", patient.anamnesis.clinicalDiagnosis, (v) => _update(context, patient.anamnesis.copyWith(clinicalDiagnosis: v))),
-                  _buildEditor(context, "Plano de Tratamento", patient.anamnesis.treatmentPlan, (v) => _update(context, patient.anamnesis.copyWith(treatmentPlan: v))),
+                  _buildEditor("Exame Físico", _physicalExamCtrl),
+                  _buildEditor("Diagnóstico Clínico", _clinicalDiagnosisCtrl),
+                  _buildEditor("Plano de Tratamento", _treatmentPlanCtrl),
                   
-                  const SizedBox(height: 40),
+                  const SizedBox(height: 48),
+
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      onPressed: _saveAnamnesis,
+                      icon: const Icon(Icons.save_rounded, color: Colors.white),
+                      label: const Text("SALVAR ALTERAÇÕES DA ANAMNESE", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF0D9488),
+                        padding: const EdgeInsets.symmetric(vertical: 24),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                        elevation: 0,
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 80),
                 ],
               ),
             ),
@@ -147,7 +251,7 @@ class PatientAnamnesisView extends StatelessWidget {
     );
   }
 
-  Widget _buildEditor(BuildContext context, String title, String value, Function(String) onSave) {
+  Widget _buildEditor(String title, TextEditingController controller) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 24),
       child: Column(
@@ -156,9 +260,8 @@ class PatientAnamnesisView extends StatelessWidget {
           Text(title, style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF334155), fontSize: 14)),
           const SizedBox(height: 8),
           TextFormField(
-            initialValue: value, 
+            controller: controller, 
             maxLines: 4, 
-            onChanged: onSave, 
             decoration: InputDecoration(
               filled: true, 
               fillColor: Colors.white, 
@@ -171,9 +274,5 @@ class PatientAnamnesisView extends StatelessWidget {
         ]
       ),
     );
-  }
-
-  void _update(BuildContext context, Anamnesis anamnesis) {
-    context.read<PatientBloc>().add(UpdatePatient(patient.copyWith(anamnesis: anamnesis)));
   }
 }

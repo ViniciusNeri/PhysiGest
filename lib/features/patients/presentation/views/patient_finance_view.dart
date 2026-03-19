@@ -1,7 +1,14 @@
 // lib/features/patients/presentation/views/patient_finance_view.dart
 
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../domain/models/patient.dart';
+import 'package:physigest/features/settings/presentation/bloc/settings/settings_bloc.dart';
+import 'package:physigest/features/settings/presentation/bloc/settings/settings_state.dart';
+import 'package:physigest/features/settings/domain/entities/attendance_category.dart';
+import '../bloc/patient_bloc.dart';
+import '../bloc/patient_event.dart';
+import '../widgets/payment_action_dialog.dart';
 
 class PatientFinanceView extends StatelessWidget {
   final Patient patient;
@@ -58,31 +65,71 @@ class PatientFinanceView extends StatelessWidget {
                     ],
 
                     const SizedBox(height: 40),
-                    const Text(
-                      "Pacotes Disponíveis",
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: textMain),
-                    ),
-                    const SizedBox(height: 16),
-
-                    // Seção de Pacotes
-                    if (isDesktop) ...[
-                      Row(
+                    const SizedBox(height: 40),
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(24),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(color: const Color(0xFF2DD4BF).withOpacity(0.3), width: 2),
+                      ),
+                      child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Expanded(child: _buildPackageCard("Básico", "5 Sessões", "R\$ 750", "R\$ 150/sessão", const Color(0xFF2DD4BF))),
-                          const SizedBox(width: 16),
-                          Expanded(child: _buildPackageCard("Intermediário", "10 Sessões", "R\$ 1.300", "R\$ 130/sessão", const Color(0xFFA78BFA))),
-                          const SizedBox(width: 16),
-                          Expanded(child: _buildPackageCard("Premium", "20 Sessões", "R\$ 2.200", "R\$ 110/sessão", const Color(0xFFF59E0B))),
+                          const Text(
+                            "Registrar Lançamento Avulso",
+                            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: textMain),
+                          ),
+                          const SizedBox(height: 8),
+                          const Text(
+                            "Insira créditos para pacotes ou sessões avulsas pagas por este paciente.",
+                            style: TextStyle(color: textSecondary),
+                          ),
+                          const SizedBox(height: 24),
+                          SizedBox(
+                            width: isDesktop ? 300 : double.infinity,
+                            child: ElevatedButton.icon(
+                              onPressed: () {
+                                final settingsState = context.read<SettingsBloc>().state;
+                                List<String> categories = ['Sessões', 'Avaliação', 'Pacote'];
+                                if (settingsState is SettingsLoaded) {
+                                  final activeCats = settingsState.categories.where((c) => c.isActive).map((c) => c.name).toList();
+                                  if (activeCats.isNotEmpty) categories = activeCats;
+                                }
+
+                                showDialog(
+                                  context: context,
+                                  builder: (dlgContext) => PaymentActionDialog(
+                                    availableCategories: categories,
+                                    onSave: (transaction) {
+                                      final updatedList = List<PaymentTransaction>.from(patient.financialHistory)..add(transaction);
+                                      final updatedPatient = patient.copyWith(financialHistory: updatedList);
+                                      context.read<PatientBloc>().add(UpdatePatient(updatedPatient));
+                                      
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        const SnackBar(
+                                          content: Text("Lançamento registrado com sucesso!"),
+                                          backgroundColor: Colors.green,
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                );
+                              },
+                              icon: const Icon(Icons.add_card_rounded, color: Colors.white),
+                              label: const Text("REGISTRAR PAGAMENTO", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFF2DD4BF),
+                                padding: const EdgeInsets.symmetric(vertical: 18),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                elevation: 0,
+                              ),
+                            ),
+                          ),
                         ],
-                      )
-                    ] else ...[
-                      _buildPackageCard("Básico", "5 Sessões", "R\$ 750", "R\$ 150/sessão", const Color(0xFF2DD4BF)),
-                      const SizedBox(height: 16),
-                      _buildPackageCard("Intermediário", "10 Sessões", "R\$ 1.300", "R\$ 130/sessão", const Color(0xFFA78BFA)),
-                      const SizedBox(height: 16),
-                      _buildPackageCard("Premium", "20 Sessões", "R\$ 2.200", "R\$ 110/sessão", const Color(0xFFF59E0B)),
-                    ],
+                      ),
+                    ),
                     
                     const SizedBox(height: 40),
                     const Text(
@@ -178,42 +225,22 @@ class PatientFinanceView extends StatelessWidget {
     );
   }
 
-  Widget _buildPackageCard(String name, String sessions, String price, String detail, Color color) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: color.withOpacity(0.3), width: 2),
-      ),
-      child: Column(
-        children: [
-          Text(name, style: TextStyle(color: color, fontWeight: FontWeight.w900, fontSize: 13)),
-          const SizedBox(height: 8),
-          Text(sessions, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: textMain)),
-          const SizedBox(height: 12),
-          FittedBox(
-            fit: BoxFit.scaleDown,
-            child: Text(price, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w900, color: textMain)),
-          ),
-          Text(detail, style: const TextStyle(color: textSecondary, fontSize: 11)),
-          const SizedBox(height: 20),
-          ElevatedButton(
-            onPressed: () {},
-            style: ElevatedButton.styleFrom(
-              backgroundColor: color,
-              elevation: 0,
-              minimumSize: const Size(double.infinity, 45),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-            ),
-            child: const Text("VENDER", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13)),
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _buildHistoryTable() {
+    if (patient.financialHistory.isEmpty) {
+      return Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(32),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: borderColor),
+        ),
+        child: const Center(
+          child: Text("Nenhuma transação registrada.", style: TextStyle(color: textSecondary)),
+        ),
+      );
+    }
+
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -221,18 +248,30 @@ class PatientFinanceView extends StatelessWidget {
         border: Border.all(color: borderColor),
       ),
       child: Column(
-        children: [
-          _buildHistoryRow("Pacote Intermediário (10 sessões)", "28 Fev 2026", "R\$ 1.300,00", "PAGO", Colors.green),
-          const Divider(height: 1, color: borderColor),
-          _buildHistoryRow("Avaliação Clínica Avulsa", "12 Fev 2026", "R\$ 250,00", "PAGO", Colors.green),
-          const Divider(height: 1, color: borderColor),
-          _buildHistoryRow("Sessão Extra - Liberação", "05 Fev 2026", "R\$ 180,00", "PENDENTE", Colors.orange),
-        ],
+        children: patient.financialHistory.reversed.map((tx) {
+          final color = tx.status == 'PAGO' ? Colors.green : Colors.orange;
+          final isLast = tx == patient.financialHistory.first;
+          
+          return Column(
+            children: [
+              _buildHistoryRow(
+                tx.serviceType,
+                tx.quantity,
+                tx.date,
+                "R\$ ${tx.value.toStringAsFixed(2).replaceAll('.', ',')}",
+                tx.status,
+                color,
+                tx.title,
+              ),
+              if (!isLast) const Divider(height: 1, color: borderColor),
+            ],
+          );
+        }).toList(),
       ),
     );
   }
 
-  Widget _buildHistoryRow(String title, String date, String value, String status, Color color) {
+  Widget _buildHistoryRow(String serviceType, int quantity, String date, String value, String status, Color color, String titleObj) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
       child: Row(
@@ -247,7 +286,9 @@ class PatientFinanceView extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title, style: const TextStyle(fontWeight: FontWeight.w800, color: textMain, fontSize: 14)),
+                Text('[$serviceType] - ${quantity}x', style: const TextStyle(fontWeight: FontWeight.w800, color: textMain, fontSize: 14)),
+                if (titleObj.isNotEmpty)
+                  Text(titleObj, style: const TextStyle(color: textSecondary, fontSize: 12, fontStyle: FontStyle.italic)),
                 Text(date, style: const TextStyle(color: textSecondary, fontSize: 12)),
               ],
             ),

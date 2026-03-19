@@ -8,7 +8,9 @@ import 'package:physigest/features/schedule/presentation/bloc/schedule_bloc.dart
 import 'package:physigest/features/schedule/presentation/bloc/schedule_event.dart';
 import 'package:physigest/features/schedule/presentation/bloc/schedule_state.dart';
 import 'package:physigest/features/schedule/presentation/widgets/add_appointment_dialog.dart';
+import 'package:physigest/features/schedule/presentation/widgets/appointment_action_dialog.dart';
 import 'package:physigest/features/schedule/domain/models/appointment.dart';
+import 'package:table_calendar/table_calendar.dart';
 
 class ScheduleScreen extends StatelessWidget {
   const ScheduleScreen({super.key});
@@ -111,7 +113,7 @@ class ScheduleView extends StatelessWidget {
                       if (state.status == ScheduleStatus.loading) {
                         return const Center(child: CircularProgressIndicator(strokeWidth: 2));
                       }
-                      return _buildWeeklyTimeline(context, state);
+                      return _buildBodyContent(context, state);
                     },
                   ),
                 ),
@@ -137,14 +139,25 @@ class ScheduleView extends StatelessWidget {
     return BlocBuilder<ScheduleBloc, ScheduleState>(
       builder: (context, state) {
         final bool isDesktop = MediaQuery.of(context).size.width > 800;
-        final startDate = isDesktop 
-            ? state.selectedDate.subtract(Duration(days: state.selectedDate.weekday - 1))
-            : state.selectedDate;
-        final endDate = isDesktop ? startDate.add(const Duration(days: 6)) : startDate;
-        
-        final rangeLabel = isDesktop 
-            ? "${DateFormat('d').format(startDate)} - ${DateFormat('d').format(endDate)} de ${DateFormat('MMMM, yyyy', 'pt_BR').format(endDate)}"
-            : "${DateFormat('d', 'pt_BR').format(startDate)} de ${DateFormat('MMMM, yyyy', 'pt_BR').format(startDate)}";
+        late DateTime startDate;
+        late DateTime endDate;
+        late String rangeLabel;
+
+        if (state.viewMode == ScheduleViewMode.day) {
+          startDate = state.selectedDate;
+          endDate = state.selectedDate;
+          rangeLabel = DateFormat("d 'de' MMMM, yyyy", 'pt_BR').format(startDate);
+        } else if (state.viewMode == ScheduleViewMode.week) {
+          startDate = state.selectedDate.subtract(Duration(days: state.selectedDate.weekday % 7)); // Domingo como início
+          endDate = startDate.add(const Duration(days: 6));
+          rangeLabel = "${DateFormat('d').format(startDate)} - ${DateFormat('d').format(endDate)} de ${DateFormat('MMMM, yyyy', 'pt_BR').format(endDate)}";
+        } else {
+          startDate = DateTime(state.selectedDate.year, state.selectedDate.month, 1);
+          endDate = DateTime(state.selectedDate.year, state.selectedDate.month + 1, 0);
+          rangeLabel = "${DateFormat('MMMM, yyyy', 'pt_BR').format(startDate)}";
+          // Capitalize first letter of month
+          rangeLabel = rangeLabel[0].toUpperCase() + rangeLabel.substring(1);
+        }
 
         return Container(
           height: 80,
@@ -159,11 +172,27 @@ class ScheduleView extends StatelessWidget {
               
               const SizedBox(width: 12),
               _buildNavButton(Icons.chevron_left_rounded, () {
-                context.read<ScheduleBloc>().add(SelectDate(state.selectedDate.subtract(Duration(days: isDesktop ? 7 : 1))));
+                DateTime newDate;
+                if (state.viewMode == ScheduleViewMode.day) {
+                  newDate = state.selectedDate.subtract(const Duration(days: 1));
+                } else if (state.viewMode == ScheduleViewMode.week) {
+                  newDate = state.selectedDate.subtract(const Duration(days: 7));
+                } else {
+                  newDate = DateTime(state.selectedDate.year, state.selectedDate.month - 1, state.selectedDate.day);
+                }
+                context.read<ScheduleBloc>().add(SelectDate(newDate));
               }),
               const SizedBox(width: 8),
               _buildNavButton(Icons.chevron_right_rounded, () {
-                context.read<ScheduleBloc>().add(SelectDate(state.selectedDate.add(Duration(days: isDesktop ? 7 : 1))));
+                DateTime newDate;
+                if (state.viewMode == ScheduleViewMode.day) {
+                  newDate = state.selectedDate.add(const Duration(days: 1));
+                } else if (state.viewMode == ScheduleViewMode.week) {
+                  newDate = state.selectedDate.add(const Duration(days: 7));
+                } else {
+                  newDate = DateTime(state.selectedDate.year, state.selectedDate.month + 1, state.selectedDate.day);
+                }
+                context.read<ScheduleBloc>().add(SelectDate(newDate));
               }),
               const SizedBox(width: 16),
               TextButton(
@@ -172,7 +201,11 @@ class ScheduleView extends StatelessWidget {
               ),
               if (isDesktop) ...[
                 const Spacer(),
-                _buildViewToggle(),
+                _buildViewToggle(context, state),
+              ] else ...[
+                const Spacer(),
+                // Simplificação pro Mobile (Ícone ou Menu)
+                _buildViewToggle(context, state, isMobile: true),
               ],
             ],
           ),
@@ -181,12 +214,24 @@ class ScheduleView extends StatelessWidget {
     );
   }
 
+  Widget _buildBodyContent(BuildContext context, ScheduleState state) {
+    if (state.viewMode == ScheduleViewMode.month) {
+      return _buildMonthView(context, state);
+    } else {
+      return _buildWeeklyTimeline(context, state);
+    }
+  }
+
   Widget _buildWeeklyTimeline(BuildContext context, ScheduleState state) {
-    final bool isDesktop = MediaQuery.of(context).size.width > 800;
-    
-    final List<DateTime> weekDays = isDesktop 
-      ? List.generate(7, (i) => state.selectedDate.subtract(Duration(days: state.selectedDate.weekday - 1)).add(Duration(days: i)))
-      : [state.selectedDate];
+    List<DateTime> weekDays;
+
+    if (state.viewMode == ScheduleViewMode.day) {
+      weekDays = [state.selectedDate];
+    } else {
+      // Semana começa no Domingo
+      final startOfWeek = state.selectedDate.subtract(Duration(days: state.selectedDate.weekday % 7));
+      weekDays = List.generate(7, (i) => startOfWeek.add(Duration(days: i)));
+    }
 
     return Container(
       color: Colors.white,
@@ -210,6 +255,52 @@ class ScheduleView extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildMonthView(BuildContext context, ScheduleState state) {
+    return Container(
+      color: Colors.white,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: TableCalendar(
+        firstDay: DateTime.utc(2020, 1, 1),
+        lastDay: DateTime.utc(2030, 12, 31),
+        focusedDay: state.selectedDate,
+        calendarFormat: CalendarFormat.month,
+        availableCalendarFormats: const { CalendarFormat.month: 'Mês' },
+        startingDayOfWeek: StartingDayOfWeek.sunday,
+        headerVisible: false, // The custom header handles navigation
+        onDaySelected: (selectedDay, focusedDay) {
+          // Muda pro modo Dia e seleciona o dia clicado
+          context.read<ScheduleBloc>().add(ChangeViewMode(ScheduleViewMode.day));
+          context.read<ScheduleBloc>().add(SelectDate(selectedDay));
+        },
+        selectedDayPredicate: (day) => isSameDay(state.selectedDate, day),
+        calendarBuilders: CalendarBuilders(
+          markerBuilder: (context, date, events) {
+            final dayApts = state.appointments.where((a) => DateUtils.isSameDay(a.date, date)).toList();
+            if (dayApts.isEmpty) return const SizedBox();
+
+            return Positioned(
+              bottom: 4,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: dayApts.take(4).map((apt) {
+                  return Container(
+                    margin: const EdgeInsets.symmetric(horizontal: 1),
+                    width: 6,
+                    height: 6,
+                    decoration: BoxDecoration(
+                      color: _getTypeColor(apt.type),
+                      shape: BoxShape.circle,
+                    ),
+                  );
+                }).toList(),
+              ),
+            );
+          },
+        ),
       ),
     );
   }
@@ -255,11 +346,10 @@ class ScheduleView extends StatelessWidget {
                 top: top + 4,
                 left: 6,
                 right: 6,
-                // AQUI ESTÁ A MÁGICA: Altura baseada na duração real
                 height: (duration * hourHeight) - 8, 
                 child: GestureDetector(
                   onTap: () => _openEditAppointment(context, state, apt),
-                  child: _buildAppointmentCard(apt),
+                  child: _buildAppointmentCard(context, state, apt),
                 ),
               );
             }),
@@ -293,8 +383,13 @@ class ScheduleView extends StatelessWidget {
     );
   }
 
-   Widget _buildAppointmentCard(dynamic apt) {
-    final Color baseColor = _getTypeColor(apt.type);
+   Widget _buildAppointmentCard(BuildContext context, ScheduleState state, Appointment apt) {
+    Color baseColor = _getTypeColor(apt.type);
+    
+    // Altera opacidade dependendo do status
+    if (apt.status == 'falta' || apt.status == 'cancelado') {
+      baseColor = baseColor.withOpacity(0.5);
+    }
 
     return Container(
       decoration: BoxDecoration(
@@ -361,21 +456,63 @@ class ScheduleView extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 6),
-                Text(
-                  apt.type.toUpperCase(),
-                  style: TextStyle(
-                    fontSize: 9,
-                    fontWeight: FontWeight.w900,
-                    color: Colors.white.withOpacity(0.7),
-                    letterSpacing: 0.5,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
+             Row(
+               mainAxisAlignment: MainAxisAlignment.spaceBetween,
+               crossAxisAlignment: CrossAxisAlignment.end,
+               children: [
+                 Expanded(
+                   child: Text(
+                     apt.type.toUpperCase(),
+                     style: TextStyle(
+                       fontSize: 9,
+                       fontWeight: FontWeight.w900,
+                       color: Colors.white.withOpacity(0.7),
+                       letterSpacing: 0.5,
+                       overflow: TextOverflow.ellipsis,
+                     ),
+                   ),
+                 ),
+                 // Icon Button para Avaliar / Status
+                 InkWell(
+                   onTap: () {
+                     showDialog(
+                       context: context,
+                       builder: (dContext) => AppointmentActionDialog(
+                         appointment: apt,
+                         onSave: (updatedApt) {
+                           context.read<ScheduleBloc>().add(UpdateAppointment(updatedApt));
+                         },
+                       ),
+                     );
+                   },
+                   child: Container(
+                     padding: const EdgeInsets.all(4),
+                     decoration: BoxDecoration(
+                       color: Colors.white.withOpacity(0.25),
+                       shape: BoxShape.circle,
+                     ),
+                     child: Icon(
+                       apt.status == 'realizado' ? Icons.check_circle_rounded :
+                       (apt.status == 'falta' || apt.status == 'cancelado' ? Icons.cancel_rounded : Icons.fact_check_rounded),
+                       size: 14, 
+                       color: Colors.white,
+                     ),
+                   ),
+                 )
+               ],
+             ),
+           ],
+         ),
+       ),
+       if (apt.status == 'realizado')
+         Positioned(
+           top: 8,
+           right: 8,
+           child: Icon(Icons.check_circle_rounded, color: Colors.white, size: 16),
+         ),
+     ],
+   ),
+ );
   }
 
   Widget _buildTimeColumn() {
@@ -445,24 +582,40 @@ class ScheduleView extends StatelessWidget {
     );
   }
 
-  Widget _buildViewToggle() {
+  Widget _buildViewToggle(BuildContext context, ScheduleState state, {bool isMobile = false}) {
+    if (isMobile) {
+      return PopupMenuButton<ScheduleViewMode>(
+        icon: const Icon(Icons.more_vert),
+        onSelected: (mode) => context.read<ScheduleBloc>().add(ChangeViewMode(mode)),
+        itemBuilder: (context) => [
+          const PopupMenuItem(value: ScheduleViewMode.day, child: Text("Dia")),
+          const PopupMenuItem(value: ScheduleViewMode.week, child: Text("Semana")),
+          const PopupMenuItem(value: ScheduleViewMode.month, child: Text("Mês")),
+        ],
+      );
+    }
+
     return Container(
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(color: const Color(0xFFF1F5F9), borderRadius: BorderRadius.circular(12)),
       child: Row(
         children: [
-          _buildToggleItem("Dia", false),
-          _buildToggleItem("Semana", true),
+          _buildToggleItem("Dia", state.viewMode == ScheduleViewMode.day, () => context.read<ScheduleBloc>().add(ChangeViewMode(ScheduleViewMode.day))),
+          _buildToggleItem("Semana", state.viewMode == ScheduleViewMode.week, () => context.read<ScheduleBloc>().add(ChangeViewMode(ScheduleViewMode.week))),
+          _buildToggleItem("Mês", state.viewMode == ScheduleViewMode.month, () => context.read<ScheduleBloc>().add(ChangeViewMode(ScheduleViewMode.month))),
         ],
       ),
     );
   }
 
-  Widget _buildToggleItem(String label, bool active) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-      decoration: BoxDecoration(color: active ? Colors.white : Colors.transparent, borderRadius: BorderRadius.circular(10)),
-      child: Text(label, style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: active ? const Color(0xFF0F172A) : Colors.black45)),
+  Widget _buildToggleItem(String label, bool active, VoidCallback onTap) {
+    return InkWell(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+        decoration: BoxDecoration(color: active ? Colors.white : Colors.transparent, borderRadius: BorderRadius.circular(10)),
+        child: Text(label, style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: active ? const Color(0xFF0F172A) : Colors.black45)),
+      ),
     );
   }
 

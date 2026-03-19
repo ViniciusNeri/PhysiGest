@@ -9,6 +9,7 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
   ScheduleBloc() : super(ScheduleState(selectedDate: DateTime.now())) {
     on<LoadSchedule>(_onLoadSchedule);
     on<SelectDate>(_onSelectDate);
+    on<ChangeViewMode>(_onChangeViewMode);
     on<AddAppointment>(_onAddAppointment);
     on<UpdateAppointment>(_onUpdateAppointment);
   }
@@ -125,6 +126,10 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
 
   void _onSelectDate(SelectDate event, Emitter<ScheduleState> emit) {
     emit(state.copyWith(selectedDate: event.selectedDate));
+  }
+
+  void _onChangeViewMode(ChangeViewMode event, Emitter<ScheduleState> emit) {
+    emit(state.copyWith(viewMode: event.viewMode));
   }
 
   void _onAddAppointment(AddAppointment event, Emitter<ScheduleState> emit) {

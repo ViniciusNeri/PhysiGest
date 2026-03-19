@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:physigest/features/schedule/domain/models/appointment.dart';
+import 'package:physigest/features/schedule/presentation/bloc/schedule_state.dart';
 
 abstract class ScheduleEvent extends Equatable {
   const ScheduleEvent();
@@ -22,6 +23,15 @@ class SelectDate extends ScheduleEvent {
 
   @override
   List<Object?> get props => [selectedDate];
+}
+
+class ChangeViewMode extends ScheduleEvent {
+  final ScheduleViewMode viewMode;
+
+  const ChangeViewMode(this.viewMode);
+
+  @override
+  List<Object?> get props => [viewMode];
 }
 
 class AddAppointment extends ScheduleEvent {
