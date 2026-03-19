@@ -75,6 +75,7 @@ class _EditPatientDialogState extends State<EditPatientDialog> {
   @override
   Widget build(BuildContext context) {
     final isEditing = widget.patient != null;
+    final bool isDesktop = MediaQuery.of(context).size.width > 600;
 
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
@@ -82,7 +83,7 @@ class _EditPatientDialogState extends State<EditPatientDialog> {
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 600),
         child: Padding(
-          padding: const EdgeInsets.all(32.0),
+          padding: EdgeInsets.all(isDesktop ? 32.0 : 20.0),
           child: Form(
             key: _formKey,
             child: SingleChildScrollView(
@@ -93,9 +94,11 @@ class _EditPatientDialogState extends State<EditPatientDialog> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
-                        isEditing ? 'Editar Cadastro' : 'Novo Paciente',
-                        style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w900, color: Color(0xFF0F172A)),
+                      Expanded(
+                        child: Text(
+                          isEditing ? 'Editar Cadastro' : 'Novo Paciente',
+                          style: TextStyle(fontSize: isDesktop ? 24 : 20, fontWeight: FontWeight.w900, color: const Color(0xFF0F172A)),
+                        ),
                       ),
                       IconButton(
                         icon: const Icon(Icons.close_rounded, color: Color(0xFF94A3B8)),
@@ -173,34 +176,64 @@ class _EditPatientDialogState extends State<EditPatientDialog> {
                   ),
                   const SizedBox(height: 32),
                   
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      TextButton(
-                        onPressed: () => context.pop(),
-                        style: TextButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-                          foregroundColor: const Color(0xFF64748B),
+                  if (isDesktop)
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        TextButton(
+                          onPressed: () => context.pop(),
+                          style: TextButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                            foregroundColor: const Color(0xFF64748B),
+                          ),
+                          child: const Text('Cancelar', style: TextStyle(fontWeight: FontWeight.bold)),
                         ),
-                        child: const Text('Cancelar', style: TextStyle(fontWeight: FontWeight.bold)),
-                      ),
-                      const SizedBox(width: 16),
-                      ElevatedButton.icon(
-                        onPressed: _savePatient,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: azulPetroleo,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-                          elevation: 0,
+                        const SizedBox(width: 16),
+                        ElevatedButton.icon(
+                          onPressed: _savePatient,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: azulPetroleo,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                            elevation: 0,
+                          ),
+                          icon: const Icon(Icons.save_rounded, color: Colors.white, size: 20),
+                          label: Text(
+                            isEditing ? 'Salvar Alterações' : 'Cadastrar Paciente', 
+                            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)
+                          ),
                         ),
-                        icon: const Icon(Icons.save_rounded, color: Colors.white, size: 20),
-                        label: Text(
-                          isEditing ? 'Salvar Alterações' : 'Cadastrar Paciente', 
-                          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)
+                      ],
+                    )
+                  else
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        ElevatedButton.icon(
+                          onPressed: _savePatient,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: azulPetroleo,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            elevation: 0,
+                          ),
+                          icon: const Icon(Icons.save_rounded, color: Colors.white, size: 20),
+                          label: Text(
+                            isEditing ? 'Salvar Alterações' : 'Cadastrar', 
+                            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
+                        const SizedBox(height: 12),
+                        TextButton(
+                          onPressed: () => context.pop(),
+                          style: TextButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(vertical: 16),
+                            foregroundColor: const Color(0xFF64748B),
+                          ),
+                          child: const Text('Cancelar', style: TextStyle(fontWeight: FontWeight.bold)),
+                        ),
+                      ],
+                    ),
                 ],
               ),
             ),

@@ -63,28 +63,54 @@ class _PatientsListViewState extends State<PatientsListView> {
   }
 
   Widget _buildPageHeader(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        const Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text("Pacientes", style: TextStyle(fontSize: 28, fontWeight: FontWeight.w900, color: Color(0xFF0F172A))),
-            Text("Gerencie sua base de pacientes.", style: TextStyle(fontSize: 16, color: Color(0xFF64748B))),
-          ],
-        ),
-        ElevatedButton.icon(
-          onPressed: () => showDialog(context: context, builder: (_) => const EditPatientDialog()),
-          icon: const Icon(Icons.add_rounded, size: 20, color: Colors.white),
-          label: const Text("Novo Paciente", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: AppTheme.primaryColor,
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+    final bool isDesktop = MediaQuery.of(context).size.width > 600;
+
+    if (isDesktop) {
+      return Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          const Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text("Pacientes", style: TextStyle(fontSize: 28, fontWeight: FontWeight.w900, color: Color(0xFF0F172A))),
+              Text("Gerencie sua base de pacientes.", style: TextStyle(fontSize: 16, color: Color(0xFF64748B))),
+            ],
           ),
-        ),
-      ],
-    );
+          ElevatedButton.icon(
+            onPressed: () => showDialog(context: context, builder: (_) => const EditPatientDialog()),
+            icon: const Icon(Icons.add_rounded, size: 20, color: Colors.white),
+            label: const Text("Novo Paciente", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppTheme.primaryColor,
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            ),
+          ),
+        ],
+      );
+    } else {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text("Pacientes", style: TextStyle(fontSize: 28, fontWeight: FontWeight.w900, color: Color(0xFF0F172A))),
+          const Text("Gerencie sua base de pacientes.", style: TextStyle(fontSize: 16, color: Color(0xFF64748B))),
+          const SizedBox(height: 16),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: () => showDialog(context: context, builder: (_) => const EditPatientDialog()),
+              icon: const Icon(Icons.add_rounded, size: 20, color: Colors.white),
+              label: const Text("Novo Paciente", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppTheme.primaryColor,
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+            ),
+          ),
+        ],
+      );
+    }
   }
 
   Widget _buildSearchField(BuildContext context) {
