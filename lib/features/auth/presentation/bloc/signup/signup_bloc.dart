@@ -1,12 +1,15 @@
 import 'package:bloc/bloc.dart';
 import 'package:injectable/injectable.dart';
+import '../../../domain/usecases/login_usecase.dart';
 
 import 'signup_event.dart';
 import 'signup_state.dart';
 
 @injectable
 class SignUpBloc extends Bloc<SignUpEvent, SignUpState> {
-  SignUpBloc() : super(const SignUpState()) {
+  final SignUpUseCase _signUpUseCase;
+
+  SignUpBloc(this._signUpUseCase) : super(const SignUpState()) {
     on<SignUpNameChanged>(_onNameChanged);
     on<SignUpEmailChanged>(_onEmailChanged);
     on<SignUpPasswordChanged>(_onPasswordChanged);
@@ -35,10 +38,14 @@ class SignUpBloc extends Bloc<SignUpEvent, SignUpState> {
 
     emit(state.copyWith(status: SignUpStatus.loading));
     try {
-      await Future.delayed(const Duration(seconds: 2));
+      // Chama o caso de uso que conecta na API
+      final user = await _signUpUseCase(state.name, state.email, state.password);
+      
       emit(state.copyWith(status: SignUpStatus.success));
     } catch (e) {
-      emit(state.copyWith(status: SignUpStatus.failure, errorMessage: e.toString()));
+      // Remove o prefixo "Exception:" da mensagem para o usuário
+      final msg = e.toString().replaceAll('Exception: ', '');
+      emit(state.copyWith(status: SignUpStatus.failure, errorMessage: msg));
     }
   }
 }

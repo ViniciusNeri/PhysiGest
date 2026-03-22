@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:physigest/core/di/injection.dart';
-import 'package:physigest/core/theme/app_theme.dart'; // Certifique-se que o AppTheme está acessível
+import 'package:physigest/core/theme/app_theme.dart';
 import 'package:physigest/features/auth/presentation/bloc/signup/signup_bloc.dart';
 import 'package:physigest/features/auth/presentation/bloc/signup/signup_event.dart';
 import 'package:physigest/features/auth/presentation/bloc/signup/signup_state.dart';
@@ -45,7 +45,7 @@ class SignUpView extends StatelessWidget {
         child: BlocListener<SignUpBloc, SignUpState>(
           listener: (context, state) {
             if (state.status == SignUpStatus.success) {
-              context.go('/');
+              context.go('/verify', extra: state.email);
             } else if (state.status == SignUpStatus.failure) {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(

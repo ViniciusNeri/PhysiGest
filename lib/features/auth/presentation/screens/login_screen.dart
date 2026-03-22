@@ -6,6 +6,7 @@ import 'package:physigest/core/theme/app_theme.dart';
 import 'package:physigest/features/auth/presentation/bloc/login/login_bloc.dart';
 import 'package:physigest/features/auth/presentation/bloc/login/login_event.dart';
 import 'package:physigest/features/auth/presentation/bloc/login/login_state.dart';
+import 'package:physigest/core/storage/local_storage.dart';
 
 class LoginScreen extends StatelessWidget {
   const LoginScreen({super.key});
@@ -29,7 +30,6 @@ class LoginView extends StatelessWidget {
     final bool isMobile = width < 600;
 
     return Scaffold(
-      // Fundo com um degradê sutil para profundidade
       body: Container(
         width: double.infinity,
         height: double.infinity,
@@ -45,9 +45,12 @@ class LoginView extends StatelessWidget {
           ),
         ),
         child: BlocListener<LoginBloc, LoginState>(
-          listener: (context, state) {
-            if (state.status == LoginStatus.success) {
-              context.go('/');
+          listener: (context, state) async {
+            if (state.status == LoginStatus.authenticated && state.token != null) {
+              await getIt<LocalStorage>().saveToken(state.token!);
+              if (context.mounted) {
+                context.go('/');
+              }
             } else if (state.status == LoginStatus.failure) {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
@@ -83,7 +86,6 @@ class LoginView extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      // LOGO E TÍTULO
                       const Icon(
                         Icons.monitor_heart_rounded,
                         size: 64,
@@ -107,7 +109,6 @@ class LoginView extends StatelessWidget {
                       ),
                       const SizedBox(height: 40),
 
-                      // CAMPO E-MAIL
                       _buildLabel('E-mail'),
                       BlocBuilder<LoginBloc, LoginState>(
                         buildWhen: (p, c) => p.email != c.email,
@@ -121,7 +122,6 @@ class LoginView extends StatelessWidget {
                       ),
                       const SizedBox(height: 20),
 
-                      // CAMPO SENHA
                       _buildLabel('Senha'),
                       BlocBuilder<LoginBloc, LoginState>(
                         buildWhen: (p, c) => p.password != c.password,
@@ -144,29 +144,32 @@ class LoginView extends StatelessWidget {
                       ),
                       const SizedBox(height: 12),
 
-                      // BOTÃO ENTRAR
+                      // BOTÃO ENTRAR CORRIGIDO
                       BlocBuilder<LoginBloc, LoginState>(
                         builder: (context, state) {
-                          return state.status == LoginStatus.loading
-                              ? const Center(child: CircularProgressIndicator())
-                              : ElevatedButton(
-                                  onPressed: state.isValid
-                                      ? () => context.read<LoginBloc>().add(const LoginButtonPressed())
-                                      : null,
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: primary,
-                                    foregroundColor: Colors.white,
-                                    padding: const EdgeInsets.symmetric(vertical: 18),
-                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                                    elevation: 0,
-                                  ),
-                                  child: const Text('Entrar na conta', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                                );
+                          if (state.status == LoginStatus.loading || state.status == LoginStatus.authenticated) {
+                            return const Center(child: CircularProgressIndicator());
+                          }
+                          return ElevatedButton(
+                            onPressed: state.isValid
+                                ? () => context.read<LoginBloc>().add(const LoginButtonPressed())
+                                : null,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: primary,
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(vertical: 18),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                              elevation: 0,
+                            ),
+                            child: const Text(
+                              'Entrar na conta',
+                              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                            ),
+                          );
                         },
                       ),
                       const SizedBox(height: 32),
 
-                      // DIVISOR
                       Row(
                         children: [
                           Expanded(child: Divider(color: Colors.grey.withOpacity(0.2))),
@@ -179,7 +182,6 @@ class LoginView extends StatelessWidget {
                       ),
                       const SizedBox(height: 32),
 
-                      // GOOGLE LOGIN
                       OutlinedButton.icon(
                         onPressed: () => context.read<LoginBloc>().add(const GoogleLoginPressed()),
                         icon: const Icon(Icons.g_mobiledata, size: 28),
@@ -192,7 +194,6 @@ class LoginView extends StatelessWidget {
                       ),
                       const SizedBox(height: 32),
 
-                      // RODAPÉ
                       Wrap(
                         alignment: WrapAlignment.center,
                         crossAxisAlignment: WrapCrossAlignment.center,
@@ -215,7 +216,6 @@ class LoginView extends StatelessWidget {
     );
   }
 
-  // Helpers para manter o código limpo
   Widget _buildLabel(String text) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 8.0, left: 4),

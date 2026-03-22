@@ -12,7 +12,7 @@ class ApiClient {
     required LoggerInterceptor loggerInterceptor,
   }) {
     dio = Dio(BaseOptions(
-      baseUrl: 'https://api.physigest.com.br/v1', // Substitua pela URL da sua API
+      baseUrl: 'http://localhost:3000/v1', // Substitua pela URL da sua API
       connectTimeout: const Duration(seconds: 15),
       receiveTimeout: const Duration(seconds: 15),
       sendTimeout: const Duration(seconds: 15),

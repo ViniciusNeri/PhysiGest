@@ -8,7 +8,7 @@ import 'package:physigest/features/dashboard/presentation/bloc/dashboard/dashboa
 import 'package:physigest/features/dashboard/presentation/bloc/dashboard/dashboard_state.dart';
 import 'package:physigest/features/schedule/domain/models/appointment.dart';
 import 'package:physigest/features/schedule/presentation/widgets/appointment_action_dialog.dart';
-
+import 'package:physigest/core/storage/local_storage.dart';
 import 'package:physigest/features/settings/presentation/bloc/settings/settings_bloc.dart';
 import 'package:physigest/features/settings/presentation/bloc/settings/settings_state.dart';
 
@@ -39,6 +39,7 @@ class HomeView extends StatelessWidget {
     final double width = MediaQuery.of(context).size.width;
     final bool isDesktop = width > 1000;
     final double horizontalPadding = isDesktop ? width * 0.08 : 20.0;
+    final String userName = getIt<LocalStorage>().getUserName() ?? "";
 
     return Scaffold(
       backgroundColor: bg,
@@ -82,7 +83,7 @@ class HomeView extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                  _buildHeader(),
+                  _buildHeader(userName),
                   const SizedBox(height: 32),
                   
                   // Grid de Métricas Coloridas
@@ -150,15 +151,28 @@ class HomeView extends StatelessWidget {
 
   // --- COMPONENTES DE UI ---
 
-  Widget _buildHeader() {
-    return const Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text("Olá, Dra. 👋", style: TextStyle(fontSize: 28, fontWeight: FontWeight.w900, color: Color(0xFF0F172A))),
-        Text("Confira o resumo da sua clínica para hoje.", style: TextStyle(color: Colors.black54, fontSize: 14)),
-      ],
-    );
-  }
+  Widget _buildHeader(String name) {
+  // Vamos pegar apenas o primeiro nome para não quebrar o layout
+  final firstName = name.split(' ').first;
+
+  return Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Text(
+        "Olá, $firstName 👋", // Exibe o nome dinâmico
+        style: const TextStyle(
+          fontSize: 28, 
+          fontWeight: FontWeight.w900, 
+          color: Color(0xFF0F172A),
+        ),
+      ),
+      const Text(
+        "Confira o resumo da sua clínica para hoje.", 
+        style: TextStyle(color: Colors.black54, fontSize: 14),
+      ),
+    ],
+  );
+}
 
   Widget _buildMetricCard(double screenWidth, String title, String value, IconData icon, Color color) {
     double cardWidth = (screenWidth > 1200) ? (screenWidth * 0.84 - 80) / 4 : (screenWidth > 700 ? (screenWidth - 60) / 2 : screenWidth - 40);

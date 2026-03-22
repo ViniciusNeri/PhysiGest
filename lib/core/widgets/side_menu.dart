@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:physigest/core/storage/local_storage.dart';
+import 'package:physigest/core/di/injection.dart';
 import 'package:physigest/core/theme/app_theme.dart';
 
 class SideMenu extends StatelessWidget {
@@ -128,7 +130,13 @@ class SideMenu extends StatelessWidget {
         baseColor: Colors.red,
         isSelected: false,
         isDestructive: true,
-        onTap: () => context.go('/login'),
+        onTap: () async {
+          await getIt<LocalStorage>().deleteToken();
+          await getIt<LocalStorage>().deleteUser();
+          if (context.mounted) {
+            context.go('/login');
+          }
+        },
       ),
     );
   }
