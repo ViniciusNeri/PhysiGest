@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:physigest/core/di/injection.dart';
-import 'package:physigest/core/theme/app_theme.dart';
 import 'package:physigest/core/widgets/side_menu.dart';
 // Nota: Você precisará criar o FinancialBloc ou adaptar o DashboardBloc para prover estes dados
 import 'package:physigest/features/financial/presentation/bloc/financial_bloc.dart';
@@ -38,10 +37,20 @@ class _FinancialViewState extends State<FinancialView> {
   String _selectedYear = DateTime.now().year.toString();
 
   final List<String> _months = [
-    '01', '02', '03', '04', '05', '06',
-    '07', '08', '09', '10', '11', '12'
+    '01',
+    '02',
+    '03',
+    '04',
+    '05',
+    '06',
+    '07',
+    '08',
+    '09',
+    '10',
+    '11',
+    '12',
   ];
-  
+
   final List<String> _years = [
     (DateTime.now().year - 1).toString(),
     DateTime.now().year.toString(),
@@ -50,8 +59,18 @@ class _FinancialViewState extends State<FinancialView> {
 
   String _getMonthName(String monthIndex) {
     const names = [
-      'Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun',
-      'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'
+      'Jan',
+      'Fev',
+      'Mar',
+      'Abr',
+      'Mai',
+      'Jun',
+      'Jul',
+      'Ago',
+      'Set',
+      'Out',
+      'Nov',
+      'Dez',
     ];
     return names[int.parse(monthIndex) - 1];
   }
@@ -71,7 +90,10 @@ class _FinancialViewState extends State<FinancialView> {
         iconTheme: const IconThemeData(color: Colors.black87),
         actions: [
           IconButton(
-            icon: const Icon(Icons.visibility_outlined, color: FinancialView.azulPetroleo),
+            icon: const Icon(
+              Icons.visibility_outlined,
+              color: FinancialView.azulPetroleo,
+            ),
             onPressed: () {}, // Funcionalidade para ocultar valores sensíveis
           ),
         ],
@@ -86,26 +108,24 @@ class _FinancialViewState extends State<FinancialView> {
             barrierColor: Colors.black.withOpacity(0.4),
             transitionDuration: const Duration(milliseconds: 300),
             pageBuilder: (context, anim1, anim2) {
-              return const Center(
-                child: AddTransactionDialog(),
-              );
+              return const Center(child: AddTransactionDialog());
             },
             transitionBuilder: (context, anim1, anim2, child) {
               return ScaleTransition(
-                scale: Tween<double>(begin: 0.9, end: 1.0)
-                    .animate(CurvedAnimation(parent: anim1, curve: Curves.easeOutBack)),
-                child: FadeTransition(
-                  opacity: anim1,
-                  child: child,
+                scale: Tween<double>(begin: 0.9, end: 1.0).animate(
+                  CurvedAnimation(parent: anim1, curve: Curves.easeOutBack),
                 ),
+                child: FadeTransition(opacity: anim1, child: child),
               );
             },
           );
 
           if (result != null && context.mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
-               SnackBar(
-                content: Text('Lançamento salvo: R\$ ${result['amount']} - ${result['description']}'),
+              SnackBar(
+                content: Text(
+                  'Lançamento salvo: R\$ ${result['amount']} - ${result['description']}',
+                ),
                 backgroundColor: FinancialView.azulPetroleo,
               ),
             );
@@ -139,12 +159,18 @@ class _FinancialViewState extends State<FinancialView> {
                                 children: [
                                   const Text(
                                     'Gestão de Caixa',
-                                    style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+                                    style: TextStyle(
+                                      fontSize: 28,
+                                      fontWeight: FontWeight.bold,
+                                    ),
                                   ),
                                   const SizedBox(height: 4),
                                   Text(
                                     'Controle de faturamento, despesas e repasses',
-                                    style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      color: Colors.grey.shade600,
+                                    ),
                                   ),
                                 ],
                               ),
@@ -158,27 +184,32 @@ class _FinancialViewState extends State<FinancialView> {
                           _buildFilters(),
                         ],
                         const SizedBox(height: 32),
-                        
+
                         // CARDS DE RESUMO FINANCEIRO
                         const Text(
                           'MÉTRICAS DO MÊS',
                           style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.grey,
-                              letterSpacing: 1.2),
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.grey,
+                            letterSpacing: 1.2,
+                          ),
                         ),
                         const SizedBox(height: 16),
-                        
+
                         GridView(
                           shrinkWrap: true,
                           physics: const NeverScrollableScrollPhysics(),
-                          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: MediaQuery.of(context).size.width > 600 ? 2 : 1,
-                            mainAxisSpacing: 16,
-                            crossAxisSpacing: 16,
-                            mainAxisExtent: 180,
-                          ),
+                          gridDelegate:
+                              SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount:
+                                    MediaQuery.of(context).size.width > 600
+                                    ? 2
+                                    : 1,
+                                mainAxisSpacing: 16,
+                                crossAxisSpacing: 16,
+                                mainAxisExtent: 180,
+                              ),
                           children: [
                             _FinancialSummaryCard(
                               title: 'Faturamento Total',
@@ -199,20 +230,24 @@ class _FinancialViewState extends State<FinancialView> {
                               subtitle: 'Aluguel, luz e materiais',
                               value: 'R\$ 3.200',
                               iconText: '📉',
-                              color: const Color(0xFFFF7A00), // Laranja para atenção
+                              color: const Color(
+                                0xFFFF7A00,
+                              ), // Laranja para atenção
                             ),
                             _FinancialSummaryCard(
                               title: 'Lucro Líquido',
                               subtitle: 'O que sobra após as despesas',
                               value: 'R\$ 9.250',
                               iconText: '📈',
-                              color: const Color(0xFF10B981), // Verde para sucesso
+                              color: const Color(
+                                0xFF10B981,
+                              ), // Verde para sucesso
                             ),
                           ],
                         ),
-                        
+
                         const SizedBox(height: 32),
-                        
+
                         // LISTA DE LANÇAMENTOS (Substituindo o calendário)
                         _RecentTransactionsCard(),
                       ],
@@ -227,6 +262,7 @@ class _FinancialViewState extends State<FinancialView> {
       ),
     );
   }
+
   Widget _buildFilters() {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -245,14 +281,21 @@ class _FinancialViewState extends State<FinancialView> {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(Icons.calendar_month_rounded, size: 20, color: FinancialView.azulPetroleo),
+          const Icon(
+            Icons.calendar_month_rounded,
+            size: 20,
+            color: FinancialView.azulPetroleo,
+          ),
           const SizedBox(width: 12),
           DropdownButtonHideUnderline(
             child: DropdownButton<String>(
               value: _selectedMonth,
               dropdownColor: Colors.white,
               borderRadius: BorderRadius.circular(12),
-              style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.black87),
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                color: Colors.black87,
+              ),
               items: _months.map((m) {
                 return DropdownMenuItem<String>(
                   value: m,
@@ -268,19 +311,25 @@ class _FinancialViewState extends State<FinancialView> {
             ),
           ),
           const SizedBox(width: 8),
-          const Text("/", style: TextStyle(color: Colors.black26, fontWeight: FontWeight.bold)),
+          const Text(
+            "/",
+            style: TextStyle(
+              color: Colors.black26,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
           const SizedBox(width: 8),
           DropdownButtonHideUnderline(
             child: DropdownButton<String>(
               value: _selectedYear,
               dropdownColor: Colors.white,
               borderRadius: BorderRadius.circular(12),
-              style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.black87),
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                color: Colors.black87,
+              ),
               items: _years.map((y) {
-                return DropdownMenuItem<String>(
-                  value: y,
-                  child: Text(y),
-                );
+                return DropdownMenuItem<String>(value: y, child: Text(y));
               }).toList(),
               onChanged: (val) {
                 if (val != null) {
@@ -388,20 +437,27 @@ class _RecentTransactionsCard extends StatelessWidget {
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             itemCount: 4,
-            separatorBuilder: (context, index) => Divider(height: 1, color: Colors.grey.shade50),
+            separatorBuilder: (context, index) =>
+                Divider(height: 1, color: Colors.grey.shade50),
             itemBuilder: (context, index) {
               final isExpense = index % 2 != 0;
               return ListTile(
                 leading: CircleAvatar(
-                  backgroundColor: isExpense ? Colors.red.shade50 : FinancialView.azulPetroleo.withOpacity(0.1),
+                  backgroundColor: isExpense
+                      ? Colors.red.shade50
+                      : FinancialView.azulPetroleo.withOpacity(0.1),
                   child: Icon(
                     isExpense ? Icons.arrow_downward : Icons.arrow_upward,
                     color: isExpense ? Colors.red : FinancialView.azulPetroleo,
                     size: 18,
                   ),
                 ),
-                title: Text(isExpense ? 'Fornecedor de Luvas' : 'Sessão: Ana Paula'),
-                subtitle: Text(isExpense ? 'Despesa Variável' : 'Particular (Pix)'),
+                title: Text(
+                  isExpense ? 'Fornecedor de Luvas' : 'Sessão: Ana Paula',
+                ),
+                subtitle: Text(
+                  isExpense ? 'Despesa Variável' : 'Particular (Pix)',
+                ),
                 trailing: Text(
                   isExpense ? '- R\$ 80,00' : '+ R\$ 150,00',
                   style: TextStyle(

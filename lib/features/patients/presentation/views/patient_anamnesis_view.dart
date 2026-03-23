@@ -31,10 +31,14 @@ class _PatientAnamnesisViewState extends State<PatientAnamnesisView> {
     _currentIllnessCtrl = TextEditingController(text: anamnesis.currentIllness);
     _historicCtrl = TextEditingController(text: anamnesis.historic);
     _familyHistoryCtrl = TextEditingController(text: anamnesis.familyHistory);
-    _lifestyleHabitsCtrl = TextEditingController(text: anamnesis.lifestyleHabits);
+    _lifestyleHabitsCtrl = TextEditingController(
+      text: anamnesis.lifestyleHabits,
+    );
     _medicationsCtrl = TextEditingController(text: anamnesis.medications);
     _physicalExamCtrl = TextEditingController(text: anamnesis.physicalExam);
-    _clinicalDiagnosisCtrl = TextEditingController(text: anamnesis.clinicalDiagnosis);
+    _clinicalDiagnosisCtrl = TextEditingController(
+      text: anamnesis.clinicalDiagnosis,
+    );
     _treatmentPlanCtrl = TextEditingController(text: anamnesis.treatmentPlan);
   }
 
@@ -44,7 +48,7 @@ class _PatientAnamnesisViewState extends State<PatientAnamnesisView> {
     // Evita recriar ou sobrescrever os controllers enquanto o usuário digita
     // a menos que o paciente seja um paciente completamente diferente
     if (oldWidget.patient.id != widget.patient.id) {
-       final anamnesis = widget.patient.anamnesis;
+      final anamnesis = widget.patient.anamnesis;
       _mainComplaintCtrl.text = anamnesis.mainComplaint;
       _currentIllnessCtrl.text = anamnesis.currentIllness;
       _historicCtrl.text = anamnesis.historic;
@@ -110,27 +114,40 @@ class _PatientAnamnesisViewState extends State<PatientAnamnesisView> {
               child: ListView(
                 padding: EdgeInsets.all(isDesktop ? 48.0 : 24.0),
                 children: [
-                  Text("Avaliação Clínica", style: TextStyle(fontSize: isDesktop ? 28 : 24, fontWeight: FontWeight.w900, color: const Color(0xFF1E293B))),
+                  Text(
+                    "Avaliação Clínica",
+                    style: TextStyle(
+                      fontSize: isDesktop ? 28 : 24,
+                      fontWeight: FontWeight.w900,
+                      color: const Color(0xFF1E293B),
+                    ),
+                  ),
                   const SizedBox(height: 24),
                   _buildVitalsRow(isDesktop),
                   const SizedBox(height: 32),
-                  
+
                   // Seções de Anamnese Profissional
                   _buildSectionTitle("História Médica"),
                   _buildEditor("Queixa Principal (QP)", _mainComplaintCtrl),
-                  _buildEditor("História da Moléstia Atual (HMA)", _currentIllnessCtrl),
-                  _buildEditor("História Médica Pregressa (HMP)", _historicCtrl),
+                  _buildEditor(
+                    "História da Moléstia Atual (HMA)",
+                    _currentIllnessCtrl,
+                  ),
+                  _buildEditor(
+                    "História Médica Pregressa (HMP)",
+                    _historicCtrl,
+                  ),
                   _buildEditor("Histórico Familiar", _familyHistoryCtrl),
-                  
+
                   _buildSectionTitle("Estilo de Vida e Medicamentos"),
                   _buildEditor("Hábitos de Vida", _lifestyleHabitsCtrl),
                   _buildEditor("Medicamentos em Uso", _medicationsCtrl),
-                  
+
                   _buildSectionTitle("Exame e Diagnóstico"),
                   _buildEditor("Exame Físico", _physicalExamCtrl),
                   _buildEditor("Diagnóstico Clínico", _clinicalDiagnosisCtrl),
                   _buildEditor("Plano de Tratamento", _treatmentPlanCtrl),
-                  
+
                   const SizedBox(height: 48),
 
                   SizedBox(
@@ -138,11 +155,19 @@ class _PatientAnamnesisViewState extends State<PatientAnamnesisView> {
                     child: ElevatedButton.icon(
                       onPressed: _saveAnamnesis,
                       icon: const Icon(Icons.save_rounded, color: Colors.white),
-                      label: const Text("SALVAR ALTERAÇÕES DA ANAMNESE", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                      label: const Text(
+                        "SALVAR ALTERAÇÕES DA ANAMNESE",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF0D9488),
                         padding: const EdgeInsets.symmetric(vertical: 24),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
                         elevation: 0,
                       ),
                     ),
@@ -170,15 +195,27 @@ class _PatientAnamnesisViewState extends State<PatientAnamnesisView> {
         children: const [
           ListTile(
             leading: Icon(Icons.history_edu, color: Color(0xFF0D9488)),
-            title: Text("História Médica", style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF1E293B))),
+            title: Text(
+              "História Médica",
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF1E293B),
+              ),
+            ),
           ),
           ListTile(
             leading: Icon(Icons.monitor_heart, color: Color(0xFF94A3B8)),
-            title: Text("Estilo de Vida", style: TextStyle(color: Color(0xFF64748B))),
+            title: Text(
+              "Estilo de Vida",
+              style: TextStyle(color: Color(0xFF64748B)),
+            ),
           ),
           ListTile(
             leading: Icon(Icons.accessibility_new, color: Color(0xFF94A3B8)),
-            title: Text("Exame e Diagnóstico", style: TextStyle(color: Color(0xFF64748B))),
+            title: Text(
+              "Exame e Diagnóstico",
+              style: TextStyle(color: Color(0xFF64748B)),
+            ),
           ),
         ],
       ),
@@ -191,7 +228,14 @@ class _PatientAnamnesisViewState extends State<PatientAnamnesisView> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF0D9488))),
+          Text(
+            title,
+            style: const TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF0D9488),
+            ),
+          ),
           const Divider(color: Color(0xFFE2E8F0)),
         ],
       ),
@@ -226,25 +270,48 @@ class _PatientAnamnesisViewState extends State<PatientAnamnesisView> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white, 
-        borderRadius: BorderRadius.circular(16), 
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
         border: Border.all(color: const Color(0xFFE2E8F0)),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 10, offset: const Offset(0, 4))],
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.02),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Row(
         children: [
           Container(
             padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(color: const Color(0xFFF0FDFA), borderRadius: BorderRadius.circular(12)),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF0FDFA),
+              borderRadius: BorderRadius.circular(12),
+            ),
             child: Icon(icon, color: const Color(0xFF0D9488), size: 24),
           ),
           const SizedBox(width: 16),
           Column(
-            crossAxisAlignment: CrossAxisAlignment.start, 
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(label, style: const TextStyle(fontSize: 12, color: Color(0xFF64748B), fontWeight: FontWeight.bold)), 
-              Text(value, style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 18, color: Color(0xFF1E293B)))
-            ]
+              Text(
+                label,
+                style: const TextStyle(
+                  fontSize: 12,
+                  color: Color(0xFF64748B),
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              Text(
+                value,
+                style: const TextStyle(
+                  fontWeight: FontWeight.w900,
+                  fontSize: 18,
+                  color: Color(0xFF1E293B),
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -255,23 +322,42 @@ class _PatientAnamnesisViewState extends State<PatientAnamnesisView> {
     return Padding(
       padding: const EdgeInsets.only(bottom: 24),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start, 
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(title, style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF334155), fontSize: 14)),
+          Text(
+            title,
+            style: const TextStyle(
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF334155),
+              fontSize: 14,
+            ),
+          ),
           const SizedBox(height: 8),
           TextFormField(
-            controller: controller, 
-            maxLines: 4, 
+            controller: controller,
+            maxLines: 4,
             decoration: InputDecoration(
-              filled: true, 
-              fillColor: Colors.white, 
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFFE2E8F0))),
-              enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFFE2E8F0))),
-              focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFF0D9488), width: 2)),
+              filled: true,
+              fillColor: Colors.white,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(
+                  color: Color(0xFF0D9488),
+                  width: 2,
+                ),
+              ),
               contentPadding: const EdgeInsets.all(16),
             ),
           ),
-        ]
+        ],
       ),
     );
   }

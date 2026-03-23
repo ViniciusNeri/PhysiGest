@@ -21,19 +21,45 @@ class FinancialBloc extends Bloc<FinancialEvent, FinancialState> {
 
       // Mock de dados financeiros
       final transacoesMock = [
-        {'titulo': 'Sessão: Ana Paula', 'subtitulo': 'Particular (Pix)', 'valor': 150.0, 'isExpense': false, 'data': '26 Out'},
-        {'titulo': 'Fornecedor de Luvas', 'subtitulo': 'Despesa Variável', 'valor': 80.0, 'isExpense': true, 'data': '25 Out'},
-        {'titulo': 'Sessão: Marcos Vinicius', 'subtitulo': 'Convênio Unimed', 'valor': 120.0, 'isExpense': false, 'data': '25 Out'},
-        {'titulo': 'Aluguel Clínica', 'subtitulo': 'Despesa Fixa', 'valor': 1200.0, 'isExpense': true, 'data': '20 Out'},
+        {
+          'titulo': 'Sessão: Ana Paula',
+          'subtitulo': 'Particular (Pix)',
+          'valor': 150.0,
+          'isExpense': false,
+          'data': '26 Out',
+        },
+        {
+          'titulo': 'Fornecedor de Luvas',
+          'subtitulo': 'Despesa Variável',
+          'valor': 80.0,
+          'isExpense': true,
+          'data': '25 Out',
+        },
+        {
+          'titulo': 'Sessão: Marcos Vinicius',
+          'subtitulo': 'Convênio Unimed',
+          'valor': 120.0,
+          'isExpense': false,
+          'data': '25 Out',
+        },
+        {
+          'titulo': 'Aluguel Clínica',
+          'subtitulo': 'Despesa Fixa',
+          'valor': 1200.0,
+          'isExpense': true,
+          'data': '20 Out',
+        },
       ];
 
-      emit(FinancialLoaded(
-        faturamentoTotal: 12450.00,
-        contasReceber: 2180.00,
-        despesasFixas: 3200.00,
-        lucroLiquido: 9250.00,
-        transacoes: transacoesMock,
-      ));
+      emit(
+        FinancialLoaded(
+          faturamentoTotal: 12450.00,
+          contasReceber: 2180.00,
+          despesasFixas: 3200.00,
+          lucroLiquido: 9250.00,
+          transacoes: transacoesMock,
+        ),
+      );
     } catch (e) {
       emit(const FinancialError("Erro ao carregar dados financeiros."));
     }

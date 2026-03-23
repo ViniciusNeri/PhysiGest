@@ -32,7 +32,11 @@ class ScheduleView extends StatelessWidget {
   static const int endHour = 22;
 
   // Função centralizada para abrir o modal de agendamento
-  Future<void> _openAddAppointment(BuildContext context, ScheduleState state, DateTime initialDate) async {
+  Future<void> _openAddAppointment(
+    BuildContext context,
+    ScheduleState state,
+    DateTime initialDate,
+  ) async {
     final result = await showGeneralDialog<Appointment>(
       context: context,
       barrierDismissible: true,
@@ -50,8 +54,10 @@ class ScheduleView extends StatelessWidget {
       },
       transitionBuilder: (context, anim1, anim2, child) {
         return SlideTransition(
-          position: Tween<Offset>(begin: const Offset(1, 0), end: const Offset(0, 0))
-              .animate(CurvedAnimation(parent: anim1, curve: Curves.easeOutCubic)),
+          position: Tween<Offset>(
+            begin: const Offset(1, 0),
+            end: const Offset(0, 0),
+          ).animate(CurvedAnimation(parent: anim1, curve: Curves.easeOutCubic)),
           child: child,
         );
       },
@@ -73,7 +79,10 @@ class ScheduleView extends StatelessWidget {
         backgroundColor: Colors.white,
         elevation: 0,
         centerTitle: false,
-        iconTheme: IconThemeData(color: Theme.of(context).primaryColor, size: 24),
+        iconTheme: IconThemeData(
+          color: Theme.of(context).primaryColor,
+          size: 24,
+        ),
         title: const Text(
           "Agenda",
           style: TextStyle(
@@ -83,9 +92,17 @@ class ScheduleView extends StatelessWidget {
             letterSpacing: -0.5,
           ),
         ),
-        shape: const Border(bottom: BorderSide(color: Color(0xFFE2E8F0), width: 1)),
+        shape: const Border(
+          bottom: BorderSide(color: Color(0xFFE2E8F0), width: 1),
+        ),
         actions: [
-          IconButton(onPressed: () {}, icon: const Icon(Icons.notifications_none_rounded, color: Colors.black45)),
+          IconButton(
+            onPressed: () {},
+            icon: const Icon(
+              Icons.notifications_none_rounded,
+              color: Colors.black45,
+            ),
+          ),
           const SizedBox(width: 16),
         ],
       ),
@@ -111,7 +128,9 @@ class ScheduleView extends StatelessWidget {
                   child: BlocBuilder<ScheduleBloc, ScheduleState>(
                     builder: (context, state) {
                       if (state.status == ScheduleStatus.loading) {
-                        return const Center(child: CircularProgressIndicator(strokeWidth: 2));
+                        return const Center(
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        );
                       }
                       return _buildBodyContent(context, state);
                     },
@@ -125,10 +144,17 @@ class ScheduleView extends StatelessWidget {
       floatingActionButton: BlocBuilder<ScheduleBloc, ScheduleState>(
         builder: (context, state) {
           return FloatingActionButton.extended(
-            onPressed: () => _openAddAppointment(context, state, state.selectedDate),
+            onPressed: () =>
+                _openAddAppointment(context, state, state.selectedDate),
             backgroundColor: const Color(0xFF0F172A),
             icon: const Icon(Icons.add_rounded, color: Colors.white),
-            label: const Text("Novo Horário", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+            label: const Text(
+              "Novo Horário",
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           );
         },
       ),
@@ -146,15 +172,29 @@ class ScheduleView extends StatelessWidget {
         if (state.viewMode == ScheduleViewMode.day) {
           startDate = state.selectedDate;
           endDate = state.selectedDate;
-          rangeLabel = DateFormat("d 'de' MMMM, yyyy", 'pt_BR').format(startDate);
+          rangeLabel = DateFormat(
+            "d 'de' MMMM, yyyy",
+            'pt_BR',
+          ).format(startDate);
         } else if (state.viewMode == ScheduleViewMode.week) {
-          startDate = state.selectedDate.subtract(Duration(days: state.selectedDate.weekday % 7)); // Domingo como início
+          startDate = state.selectedDate.subtract(
+            Duration(days: state.selectedDate.weekday % 7),
+          ); // Domingo como início
           endDate = startDate.add(const Duration(days: 6));
-          rangeLabel = "${DateFormat('d').format(startDate)} - ${DateFormat('d').format(endDate)} de ${DateFormat('MMMM, yyyy', 'pt_BR').format(endDate)}";
+          rangeLabel =
+              "${DateFormat('d').format(startDate)} - ${DateFormat('d').format(endDate)} de ${DateFormat('MMMM, yyyy', 'pt_BR').format(endDate)}";
         } else {
-          startDate = DateTime(state.selectedDate.year, state.selectedDate.month, 1);
-          endDate = DateTime(state.selectedDate.year, state.selectedDate.month + 1, 0);
-          rangeLabel = "${DateFormat('MMMM, yyyy', 'pt_BR').format(startDate)}";
+          startDate = DateTime(
+            state.selectedDate.year,
+            state.selectedDate.month,
+            1,
+          );
+          endDate = DateTime(
+            state.selectedDate.year,
+            state.selectedDate.month + 1,
+            0,
+          );
+          rangeLabel = DateFormat('MMMM, yyyy', 'pt_BR').format(startDate);
           // Capitalize first letter of month
           rangeLabel = rangeLabel[0].toUpperCase() + rangeLabel.substring(1);
         }
@@ -162,23 +202,53 @@ class ScheduleView extends StatelessWidget {
         return Container(
           height: 80,
           padding: EdgeInsets.symmetric(horizontal: isDesktop ? 24 : 12),
-          decoration: const BoxDecoration(color: Colors.white, border: Border(bottom: BorderSide(color: Color(0xFFF1F5F9)))),
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            border: Border(bottom: BorderSide(color: Color(0xFFF1F5F9))),
+          ),
           child: Row(
             children: [
               if (isDesktop)
-                Text(rangeLabel, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: Color(0xFF1E293B), letterSpacing: -0.5))
+                Text(
+                  rangeLabel,
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w800,
+                    color: Color(0xFF1E293B),
+                    letterSpacing: -0.5,
+                  ),
+                )
               else
-                Expanded(child: Text(rangeLabel, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: Color(0xFF1E293B), letterSpacing: -0.5), overflow: TextOverflow.ellipsis)),
-              
+                Expanded(
+                  child: Text(
+                    rangeLabel,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w800,
+                      color: Color(0xFF1E293B),
+                      letterSpacing: -0.5,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+
               const SizedBox(width: 12),
               _buildNavButton(Icons.chevron_left_rounded, () {
                 DateTime newDate;
                 if (state.viewMode == ScheduleViewMode.day) {
-                  newDate = state.selectedDate.subtract(const Duration(days: 1));
+                  newDate = state.selectedDate.subtract(
+                    const Duration(days: 1),
+                  );
                 } else if (state.viewMode == ScheduleViewMode.week) {
-                  newDate = state.selectedDate.subtract(const Duration(days: 7));
+                  newDate = state.selectedDate.subtract(
+                    const Duration(days: 7),
+                  );
                 } else {
-                  newDate = DateTime(state.selectedDate.year, state.selectedDate.month - 1, state.selectedDate.day);
+                  newDate = DateTime(
+                    state.selectedDate.year,
+                    state.selectedDate.month - 1,
+                    state.selectedDate.day,
+                  );
                 }
                 context.read<ScheduleBloc>().add(SelectDate(newDate));
               }),
@@ -190,14 +260,23 @@ class ScheduleView extends StatelessWidget {
                 } else if (state.viewMode == ScheduleViewMode.week) {
                   newDate = state.selectedDate.add(const Duration(days: 7));
                 } else {
-                  newDate = DateTime(state.selectedDate.year, state.selectedDate.month + 1, state.selectedDate.day);
+                  newDate = DateTime(
+                    state.selectedDate.year,
+                    state.selectedDate.month + 1,
+                    state.selectedDate.day,
+                  );
                 }
                 context.read<ScheduleBloc>().add(SelectDate(newDate));
               }),
               const SizedBox(width: 16),
               TextButton(
-                onPressed: () => context.read<ScheduleBloc>().add(SelectDate(DateTime.now())),
-                child: const Text("Hoje", style: TextStyle(fontWeight: FontWeight.bold)),
+                onPressed: () => context.read<ScheduleBloc>().add(
+                  SelectDate(DateTime.now()),
+                ),
+                child: const Text(
+                  "Hoje",
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
               ),
               if (isDesktop) ...[
                 const Spacer(),
@@ -229,7 +308,9 @@ class ScheduleView extends StatelessWidget {
       weekDays = [state.selectedDate];
     } else {
       // Semana começa no Domingo
-      final startOfWeek = state.selectedDate.subtract(Duration(days: state.selectedDate.weekday % 7));
+      final startOfWeek = state.selectedDate.subtract(
+        Duration(days: state.selectedDate.weekday % 7),
+      );
       weekDays = List.generate(7, (i) => startOfWeek.add(Duration(days: i)));
     }
 
@@ -239,8 +320,14 @@ class ScheduleView extends StatelessWidget {
         children: [
           Container(
             padding: const EdgeInsets.only(left: 70),
-            decoration: const BoxDecoration(border: Border(bottom: BorderSide(color: Color(0xFFF1F5F9)))),
-            child: Row(children: weekDays.map((day) => Expanded(child: _buildDayHeader(day))).toList()),
+            decoration: const BoxDecoration(
+              border: Border(bottom: BorderSide(color: Color(0xFFF1F5F9))),
+            ),
+            child: Row(
+              children: weekDays
+                  .map((day) => Expanded(child: _buildDayHeader(day)))
+                  .toList(),
+            ),
           ),
           Expanded(
             child: SingleChildScrollView(
@@ -249,7 +336,10 @@ class ScheduleView extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   _buildTimeColumn(),
-                  ...weekDays.map((day) => Expanded(child: _buildDayColumn(context, state, day))),
+                  ...weekDays.map(
+                    (day) =>
+                        Expanded(child: _buildDayColumn(context, state, day)),
+                  ),
                 ],
               ),
             ),
@@ -268,18 +358,22 @@ class ScheduleView extends StatelessWidget {
         lastDay: DateTime.utc(2030, 12, 31),
         focusedDay: state.selectedDate,
         calendarFormat: CalendarFormat.month,
-        availableCalendarFormats: const { CalendarFormat.month: 'Mês' },
+        availableCalendarFormats: const {CalendarFormat.month: 'Mês'},
         startingDayOfWeek: StartingDayOfWeek.sunday,
         headerVisible: false, // The custom header handles navigation
         onDaySelected: (selectedDay, focusedDay) {
           // Muda pro modo Dia e seleciona o dia clicado
-          context.read<ScheduleBloc>().add(ChangeViewMode(ScheduleViewMode.day));
+          context.read<ScheduleBloc>().add(
+            ChangeViewMode(ScheduleViewMode.day),
+          );
           context.read<ScheduleBloc>().add(SelectDate(selectedDay));
         },
         selectedDayPredicate: (day) => isSameDay(state.selectedDate, day),
         calendarBuilders: CalendarBuilders(
           markerBuilder: (context, date, events) {
-            final dayApts = state.appointments.where((a) => DateUtils.isSameDay(a.date, date)).toList();
+            final dayApts = state.appointments
+                .where((a) => DateUtils.isSameDay(a.date, date))
+                .toList();
             if (dayApts.isEmpty) return const SizedBox();
 
             return Positioned(
@@ -305,37 +399,64 @@ class ScheduleView extends StatelessWidget {
     );
   }
 
-  Widget _buildDayColumn(BuildContext context, ScheduleState state, DateTime day) {
-    final dayApts = state.appointments.where((a) => DateUtils.isSameDay(a.date, day)).toList();
+  Widget _buildDayColumn(
+    BuildContext context,
+    ScheduleState state,
+    DateTime day,
+  ) {
+    final dayApts = state.appointments
+        .where((a) => DateUtils.isSameDay(a.date, day))
+        .toList();
 
     return GestureDetector(
-      behavior: HitTestBehavior.opaque, // Garante que o clique seja detectado em toda a área
+      behavior: HitTestBehavior
+          .opaque, // Garante que o clique seja detectado em toda a área
       onTapUp: (details) {
         // Cálculo matemático da hora clicada
         final double clickY = details.localPosition.dy;
         final int hourClicked = (clickY / hourHeight).floor() + startHour;
-        final DateTime tappedDateTime = DateTime(day.year, day.month, day.day, hourClicked);
+        final DateTime tappedDateTime = DateTime(
+          day.year,
+          day.month,
+          day.day,
+          hourClicked,
+        );
 
         _openAddAppointment(context, state, tappedDateTime);
       },
       child: Container(
-        decoration: const BoxDecoration(border: Border(right: BorderSide(color: Color(0xFFF8FAFC)))),
+        decoration: const BoxDecoration(
+          border: Border(right: BorderSide(color: Color(0xFFF8FAFC))),
+        ),
         child: Stack(
           children: [
             Column(
-              children: List.generate(endHour - startHour, (index) => Container(
-                height: hourHeight,
-                decoration: const BoxDecoration(border: Border(bottom: BorderSide(color: Color(0xFFF1F5F9)))),
-              )),
+              children: List.generate(
+                endHour - startHour,
+                (index) => Container(
+                  height: hourHeight,
+                  decoration: const BoxDecoration(
+                    border: Border(
+                      bottom: BorderSide(color: Color(0xFFF1F5F9)),
+                    ),
+                  ),
+                ),
+              ),
             ),
             ...dayApts.map((apt) {
               final startTimeParts = apt.time.split(':');
-              final endTimeParts = apt.endTime.split(':'); // Pega o horário de término
+              final endTimeParts = apt.endTime.split(
+                ':',
+              ); // Pega o horário de término
 
               // Converter para double (horas + fração de minutos)
-              final double start = double.parse(startTimeParts[0]) + (double.parse(startTimeParts[1]) / 60);
-              final double end = double.parse(endTimeParts[0]) + (double.parse(endTimeParts[1]) / 60);
-              
+              final double start =
+                  double.parse(startTimeParts[0]) +
+                  (double.parse(startTimeParts[1]) / 60);
+              final double end =
+                  double.parse(endTimeParts[0]) +
+                  (double.parse(endTimeParts[1]) / 60);
+
               // Cálculo da duração em horas (ex: 1.5 para 1h30min)
               final double duration = end - start;
 
@@ -346,7 +467,7 @@ class ScheduleView extends StatelessWidget {
                 top: top + 4,
                 left: 6,
                 right: 6,
-                height: (duration * hourHeight) - 8, 
+                height: (duration * hourHeight) - 8,
                 child: GestureDetector(
                   onTap: () => _openEditAppointment(context, state, apt),
                   child: _buildAppointmentCard(context, state, apt),
@@ -366,26 +487,47 @@ class ScheduleView extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 20),
       child: Column(
         children: [
-          Text(DateFormat('EEE', 'pt_BR').format(day).toUpperCase(),
-              style: TextStyle(fontSize: 10, fontWeight: FontWeight.w800, color: isToday ? AppTheme.primaryColor : Colors.black26, letterSpacing: 1)),
+          Text(
+            DateFormat('EEE', 'pt_BR').format(day).toUpperCase(),
+            style: TextStyle(
+              fontSize: 10,
+              fontWeight: FontWeight.w800,
+              color: isToday ? AppTheme.primaryColor : Colors.black26,
+              letterSpacing: 1,
+            ),
+          ),
           const SizedBox(height: 8),
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: isToday ? AppTheme.primaryColor.withOpacity(0.1) : Colors.transparent,
+              color: isToday
+                  ? AppTheme.primaryColor.withOpacity(0.1)
+                  : Colors.transparent,
               shape: BoxShape.circle,
             ),
-            child: Text(day.day.toString(),
-                style: TextStyle(fontWeight: FontWeight.w900, color: isToday ? AppTheme.primaryColor : const Color(0xFF1E293B), fontSize: 18)),
+            child: Text(
+              day.day.toString(),
+              style: TextStyle(
+                fontWeight: FontWeight.w900,
+                color: isToday
+                    ? AppTheme.primaryColor
+                    : const Color(0xFF1E293B),
+                fontSize: 18,
+              ),
+            ),
           ),
         ],
       ),
     );
   }
 
-   Widget _buildAppointmentCard(BuildContext context, ScheduleState state, Appointment apt) {
+  Widget _buildAppointmentCard(
+    BuildContext context,
+    ScheduleState state,
+    Appointment apt,
+  ) {
     Color baseColor = _getTypeColor(apt.type);
-    
+
     // Altera opacidade dependendo do status
     if (apt.status == 'falta' || apt.status == 'cancelado') {
       baseColor = baseColor.withOpacity(0.5);
@@ -400,7 +542,7 @@ class ScheduleView extends StatelessWidget {
             color: baseColor.withOpacity(0.4),
             blurRadius: 12,
             offset: const Offset(0, 4),
-          )
+          ),
         ],
       ),
       child: Stack(
@@ -434,7 +576,10 @@ class ScheduleView extends StatelessWidget {
                 const SizedBox(height: 4),
                 // Containerzinho para o horário (estilo Badge)
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 6,
+                    vertical: 2,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.white.withOpacity(0.2),
                     borderRadius: BorderRadius.circular(6),
@@ -442,7 +587,11 @@ class ScheduleView extends StatelessWidget {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(Icons.access_time_filled, size: 12, color: Colors.white),
+                      const Icon(
+                        Icons.access_time_filled,
+                        size: 12,
+                        color: Colors.white,
+                      ),
                       const SizedBox(width: 4),
                       Text(
                         "${apt.time} - ${apt.endTime}",
@@ -456,63 +605,73 @@ class ScheduleView extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 6),
-             Row(
-               mainAxisAlignment: MainAxisAlignment.spaceBetween,
-               crossAxisAlignment: CrossAxisAlignment.end,
-               children: [
-                 Expanded(
-                   child: Text(
-                     apt.type.toUpperCase(),
-                     style: TextStyle(
-                       fontSize: 9,
-                       fontWeight: FontWeight.w900,
-                       color: Colors.white.withOpacity(0.7),
-                       letterSpacing: 0.5,
-                       overflow: TextOverflow.ellipsis,
-                     ),
-                   ),
-                 ),
-                 // Icon Button para Avaliar / Status
-                 InkWell(
-                   onTap: () {
-                     showDialog(
-                       context: context,
-                       builder: (dContext) => AppointmentActionDialog(
-                         appointment: apt,
-                         onSave: (updatedApt) {
-                           context.read<ScheduleBloc>().add(UpdateAppointment(updatedApt));
-                         },
-                       ),
-                     );
-                   },
-                   child: Container(
-                     padding: const EdgeInsets.all(4),
-                     decoration: BoxDecoration(
-                       color: Colors.white.withOpacity(0.25),
-                       shape: BoxShape.circle,
-                     ),
-                     child: Icon(
-                       apt.status == 'realizado' ? Icons.check_circle_rounded :
-                       (apt.status == 'falta' || apt.status == 'cancelado' ? Icons.cancel_rounded : Icons.fact_check_rounded),
-                       size: 14, 
-                       color: Colors.white,
-                     ),
-                   ),
-                 )
-               ],
-             ),
-           ],
-         ),
-       ),
-       if (apt.status == 'realizado')
-         Positioned(
-           top: 8,
-           right: 8,
-           child: Icon(Icons.check_circle_rounded, color: Colors.white, size: 16),
-         ),
-     ],
-   ),
- );
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Expanded(
+                      child: Text(
+                        apt.type.toUpperCase(),
+                        style: TextStyle(
+                          fontSize: 9,
+                          fontWeight: FontWeight.w900,
+                          color: Colors.white.withOpacity(0.7),
+                          letterSpacing: 0.5,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ),
+                    // Icon Button para Avaliar / Status
+                    InkWell(
+                      onTap: () {
+                        showDialog(
+                          context: context,
+                          builder: (dContext) => AppointmentActionDialog(
+                            appointment: apt,
+                            onSave: (updatedApt) {
+                              context.read<ScheduleBloc>().add(
+                                UpdateAppointment(updatedApt),
+                              );
+                            },
+                          ),
+                        );
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.25),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          apt.status == 'realizado'
+                              ? Icons.check_circle_rounded
+                              : (apt.status == 'falta' ||
+                                        apt.status == 'cancelado'
+                                    ? Icons.cancel_rounded
+                                    : Icons.fact_check_rounded),
+                          size: 14,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          if (apt.status == 'realizado')
+            Positioned(
+              top: 8,
+              right: 8,
+              child: Icon(
+                Icons.check_circle_rounded,
+                color: Colors.white,
+                size: 16,
+              ),
+            ),
+        ],
+      ),
+    );
   }
 
   Widget _buildTimeColumn() {
@@ -520,12 +679,22 @@ class ScheduleView extends StatelessWidget {
       width: 70,
       color: Colors.white,
       child: Column(
-        children: List.generate(endHour - startHour, (index) => Container(
-          height: hourHeight,
-          alignment: Alignment.topCenter,
-          padding: const EdgeInsets.only(top: 10),
-          child: Text("${index + startHour}:00", style: const TextStyle(color: Colors.black26, fontSize: 11, fontWeight: FontWeight.bold)),
-        )),
+        children: List.generate(
+          endHour - startHour,
+          (index) => Container(
+            height: hourHeight,
+            alignment: Alignment.topCenter,
+            padding: const EdgeInsets.only(top: 10),
+            child: Text(
+              "${index + startHour}:00",
+              style: const TextStyle(
+                color: Colors.black26,
+                fontSize: 11,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -540,14 +709,29 @@ class ScheduleView extends StatelessWidget {
           TextField(
             decoration: InputDecoration(
               hintText: "Buscar paciente...",
-              prefixIcon: const Icon(Icons.search_rounded, size: 20, color: Colors.black26),
+              prefixIcon: const Icon(
+                Icons.search_rounded,
+                size: 20,
+                color: Colors.black26,
+              ),
               filled: true,
               fillColor: const Color(0xFFF1F5F9),
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide.none,
+              ),
             ),
           ),
           const SizedBox(height: 40),
-          const Text("CATEGORIAS", style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.black38, letterSpacing: 1.5)),
+          const Text(
+            "CATEGORIAS",
+            style: TextStyle(
+              fontSize: 10,
+              fontWeight: FontWeight.bold,
+              color: Colors.black38,
+              letterSpacing: 1.5,
+            ),
+          ),
           const SizedBox(height: 20),
           _buildFilterItem("Fisioterapia", AppTheme.primaryColor),
           _buildFilterItem("Pilates", Colors.teal),
@@ -562,9 +746,20 @@ class ScheduleView extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: 16),
       child: Row(
         children: [
-          Container(width: 10, height: 10, decoration: BoxDecoration(color: color, shape: BoxShape.circle)),
+          Container(
+            width: 10,
+            height: 10,
+            decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+          ),
           const SizedBox(width: 12),
-          Text(label, style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF475569), fontSize: 14)),
+          Text(
+            label,
+            style: const TextStyle(
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF475569),
+              fontSize: 14,
+            ),
+          ),
         ],
       ),
     );
@@ -576,33 +771,68 @@ class ScheduleView extends StatelessWidget {
       borderRadius: BorderRadius.circular(10),
       child: Container(
         padding: const EdgeInsets.all(8),
-        decoration: BoxDecoration(border: Border.all(color: const Color(0xFFE2E8F0)), borderRadius: BorderRadius.circular(10)),
+        decoration: BoxDecoration(
+          border: Border.all(color: const Color(0xFFE2E8F0)),
+          borderRadius: BorderRadius.circular(10),
+        ),
         child: Icon(icon, size: 18, color: const Color(0xFF64748B)),
       ),
     );
   }
 
-  Widget _buildViewToggle(BuildContext context, ScheduleState state, {bool isMobile = false}) {
+  Widget _buildViewToggle(
+    BuildContext context,
+    ScheduleState state, {
+    bool isMobile = false,
+  }) {
     if (isMobile) {
       return PopupMenuButton<ScheduleViewMode>(
         icon: const Icon(Icons.more_vert),
-        onSelected: (mode) => context.read<ScheduleBloc>().add(ChangeViewMode(mode)),
+        onSelected: (mode) =>
+            context.read<ScheduleBloc>().add(ChangeViewMode(mode)),
         itemBuilder: (context) => [
           const PopupMenuItem(value: ScheduleViewMode.day, child: Text("Dia")),
-          const PopupMenuItem(value: ScheduleViewMode.week, child: Text("Semana")),
-          const PopupMenuItem(value: ScheduleViewMode.month, child: Text("Mês")),
+          const PopupMenuItem(
+            value: ScheduleViewMode.week,
+            child: Text("Semana"),
+          ),
+          const PopupMenuItem(
+            value: ScheduleViewMode.month,
+            child: Text("Mês"),
+          ),
         ],
       );
     }
 
     return Container(
       padding: const EdgeInsets.all(4),
-      decoration: BoxDecoration(color: const Color(0xFFF1F5F9), borderRadius: BorderRadius.circular(12)),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF1F5F9),
+        borderRadius: BorderRadius.circular(12),
+      ),
       child: Row(
         children: [
-          _buildToggleItem("Dia", state.viewMode == ScheduleViewMode.day, () => context.read<ScheduleBloc>().add(ChangeViewMode(ScheduleViewMode.day))),
-          _buildToggleItem("Semana", state.viewMode == ScheduleViewMode.week, () => context.read<ScheduleBloc>().add(ChangeViewMode(ScheduleViewMode.week))),
-          _buildToggleItem("Mês", state.viewMode == ScheduleViewMode.month, () => context.read<ScheduleBloc>().add(ChangeViewMode(ScheduleViewMode.month))),
+          _buildToggleItem(
+            "Dia",
+            state.viewMode == ScheduleViewMode.day,
+            () => context.read<ScheduleBloc>().add(
+              ChangeViewMode(ScheduleViewMode.day),
+            ),
+          ),
+          _buildToggleItem(
+            "Semana",
+            state.viewMode == ScheduleViewMode.week,
+            () => context.read<ScheduleBloc>().add(
+              ChangeViewMode(ScheduleViewMode.week),
+            ),
+          ),
+          _buildToggleItem(
+            "Mês",
+            state.viewMode == ScheduleViewMode.month,
+            () => context.read<ScheduleBloc>().add(
+              ChangeViewMode(ScheduleViewMode.month),
+            ),
+          ),
         ],
       ),
     );
@@ -613,46 +843,60 @@ class ScheduleView extends StatelessWidget {
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-        decoration: BoxDecoration(color: active ? Colors.white : Colors.transparent, borderRadius: BorderRadius.circular(10)),
-        child: Text(label, style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: active ? const Color(0xFF0F172A) : Colors.black45)),
+        decoration: BoxDecoration(
+          color: active ? Colors.white : Colors.transparent,
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.bold,
+            color: active ? const Color(0xFF0F172A) : Colors.black45,
+          ),
+        ),
       ),
     );
   }
 
-  void _openEditAppointment(BuildContext context, ScheduleState state, Appointment apt) async {
-  final result = await showGeneralDialog<Appointment>(
-    context: context,
-    // ... mesmas configurações de animação do showGeneralDialog ...
-    pageBuilder: (context, anim1, anim2) {
-      return Align(
-        alignment: Alignment.centerRight,
-        child: AddAppointmentDialog(
-          availablePatients: state.availablePatients,
-          initialDate: apt.date, 
-          appointmentToEdit: apt, 
-        ),
-      );
-    },
-  );
+  void _openEditAppointment(
+    BuildContext context,
+    ScheduleState state,
+    Appointment apt,
+  ) async {
+    final result = await showGeneralDialog<Appointment>(
+      context: context,
+      // ... mesmas configurações de animação do showGeneralDialog ...
+      pageBuilder: (context, anim1, anim2) {
+        return Align(
+          alignment: Alignment.centerRight,
+          child: AddAppointmentDialog(
+            availablePatients: state.availablePatients,
+            initialDate: apt.date,
+            appointmentToEdit: apt,
+          ),
+        );
+      },
+    );
 
-  if (result != null && context.mounted) {
-    // Aqui você enviaria um evento de Update em vez de Add
-    context.read<ScheduleBloc>().add(UpdateAppointment(result));
+    if (result != null && context.mounted) {
+      // Aqui você enviaria um evento de Update em vez de Add
+      context.read<ScheduleBloc>().add(UpdateAppointment(result));
+    }
   }
-}
 
   Color _getTypeColor(String type) {
     switch (type) {
       case 'Avaliação Inicial':
-        return const Color(0xFFFB923C); 
+        return const Color(0xFFFB923C);
       case 'Fisioterapia':
-        return const Color(0xFF60A5FA); 
+        return const Color(0xFF60A5FA);
       case 'Pilates':
-        return const Color(0xFF94A3B8); 
+        return const Color(0xFF94A3B8);
       case 'RPG':
-        return const Color(0xFFF87171); 
+        return const Color(0xFFF87171);
       default:
-        return const Color(0xFF4ADE80); 
+        return const Color(0xFF4ADE80);
     }
   }
 }

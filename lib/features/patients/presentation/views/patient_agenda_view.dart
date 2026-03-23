@@ -31,16 +31,36 @@ class PatientAgendaView extends StatelessWidget {
                     children: [
                       Text(
                         "Agenda do Paciente",
-                        style: TextStyle(fontSize: isDesktop ? 26 : 22, fontWeight: FontWeight.w900, color: textMain),
+                        style: TextStyle(
+                          fontSize: isDesktop ? 26 : 22,
+                          fontWeight: FontWeight.w900,
+                          color: textMain,
+                        ),
                       ),
                       ElevatedButton.icon(
                         onPressed: () {},
-                        icon: const Icon(Icons.add_rounded, color: Colors.white),
-                        label: isDesktop ? const Text("AGENDAR", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)) : const Text(""),
+                        icon: const Icon(
+                          Icons.add_rounded,
+                          color: Colors.white,
+                        ),
+                        label: isDesktop
+                            ? const Text(
+                                "AGENDAR",
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
+                              )
+                            : const Text(""),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFF7C3AED),
-                          padding: EdgeInsets.symmetric(horizontal: isDesktop ? 24 : 16, vertical: 16),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          padding: EdgeInsets.symmetric(
+                            horizontal: isDesktop ? 24 : 16,
+                            vertical: 16,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
                         ),
                       ),
                     ],
@@ -113,7 +133,9 @@ class PatientAgendaView extends StatelessWidget {
                   color: color,
                   shape: BoxShape.circle,
                   border: Border.all(color: Colors.white, width: 3),
-                  boxShadow: [BoxShadow(color: color.withOpacity(0.3), blurRadius: 6)],
+                  boxShadow: [
+                    BoxShadow(color: color.withOpacity(0.3), blurRadius: 6),
+                  ],
                 ),
               ),
               if (!isLast)
@@ -137,7 +159,12 @@ class PatientAgendaView extends StatelessWidget {
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(color: borderColor),
-                boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 10)],
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.02),
+                    blurRadius: 10,
+                  ),
+                ],
               ),
               child: Row(
                 children: [
@@ -159,14 +186,28 @@ class PatientAgendaView extends StatelessWidget {
                       children: [
                         Text(
                           title,
-                          style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16, color: textMain),
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w800,
+                            fontSize: 16,
+                            color: textMain,
+                          ),
                         ),
                         const SizedBox(height: 4),
                         Row(
                           children: [
-                            const Icon(Icons.access_time_rounded, size: 14, color: textSecondary),
+                            const Icon(
+                              Icons.access_time_rounded,
+                              size: 14,
+                              color: textSecondary,
+                            ),
                             const SizedBox(width: 4),
-                            Text("$date às $time", style: const TextStyle(color: textSecondary, fontSize: 13)),
+                            Text(
+                              "$date às $time",
+                              style: const TextStyle(
+                                color: textSecondary,
+                                fontSize: 13,
+                              ),
+                            ),
                           ],
                         ),
                       ],
@@ -175,14 +216,22 @@ class PatientAgendaView extends StatelessWidget {
 
                   // Badge de Status
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
                     decoration: BoxDecoration(
                       color: color.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Text(
                       status,
-                      style: TextStyle(color: color, fontWeight: FontWeight.w900, fontSize: 11, letterSpacing: 0.5),
+                      style: TextStyle(
+                        color: color,
+                        fontWeight: FontWeight.w900,
+                        fontSize: 11,
+                        letterSpacing: 0.5,
+                      ),
                     ),
                   ),
                 ],

@@ -11,21 +11,20 @@ class ApiClient {
     required AuthInterceptor authInterceptor,
     required LoggerInterceptor loggerInterceptor,
   }) {
-    dio = Dio(BaseOptions(
-      baseUrl: 'http://localhost:3000/v1', // Substitua pela URL da sua API
-      connectTimeout: const Duration(seconds: 15),
-      receiveTimeout: const Duration(seconds: 15),
-      sendTimeout: const Duration(seconds: 15),
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-      },
-    ));
+    dio = Dio(
+      BaseOptions(
+        baseUrl: 'http://localhost:3000/v1', // Substitua pela URL da sua API
+        connectTimeout: const Duration(seconds: 15),
+        receiveTimeout: const Duration(seconds: 15),
+        sendTimeout: const Duration(seconds: 15),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+      ),
+    );
 
     // Adiciona os interceptors
-    dio.interceptors.addAll([
-      authInterceptor,
-      loggerInterceptor,
-    ]);
+    dio.interceptors.addAll([authInterceptor, loggerInterceptor]);
   }
 }

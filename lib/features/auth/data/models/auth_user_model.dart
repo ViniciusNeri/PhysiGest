@@ -19,11 +19,7 @@ class AuthUserModel extends AuthUser {
 
   Map<String, dynamic> toJson() {
     return {
-      'user': {
-        'id': id,
-        'name': name,
-        'email': email,
-      },
+      'user': {'id': id, 'name': name, 'email': email},
       'token': token,
     };
   }

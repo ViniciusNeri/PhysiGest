@@ -69,7 +69,10 @@ class ForgotPasswordView extends StatelessWidget {
               child: ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 450),
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 48),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 40,
+                    vertical: 48,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(24),
@@ -90,7 +93,10 @@ class ForgotPasswordView extends StatelessWidget {
                         alignment: Alignment.centerLeft,
                         child: IconButton(
                           onPressed: () => context.pop(),
-                          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+                          icon: const Icon(
+                            Icons.arrow_back_ios_new_rounded,
+                            size: 20,
+                          ),
                           color: Colors.black54,
                           padding: EdgeInsets.zero,
                           constraints: const BoxConstraints(),
@@ -152,13 +158,17 @@ class ForgotPasswordView extends StatelessWidget {
                               : ElevatedButton(
                                   onPressed: state.isValid
                                       ? () => context
-                                          .read<ForgotPasswordBloc>()
-                                          .add(const ForgotPasswordSubmitted())
+                                            .read<ForgotPasswordBloc>()
+                                            .add(
+                                              const ForgotPasswordSubmitted(),
+                                            )
                                       : null,
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: primary,
                                     foregroundColor: Colors.white,
-                                    padding: const EdgeInsets.symmetric(vertical: 18),
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 18,
+                                    ),
                                     shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(12),
                                     ),

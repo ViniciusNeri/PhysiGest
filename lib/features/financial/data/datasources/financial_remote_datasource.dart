@@ -17,7 +17,10 @@ class FinancialRemoteDataSource implements IFinancialRemoteDataSource {
   FinancialRemoteDataSource(this.apiClient);
 
   @override
-  Future<List<TransactionModel>> getTransactions(String month, String year) async {
+  Future<List<TransactionModel>> getTransactions(
+    String month,
+    String year,
+  ) async {
     try {
       final response = await apiClient.dio.get(
         '/financial/transactions',
@@ -26,7 +29,8 @@ class FinancialRemoteDataSource implements IFinancialRemoteDataSource {
       final list = response.data as List<dynamic>;
       return list.map((json) => TransactionModel.fromJson(json)).toList();
     } on DioException catch (e) {
-      final errorMsg = e.response?.data?['message'] ?? 'Erro ao buscar transações.';
+      final errorMsg =
+          e.response?.data?['message'] ?? 'Erro ao buscar transações.';
       throw Exception(errorMsg);
     } catch (e) {
       throw Exception('Erro desconhecido ao buscar transações: $e');
@@ -42,7 +46,8 @@ class FinancialRemoteDataSource implements IFinancialRemoteDataSource {
       );
       return FinancialSummaryModel.fromJson(response.data);
     } on DioException catch (e) {
-      final errorMsg = e.response?.data?['message'] ?? 'Erro ao buscar resumo financeiro.';
+      final errorMsg =
+          e.response?.data?['message'] ?? 'Erro ao buscar resumo financeiro.';
       throw Exception(errorMsg);
     } catch (e) {
       throw Exception('Erro desconhecido ao buscar resumo financeiro: $e');
@@ -50,7 +55,9 @@ class FinancialRemoteDataSource implements IFinancialRemoteDataSource {
   }
 
   @override
-  Future<TransactionModel> createTransaction(TransactionModel transaction) async {
+  Future<TransactionModel> createTransaction(
+    TransactionModel transaction,
+  ) async {
     try {
       final response = await apiClient.dio.post(
         '/financial/transactions',
@@ -58,7 +65,8 @@ class FinancialRemoteDataSource implements IFinancialRemoteDataSource {
       );
       return TransactionModel.fromJson(response.data);
     } on DioException catch (e) {
-      final errorMsg = e.response?.data?['message'] ?? 'Erro ao criar transação.';
+      final errorMsg =
+          e.response?.data?['message'] ?? 'Erro ao criar transação.';
       throw Exception(errorMsg);
     } catch (e) {
       throw Exception('Erro desconhecido ao criar transação: $e');
@@ -70,7 +78,8 @@ class FinancialRemoteDataSource implements IFinancialRemoteDataSource {
     try {
       await apiClient.dio.delete('/financial/transactions/$id');
     } on DioException catch (e) {
-      final errorMsg = e.response?.data?['message'] ?? 'Erro ao excluir transação.';
+      final errorMsg =
+          e.response?.data?['message'] ?? 'Erro ao excluir transação.';
       throw Exception(errorMsg);
     } catch (e) {
       throw Exception('Erro desconhecido ao excluir transação: $e');

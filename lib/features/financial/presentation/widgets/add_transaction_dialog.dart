@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:physigest/core/theme/app_theme.dart';
-import 'package:intl/intl.dart';
 
 class AddTransactionDialog extends StatefulWidget {
   const AddTransactionDialog({super.key});
@@ -20,7 +19,9 @@ class _AddTransactionDialogState extends State<AddTransactionDialog> {
   // Controladores para Receita
   String _paymentMethod = 'Pix';
   String _revenueType = 'Quantidade de Sessões';
-  final TextEditingController _sessionCountController = TextEditingController(text: '1');
+  final TextEditingController _sessionCountController = TextEditingController(
+    text: '1',
+  );
 
   // Controladores para Despesa
   String _expenseType = 'Fixa';
@@ -36,11 +37,12 @@ class _AddTransactionDialogState extends State<AddTransactionDialog> {
   @override
   Widget build(BuildContext context) {
     final bool isMobile = MediaQuery.of(context).size.width < 600;
-    
+
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
       backgroundColor: Colors.white,
-      surfaceTintColor: Colors.transparent, // Remove o brilho de material3 sobre a cor
+      surfaceTintColor:
+          Colors.transparent, // Remove o brilho de material3 sobre a cor
       insetPadding: EdgeInsets.all(isMobile ? 16 : 40),
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 500),
@@ -65,7 +67,10 @@ class _AddTransactionDialogState extends State<AddTransactionDialog> {
                       ),
                     ),
                     IconButton(
-                      icon: const Icon(Icons.close_rounded, color: Colors.black45),
+                      icon: const Icon(
+                        Icons.close_rounded,
+                        color: Colors.black45,
+                      ),
                       onPressed: () => Navigator.of(context).pop(),
                       padding: EdgeInsets.zero,
                       constraints: const BoxConstraints(),
@@ -93,7 +98,8 @@ class _AddTransactionDialogState extends State<AddTransactionDialog> {
                           title: 'Receita',
                           isActive: _transactionType == 'revenue',
                           activeColor: const Color(0xFF10B981), // Verde Sucesso
-                          onTap: () => setState(() => _transactionType = 'revenue'),
+                          onTap: () =>
+                              setState(() => _transactionType = 'revenue'),
                         ),
                       ),
                       const SizedBox(width: 4),
@@ -102,7 +108,8 @@ class _AddTransactionDialogState extends State<AddTransactionDialog> {
                           title: 'Despesa',
                           isActive: _transactionType == 'expense',
                           activeColor: const Color(0xFFEF4444), // Vermelho Erro
-                          onTap: () => setState(() => _transactionType = 'expense'),
+                          onTap: () =>
+                              setState(() => _transactionType = 'expense'),
                         ),
                       ),
                     ],
@@ -111,7 +118,10 @@ class _AddTransactionDialogState extends State<AddTransactionDialog> {
                 const SizedBox(height: 32),
 
                 // FORMULÁRIO DINÂMICO
-                if (_transactionType == 'revenue') _buildRevenueForm() else _buildExpenseForm(),
+                if (_transactionType == 'revenue')
+                  _buildRevenueForm()
+                else
+                  _buildExpenseForm(),
 
                 const SizedBox(height: 40),
 
@@ -123,24 +133,44 @@ class _AddTransactionDialogState extends State<AddTransactionDialog> {
                       onPressed: () => Navigator.of(context).pop(),
                       style: TextButton.styleFrom(
                         foregroundColor: const Color(0xFF64748B),
-                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 18),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 24,
+                          vertical: 18,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                       ),
-                      child: const Text('Cancelar', style: TextStyle(fontWeight: FontWeight.bold)),
+                      child: const Text(
+                        'Cancelar',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
                     ),
                     const SizedBox(width: 12),
                     ElevatedButton(
                       onPressed: _saveTransaction,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: _transactionType == 'revenue' ? const Color(0xFF10B981) : const Color(0xFFEF4444),
+                        backgroundColor: _transactionType == 'revenue'
+                            ? const Color(0xFF10B981)
+                            : const Color(0xFFEF4444),
                         foregroundColor: Colors.white,
                         elevation: 0,
-                        padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 18),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 32,
+                          vertical: 18,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                       ),
                       child: Text(
-                        _transactionType == 'revenue' ? 'Salvar Receita' : 'Salvar Despesa',
-                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                        _transactionType == 'revenue'
+                            ? 'Salvar Receita'
+                            : 'Salvar Despesa',
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
                       ),
                     ),
                   ],
@@ -168,7 +198,13 @@ class _AddTransactionDialogState extends State<AddTransactionDialog> {
           color: isActive ? Colors.white : Colors.transparent,
           borderRadius: BorderRadius.circular(12),
           boxShadow: isActive
-              ? [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 4, offset: const Offset(0, 2))]
+              ? [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.04),
+                    blurRadius: 4,
+                    offset: const Offset(0, 2),
+                  ),
+                ]
               : [],
         ),
         alignment: Alignment.center,
@@ -206,7 +242,9 @@ class _AddTransactionDialogState extends State<AddTransactionDialog> {
                 hint: '0,00',
                 controller: _amountController,
                 icon: Icons.attach_money_rounded,
-                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
+                ),
               ),
             ),
             const SizedBox(width: 16),
@@ -215,7 +253,13 @@ class _AddTransactionDialogState extends State<AddTransactionDialog> {
               child: _buildDropdown(
                 label: 'Forma de Pagamento',
                 value: _paymentMethod,
-                items: ['Dinheiro', 'Débito', 'Crédito', 'Pix', 'Transferência'],
+                items: [
+                  'Dinheiro',
+                  'Débito',
+                  'Crédito',
+                  'Pix',
+                  'Transferência',
+                ],
                 onChanged: (val) => setState(() => _paymentMethod = val!),
               ),
             ),
@@ -225,7 +269,12 @@ class _AddTransactionDialogState extends State<AddTransactionDialog> {
         _buildDropdown(
           label: 'Plano / Tipo de Cobrança',
           value: _revenueType,
-          items: ['Quantidade de Sessões', 'Mensalidade', 'Pacote Fechado', 'Consulta Avulsa'],
+          items: [
+            'Quantidade de Sessões',
+            'Mensalidade',
+            'Pacote Fechado',
+            'Consulta Avulsa',
+          ],
           onChanged: (val) => setState(() => _revenueType = val!),
         ),
         if (_revenueType == 'Quantidade de Sessões') ...[
@@ -237,7 +286,7 @@ class _AddTransactionDialogState extends State<AddTransactionDialog> {
             icon: Icons.tag_rounded,
             keyboardType: TextInputType.number,
           ),
-        ]
+        ],
       ],
     );
   }
@@ -265,7 +314,9 @@ class _AddTransactionDialogState extends State<AddTransactionDialog> {
                 hint: '0,00',
                 controller: _amountController,
                 icon: Icons.money_off_csred_rounded,
-                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
+                ),
               ),
             ),
             const SizedBox(width: 16),
@@ -273,7 +324,8 @@ class _AddTransactionDialogState extends State<AddTransactionDialog> {
               flex: 3,
               child: _buildDropdown(
                 label: 'Forma de Pagamento',
-                value: _paymentMethod, // Reutilizando a variável de método de pagamento
+                value:
+                    _paymentMethod, // Reutilizando a variável de método de pagamento
                 items: ['Dinheiro', 'Débito', 'Crédito', 'Pix', 'Boleto'],
                 onChanged: (val) => setState(() => _paymentMethod = val!),
               ),
@@ -299,7 +351,11 @@ class _AddTransactionDialogState extends State<AddTransactionDialog> {
       padding: const EdgeInsets.only(bottom: 8.0, left: 4),
       child: Text(
         text,
-        style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13, color: Color(0xFF475569)),
+        style: const TextStyle(
+          fontWeight: FontWeight.w700,
+          fontSize: 13,
+          color: Color(0xFF475569),
+        ),
       ),
     );
   }
@@ -324,14 +380,20 @@ class _AddTransactionDialogState extends State<AddTransactionDialog> {
             prefixIcon: Icon(icon, size: 20, color: const Color(0xFF94A3B8)),
             filled: true,
             fillColor: const Color(0xFFF8FAFC),
-            contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+            contentPadding: const EdgeInsets.symmetric(
+              vertical: 16,
+              horizontal: 16,
+            ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: AppTheme.primaryColor, width: 1.5),
+              borderSide: const BorderSide(
+                color: AppTheme.primaryColor,
+                width: 1.5,
+              ),
             ),
             hintStyle: const TextStyle(color: Color(0xFF94A3B8), fontSize: 14),
           ),
@@ -361,13 +423,17 @@ class _AddTransactionDialogState extends State<AddTransactionDialog> {
             child: DropdownButton<String>(
               value: value,
               isExpanded: true,
-              icon: const Icon(Icons.keyboard_arrow_down_rounded, color: Color(0xFF94A3B8)),
-              style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: Color(0xFF1E293B)),
+              icon: const Icon(
+                Icons.keyboard_arrow_down_rounded,
+                color: Color(0xFF94A3B8),
+              ),
+              style: const TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFF1E293B),
+              ),
               items: items.map((String item) {
-                return DropdownMenuItem<String>(
-                  value: item,
-                  child: Text(item),
-                );
+                return DropdownMenuItem<String>(value: item, child: Text(item));
               }).toList(),
               onChanged: onChanged,
             ),
@@ -398,9 +464,13 @@ class _AddTransactionDialogState extends State<AddTransactionDialog> {
       'description': description,
       'amount': amount,
       'paymentMethod': _paymentMethod,
-      'billingType': _transactionType == 'revenue' ? _revenueType : _expenseType,
-      'sessions': _transactionType == 'revenue' && _revenueType == 'Quantidade de Sessões' 
-          ? _sessionCountController.text 
+      'billingType': _transactionType == 'revenue'
+          ? _revenueType
+          : _expenseType,
+      'sessions':
+          _transactionType == 'revenue' &&
+              _revenueType == 'Quantidade de Sessões'
+          ? _sessionCountController.text
           : null,
     });
   }

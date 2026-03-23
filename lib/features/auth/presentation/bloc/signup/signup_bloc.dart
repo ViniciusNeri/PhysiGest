@@ -25,22 +25,42 @@ class SignUpBloc extends Bloc<SignUpEvent, SignUpState> {
     emit(state.copyWith(email: event.email, status: SignUpStatus.initial));
   }
 
-  void _onPasswordChanged(SignUpPasswordChanged event, Emitter<SignUpState> emit) {
-    emit(state.copyWith(password: event.password, status: SignUpStatus.initial));
+  void _onPasswordChanged(
+    SignUpPasswordChanged event,
+    Emitter<SignUpState> emit,
+  ) {
+    emit(
+      state.copyWith(password: event.password, status: SignUpStatus.initial),
+    );
   }
 
-  void _onConfirmPasswordChanged(SignUpConfirmPasswordChanged event, Emitter<SignUpState> emit) {
-    emit(state.copyWith(confirmPassword: event.confirmPassword, status: SignUpStatus.initial));
+  void _onConfirmPasswordChanged(
+    SignUpConfirmPasswordChanged event,
+    Emitter<SignUpState> emit,
+  ) {
+    emit(
+      state.copyWith(
+        confirmPassword: event.confirmPassword,
+        status: SignUpStatus.initial,
+      ),
+    );
   }
 
-  Future<void> _onSubmitted(SignUpSubmitted event, Emitter<SignUpState> emit) async {
+  Future<void> _onSubmitted(
+    SignUpSubmitted event,
+    Emitter<SignUpState> emit,
+  ) async {
     if (!state.isValid) return;
 
     emit(state.copyWith(status: SignUpStatus.loading));
     try {
       // Chama o caso de uso que conecta na API
-      final user = await _signUpUseCase(state.name, state.email, state.password);
-      
+      final user = await _signUpUseCase(
+        state.name,
+        state.email,
+        state.password,
+      );
+
       emit(state.copyWith(status: SignUpStatus.success));
     } catch (e) {
       // Remove o prefixo "Exception:" da mensagem para o usuário

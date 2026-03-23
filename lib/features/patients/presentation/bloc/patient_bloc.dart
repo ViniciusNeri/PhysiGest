@@ -13,7 +13,10 @@ class PatientBloc extends Bloc<PatientEvent, PatientState> {
     on<AddPhotoToPatient>(_onAddPhotoToPatient);
   }
 
-  Future<void> _onLoadPatients(LoadPatients event, Emitter<PatientState> emit) async {
+  Future<void> _onLoadPatients(
+    LoadPatients event,
+    Emitter<PatientState> emit,
+  ) async {
     emit(state.copyWith(status: PatientStatus.loading));
     try {
       await Future.delayed(const Duration(milliseconds: 600)); // Mock API call
@@ -25,7 +28,9 @@ class PatientBloc extends Bloc<PatientEvent, PatientState> {
           phone: '(11) 98765-4321',
           birthDate: '15/05/1985',
           occupation: 'Professora',
-          anamnesis: Anamnesis(mainComplaint: 'Dor lombar ao ficar muito tempo de pé.'),
+          anamnesis: Anamnesis(
+            mainComplaint: 'Dor lombar ao ficar muito tempo de pé.',
+          ),
         ),
         const Patient(
           id: '2',
@@ -34,12 +39,21 @@ class PatientBloc extends Bloc<PatientEvent, PatientState> {
           phone: '(11) 91234-5678',
           birthDate: '10/11/1990',
           occupation: 'Engenheiro',
-          anamnesis: Anamnesis(mainComplaint: 'Recuperação pós-operatória LCA joelho direito.'),
+          anamnesis: Anamnesis(
+            mainComplaint: 'Recuperação pós-operatória LCA joelho direito.',
+          ),
         ),
       ];
-      emit(state.copyWith(status: PatientStatus.success, patients: mockPatients));
+      emit(
+        state.copyWith(status: PatientStatus.success, patients: mockPatients),
+      );
     } catch (e) {
-      emit(state.copyWith(status: PatientStatus.failure, errorMessage: 'Erro ao carregar pacientes.'));
+      emit(
+        state.copyWith(
+          status: PatientStatus.failure,
+          errorMessage: 'Erro ao carregar pacientes.',
+        ),
+      );
     }
   }
 
@@ -48,11 +62,16 @@ class PatientBloc extends Bloc<PatientEvent, PatientState> {
   }
 
   void _onUpdatePatient(UpdatePatient event, Emitter<PatientState> emit) {
-    final updatedList = state.patients.map((p) => p.id == event.patient.id ? event.patient : p).toList();
+    final updatedList = state.patients
+        .map((p) => p.id == event.patient.id ? event.patient : p)
+        .toList();
     emit(state.copyWith(patients: updatedList));
   }
 
-  void _onAddPhotoToPatient(AddPhotoToPatient event, Emitter<PatientState> emit) {
+  void _onAddPhotoToPatient(
+    AddPhotoToPatient event,
+    Emitter<PatientState> emit,
+  ) {
     final updatedList = state.patients.map((p) {
       if (p.id == event.patientId) {
         final newPhotos = List<String>.from(p.photoPaths)..add(event.photoPath);

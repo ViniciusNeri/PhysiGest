@@ -19,7 +19,6 @@ class ForgotPasswordSubmitted extends ForgotPasswordEvent {
   const ForgotPasswordSubmitted();
 }
 
-
 class NewPasswordSubmitted extends ForgotPasswordEvent {
   final String token;
   final String newPassword;

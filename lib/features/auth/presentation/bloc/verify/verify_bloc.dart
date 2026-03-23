@@ -25,10 +25,12 @@ class VerifyBloc extends Bloc<VerifyEvent, VerifyState> {
         final user = await _confirmSignUpUseCase(event.email, state.code);
         emit(state.copyWith(status: VerifyStatus.success));
       } catch (e) {
-        emit(state.copyWith(
-          status: VerifyStatus.failure, 
-          errorMessage: 'Código inválido ou expirado.'
-        ));
+        emit(
+          state.copyWith(
+            status: VerifyStatus.failure,
+            errorMessage: 'Código inválido ou expirado.',
+          ),
+        );
       }
     });
 
@@ -39,7 +41,12 @@ class VerifyBloc extends Bloc<VerifyEvent, VerifyState> {
         await Future.delayed(const Duration(seconds: 2)); // Simulação
         emit(state.copyWith(status: VerifyStatus.success));
       } catch (e) {
-        emit(state.copyWith(status: VerifyStatus.failure, errorMessage: 'Erro ao reenviar e-mail.'));
+        emit(
+          state.copyWith(
+            status: VerifyStatus.failure,
+            errorMessage: 'Erro ao reenviar e-mail.',
+          ),
+        );
       }
     });
   }

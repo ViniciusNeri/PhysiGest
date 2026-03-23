@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:physigest/core/di/injection.dart';
 import 'package:physigest/features/patients/domain/models/patient.dart';
@@ -17,7 +16,7 @@ class EditPatientDialog extends StatefulWidget {
 
 class _EditPatientDialogState extends State<EditPatientDialog> {
   final _formKey = GlobalKey<FormState>();
-  
+
   // Controllers
   late TextEditingController _nameCtrl;
   late TextEditingController _emailCtrl;
@@ -34,8 +33,12 @@ class _EditPatientDialogState extends State<EditPatientDialog> {
     _nameCtrl = TextEditingController(text: widget.patient?.name ?? '');
     _emailCtrl = TextEditingController(text: widget.patient?.email ?? '');
     _phoneCtrl = TextEditingController(text: widget.patient?.phone ?? '');
-    _birthDateCtrl = TextEditingController(text: widget.patient?.birthDate ?? '');
-    _occupationCtrl = TextEditingController(text: widget.patient?.occupation ?? '');
+    _birthDateCtrl = TextEditingController(
+      text: widget.patient?.birthDate ?? '',
+    );
+    _occupationCtrl = TextEditingController(
+      text: widget.patient?.occupation ?? '',
+    );
   }
 
   @override
@@ -51,7 +54,9 @@ class _EditPatientDialogState extends State<EditPatientDialog> {
   void _savePatient() {
     if (_formKey.currentState!.validate()) {
       final newPatient = Patient(
-        id: widget.patient?.id ?? DateTime.now().millisecondsSinceEpoch.toString(),
+        id:
+            widget.patient?.id ??
+            DateTime.now().millisecondsSinceEpoch.toString(),
         name: _nameCtrl.text,
         email: _emailCtrl.text,
         phone: _phoneCtrl.text,
@@ -97,22 +102,30 @@ class _EditPatientDialogState extends State<EditPatientDialog> {
                       Expanded(
                         child: Text(
                           isEditing ? 'Editar Cadastro' : 'Novo Paciente',
-                          style: TextStyle(fontSize: isDesktop ? 24 : 20, fontWeight: FontWeight.w900, color: const Color(0xFF0F172A)),
+                          style: TextStyle(
+                            fontSize: isDesktop ? 24 : 20,
+                            fontWeight: FontWeight.w900,
+                            color: const Color(0xFF0F172A),
+                          ),
                         ),
                       ),
                       IconButton(
-                        icon: const Icon(Icons.close_rounded, color: Color(0xFF94A3B8)),
+                        icon: const Icon(
+                          Icons.close_rounded,
+                          color: Color(0xFF94A3B8),
+                        ),
                         onPressed: () => context.pop(),
                       ),
                     ],
                   ),
                   const SizedBox(height: 24),
-                  
+
                   _buildTextFieldCard(
                     label: 'Nome Completo',
                     controller: _nameCtrl,
                     icon: Icons.person_outline,
-                    validator: (v) => v == null || v.isEmpty ? 'Campo obrigatório' : null,
+                    validator: (v) =>
+                        v == null || v.isEmpty ? 'Campo obrigatório' : null,
                   ),
                   const SizedBox(height: 16),
                   _buildTextFieldCard(
@@ -122,7 +135,7 @@ class _EditPatientDialogState extends State<EditPatientDialog> {
                     keyboardType: TextInputType.emailAddress,
                   ),
                   const SizedBox(height: 16),
-                  
+
                   // Responsivo: Lado a Lado ou Um Embaixo do outro
                   LayoutBuilder(
                     builder: (context, constraints) {
@@ -175,7 +188,7 @@ class _EditPatientDialogState extends State<EditPatientDialog> {
                     icon: Icons.work_outline,
                   ),
                   const SizedBox(height: 32),
-                  
+
                   if (isDesktop)
                     Row(
                       mainAxisAlignment: MainAxisAlignment.end,
@@ -183,24 +196,44 @@ class _EditPatientDialogState extends State<EditPatientDialog> {
                         TextButton(
                           onPressed: () => context.pop(),
                           style: TextButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 24,
+                              vertical: 16,
+                            ),
                             foregroundColor: const Color(0xFF64748B),
                           ),
-                          child: const Text('Cancelar', style: TextStyle(fontWeight: FontWeight.bold)),
+                          child: const Text(
+                            'Cancelar',
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
                         ),
                         const SizedBox(width: 16),
                         ElevatedButton.icon(
                           onPressed: _savePatient,
                           style: ElevatedButton.styleFrom(
                             backgroundColor: azulPetroleo,
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 24,
+                              vertical: 16,
+                            ),
                             elevation: 0,
                           ),
-                          icon: const Icon(Icons.save_rounded, color: Colors.white, size: 20),
+                          icon: const Icon(
+                            Icons.save_rounded,
+                            color: Colors.white,
+                            size: 20,
+                          ),
                           label: Text(
-                            isEditing ? 'Salvar Alterações' : 'Cadastrar Paciente', 
-                            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)
+                            isEditing
+                                ? 'Salvar Alterações'
+                                : 'Cadastrar Paciente',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ),
                       ],
@@ -213,14 +246,23 @@ class _EditPatientDialogState extends State<EditPatientDialog> {
                           onPressed: _savePatient,
                           style: ElevatedButton.styleFrom(
                             backgroundColor: azulPetroleo,
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
                             padding: const EdgeInsets.symmetric(vertical: 16),
                             elevation: 0,
                           ),
-                          icon: const Icon(Icons.save_rounded, color: Colors.white, size: 20),
+                          icon: const Icon(
+                            Icons.save_rounded,
+                            color: Colors.white,
+                            size: 20,
+                          ),
                           label: Text(
-                            isEditing ? 'Salvar Alterações' : 'Cadastrar', 
-                            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)
+                            isEditing ? 'Salvar Alterações' : 'Cadastrar',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ),
                         const SizedBox(height: 12),
@@ -230,7 +272,10 @@ class _EditPatientDialogState extends State<EditPatientDialog> {
                             padding: const EdgeInsets.symmetric(vertical: 16),
                             foregroundColor: const Color(0xFF64748B),
                           ),
-                          child: const Text('Cancelar', style: TextStyle(fontWeight: FontWeight.bold)),
+                          child: const Text(
+                            'Cancelar',
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
                         ),
                       ],
                     ),
@@ -265,7 +310,10 @@ class _EditPatientDialogState extends State<EditPatientDialog> {
           labelStyle: const TextStyle(color: Color(0xFF94A3B8)),
           prefixIcon: Icon(icon, color: const Color(0xFF0D9488)),
           border: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 16,
+          ),
         ),
       ),
     );

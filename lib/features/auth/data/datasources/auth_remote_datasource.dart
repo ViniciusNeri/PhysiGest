@@ -25,15 +25,14 @@ class AuthRemoteDataSource implements IAuthRemoteDataSource {
     try {
       final response = await apiClient.dio.post(
         '/auth/sessions',
-        data: {
-          'email': email,
-          'password': password,
-        },
+        data: {'email': email, 'password': password},
       );
 
       return AuthUserModel.fromJson(response.data);
     } on DioException catch (e) {
-      final errorMsg = e.response?.data?['message'] ?? 'Erro de rede ou servidor ao realizar login.';
+      final errorMsg =
+          e.response?.data?['message'] ??
+          'Erro de rede ou servidor ao realizar login.';
       throw Exception(errorMsg);
     } catch (e) {
       throw Exception('Erro desconhecido na tentativa de autenticação: $e');
@@ -43,12 +42,11 @@ class AuthRemoteDataSource implements IAuthRemoteDataSource {
   @override
   Future<void> forgotPassword(String email) async {
     try {
-      await apiClient.dio.post(
-        '/auth/forgot-password',
-        data: {'email': email},
-      );
+      await apiClient.dio.post('/auth/forgot-password', data: {'email': email});
     } on DioException catch (e) {
-      final errorMsg = e.response?.data?['message'] ?? 'Erro ao solicitar redefinição de senha.';
+      final errorMsg =
+          e.response?.data?['message'] ??
+          'Erro ao solicitar redefinição de senha.';
       throw Exception(errorMsg);
     } catch (e) {
       throw Exception('Erro desconhecido na tentativa de redefinir senha: $e');
@@ -63,7 +61,8 @@ class AuthRemoteDataSource implements IAuthRemoteDataSource {
         data: {'token': token, 'password': password},
       );
     } on DioException catch (e) {
-      final errorMsg = e.response?.data?['message'] ?? 'Erro ao redefinir senha.';
+      final errorMsg =
+          e.response?.data?['message'] ?? 'Erro ao redefinir senha.';
       throw Exception(errorMsg);
     } catch (e) {
       throw Exception('Erro desconhecido na tentativa de redefinir senha: $e');
@@ -75,7 +74,8 @@ class AuthRemoteDataSource implements IAuthRemoteDataSource {
     try {
       await apiClient.dio.post('/auth/logout');
     } on DioException catch (e) {
-      final errorMsg = e.response?.data?['message'] ?? 'Erro ao realizar logout.';
+      final errorMsg =
+          e.response?.data?['message'] ?? 'Erro ao realizar logout.';
       throw Exception(errorMsg);
     } catch (e) {
       throw Exception('Erro desconhecido na tentativa de logout: $e');
@@ -83,7 +83,11 @@ class AuthRemoteDataSource implements IAuthRemoteDataSource {
   }
 
   @override
-  Future<AuthUserModel> signUp(String name, String email, String password) async {
+  Future<AuthUserModel> signUp(
+    String name,
+    String email,
+    String password,
+  ) async {
     try {
       final response = await apiClient.dio.post(
         '/auth/signup',
@@ -91,7 +95,8 @@ class AuthRemoteDataSource implements IAuthRemoteDataSource {
       );
       return AuthUserModel.fromJson(response.data);
     } on DioException catch (e) {
-      final errorMsg = e.response?.data?['message'] ?? 'Erro ao registrar novo usuário.';
+      final errorMsg =
+          e.response?.data?['message'] ?? 'Erro ao registrar novo usuário.';
       throw Exception(errorMsg);
     } catch (e) {
       throw Exception('Erro desconhecido na tentativa de registro: $e');
@@ -99,7 +104,10 @@ class AuthRemoteDataSource implements IAuthRemoteDataSource {
   }
 
   @override
-  Future<AuthUserModel> confirmSignUp(String email, String confirmationCode) async {
+  Future<AuthUserModel> confirmSignUp(
+    String email,
+    String confirmationCode,
+  ) async {
     try {
       final response = await apiClient.dio.post(
         '/auth/signup/confirm',
@@ -107,7 +115,8 @@ class AuthRemoteDataSource implements IAuthRemoteDataSource {
       );
       return AuthUserModel.fromJson(response.data);
     } on DioException catch (e) {
-      final errorMsg = e.response?.data?['message'] ?? 'Erro ao confirmar registro.';
+      final errorMsg =
+          e.response?.data?['message'] ?? 'Erro ao confirmar registro.';
       throw Exception(errorMsg);
     } catch (e) {
       throw Exception('Erro desconhecido na tentativa de confirmação: $e');

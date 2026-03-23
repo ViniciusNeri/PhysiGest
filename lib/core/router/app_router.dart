@@ -18,13 +18,14 @@ import 'package:physigest/core/di/injection.dart';
 
 class AppRouter {
   static final GoRouter router = GoRouter(
-    initialLocation: '/login',redirect: (context, state) {
+    initialLocation: '/login',
+    redirect: (context, state) {
       final publicRoutes = [
         '/login',
         '/signup',
         '/forgot-password',
         '/reset-password',
-        '/verify'
+        '/verify',
       ];
 
       final localStorage = getIt<LocalStorage>();
@@ -43,10 +44,7 @@ class AppRouter {
       return null;
     },
     routes: [
-      GoRoute(
-        path: '/login',
-        builder: (context, state) => const LoginScreen(),
-      ),
+      GoRoute(path: '/login', builder: (context, state) => const LoginScreen()),
 
       GoRoute(
         path: '/signup',
@@ -55,7 +53,7 @@ class AppRouter {
       GoRoute(
         path: '/verify',
         builder: (context, state) {
-          final email = state.extra as String; 
+          final email = state.extra as String;
           return VerificationScreen(email: email);
         },
       ),
@@ -66,7 +64,7 @@ class AppRouter {
       GoRoute(
         path: '/reset-password',
         builder: (context, state) {
-          final token = state.uri.queryParameters['token'] ?? ''; 
+          final token = state.uri.queryParameters['token'] ?? '';
           return NewPasswordScreen(token: token);
         },
       ),
@@ -93,10 +91,7 @@ class AppRouter {
           return PatientProfileScreen(patient: patient as dynamic);
         },
       ),
-      GoRoute(
-        path: '/',
-        builder: (context, state) => const HomeScreen(),
-      ),
+      GoRoute(path: '/', builder: (context, state) => const HomeScreen()),
       GoRoute(
         path: '/settings',
         builder: (context, state) => const SettingsScreen(),
@@ -114,4 +109,3 @@ class AppRouter {
     ],
   );
 }
-

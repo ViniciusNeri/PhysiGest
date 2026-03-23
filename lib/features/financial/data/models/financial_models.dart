@@ -49,10 +49,21 @@ class FinancialSummaryModel extends FinancialSummary {
 
   factory FinancialSummaryModel.fromJson(Map<String, dynamic> json) {
     return FinancialSummaryModel(
-      faturamentoTotal: (json['faturamentoTotal'] ?? json['totalRevenue'] as num?)?.toDouble() ?? 0.0,
-      contasReceber: (json['contasReceber'] ?? json['pendingPayments'] as num?)?.toDouble() ?? 0.0,
-      despesasFixas: (json['despesasFixas'] ?? json['fixedExpenses'] as num?)?.toDouble() ?? 0.0,
-      lucroLiquido: (json['lucroLiquido'] ?? json['netProfit'] as num?)?.toDouble() ?? 0.0,
+      faturamentoTotal:
+          (json['faturamentoTotal'] ?? json['totalRevenue'] as num?)
+              ?.toDouble() ??
+          0.0,
+      contasReceber:
+          (json['contasReceber'] ?? json['pendingPayments'] as num?)
+              ?.toDouble() ??
+          0.0,
+      despesasFixas:
+          (json['despesasFixas'] ?? json['fixedExpenses'] as num?)
+              ?.toDouble() ??
+          0.0,
+      lucroLiquido:
+          (json['lucroLiquido'] ?? json['netProfit'] as num?)?.toDouble() ??
+          0.0,
     );
   }
 }

@@ -29,7 +29,7 @@ class _ChangePasswordDialogState extends State<ChangePasswordDialog> {
       if (mounted) {
         setState(() => _isLoading = false);
         Navigator.of(context).pop();
-        
+
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Senha alterada com sucesso!'),
@@ -86,14 +86,16 @@ class _ChangePasswordDialogState extends State<ChangePasswordDialog> {
                 controller: _currentPasswordController,
                 label: 'Senha atual',
                 obscureText: _obscureCurrent,
-                onToggleObscure: () => setState(() => _obscureCurrent = !_obscureCurrent),
+                onToggleObscure: () =>
+                    setState(() => _obscureCurrent = !_obscureCurrent),
               ),
               const SizedBox(height: 16),
               _buildPasswordField(
                 controller: _newPasswordController,
                 label: 'Nova senha',
                 obscureText: _obscureNew,
-                onToggleObscure: () => setState(() => _obscureNew = !_obscureNew),
+                onToggleObscure: () =>
+                    setState(() => _obscureNew = !_obscureNew),
                 validator: (value) {
                   if (value == null || value.length < 6) {
                     return 'A nova senha deve ter pelo menos 6 caracteres';
@@ -106,7 +108,8 @@ class _ChangePasswordDialogState extends State<ChangePasswordDialog> {
                 controller: _confirmPasswordController,
                 label: 'Confirmar nova senha',
                 obscureText: _obscureConfirm,
-                onToggleObscure: () => setState(() => _obscureConfirm = !_obscureConfirm),
+                onToggleObscure: () =>
+                    setState(() => _obscureConfirm = !_obscureConfirm),
                 validator: (value) {
                   if (value != _newPasswordController.text) {
                     return 'As senhas não coincidem';
@@ -130,11 +133,17 @@ class _ChangePasswordDialogState extends State<ChangePasswordDialog> {
                       ? const SizedBox(
                           height: 20,
                           width: 20,
-                          child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                          child: CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 2,
+                          ),
                         )
                       : const Text(
                           'Salvar',
-                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                 ),
               ),
@@ -160,7 +169,10 @@ class _ChangePasswordDialogState extends State<ChangePasswordDialog> {
         labelStyle: TextStyle(color: Colors.grey.shade600),
         filled: true,
         fillColor: Colors.grey.shade50,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 16,
+        ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide(color: Colors.grey.shade300),
@@ -175,18 +187,22 @@ class _ChangePasswordDialogState extends State<ChangePasswordDialog> {
         ),
         suffixIcon: IconButton(
           icon: Icon(
-            obscureText ? Icons.visibility_off_rounded : Icons.visibility_rounded,
+            obscureText
+                ? Icons.visibility_off_rounded
+                : Icons.visibility_rounded,
             color: Colors.grey,
           ),
           onPressed: onToggleObscure,
         ),
       ),
-      validator: validator ?? (value) {
-        if (value == null || value.isEmpty) {
-          return 'Campo obrigatório';
-        }
-        return null;
-      },
+      validator:
+          validator ??
+          (value) {
+            if (value == null || value.isEmpty) {
+              return 'Campo obrigatório';
+            }
+            return null;
+          },
     );
   }
 }

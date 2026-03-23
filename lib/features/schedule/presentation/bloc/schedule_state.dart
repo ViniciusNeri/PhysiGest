@@ -2,6 +2,7 @@ import 'package:equatable/equatable.dart';
 import 'package:physigest/features/schedule/domain/models/appointment.dart';
 
 enum ScheduleStatus { initial, loading, success, failure }
+
 enum ScheduleViewMode { day, week, month }
 
 class ScheduleState extends Equatable {
@@ -48,5 +49,12 @@ class ScheduleState extends Equatable {
   }
 
   @override
-  List<Object?> get props => [status, viewMode, selectedDate, appointments, availablePatients, errorMessage];
+  List<Object?> get props => [
+    status,
+    viewMode,
+    selectedDate,
+    appointments,
+    availablePatients,
+    errorMessage,
+  ];
 }

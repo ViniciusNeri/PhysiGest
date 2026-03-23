@@ -1,6 +1,7 @@
 import 'package:injectable/injectable.dart';
 import 'package:physigest/features/settings/domain/entities/attendance_category.dart';
 import 'package:physigest/features/settings/domain/entities/payment_method.dart';
+import 'package:physigest/features/settings/domain/entities/dashboard_preferences.dart';
 import '../repositories/i_settings_repository.dart';
 
 // ==================== CATEGORIES ====================
@@ -75,4 +76,21 @@ class ChangePasswordUseCase {
   ChangePasswordUseCase(this.repository);
   Future<void> call(String currentPassword, String newPassword) =>
       repository.changePassword(currentPassword, newPassword);
+}
+
+// ==================== DASHBOARD PREFERENCES ====================
+
+@lazySingleton
+class GetDashboardPreferencesUseCase {
+  final ISettingsRepository repository;
+  GetDashboardPreferencesUseCase(this.repository);
+  Future<DashboardPreferences> call() => repository.getDashboardPreferences();
+}
+
+@lazySingleton
+class UpdateDashboardPreferencesUseCase {
+  final ISettingsRepository repository;
+  UpdateDashboardPreferencesUseCase(this.repository);
+  Future<void> call(DashboardPreferences preferences) =>
+      repository.updateDashboardPreferences(preferences);
 }

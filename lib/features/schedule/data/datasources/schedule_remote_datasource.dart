@@ -19,7 +19,10 @@ class ScheduleRemoteDataSource implements IScheduleRemoteDataSource {
   ScheduleRemoteDataSource(this.apiClient);
 
   @override
-  Future<List<AppointmentModel>> getAppointments(DateTime from, DateTime to) async {
+  Future<List<AppointmentModel>> getAppointments(
+    DateTime from,
+    DateTime to,
+  ) async {
     try {
       final response = await apiClient.dio.get(
         '/appointments',
@@ -31,7 +34,8 @@ class ScheduleRemoteDataSource implements IScheduleRemoteDataSource {
       final list = response.data as List<dynamic>;
       return list.map((json) => AppointmentModel.fromJson(json)).toList();
     } on DioException catch (e) {
-      final errorMsg = e.response?.data?['message'] ?? 'Erro ao buscar agendamentos.';
+      final errorMsg =
+          e.response?.data?['message'] ?? 'Erro ao buscar agendamentos.';
       throw Exception(errorMsg);
     } catch (e) {
       throw Exception('Erro desconhecido ao buscar agendamentos: $e');
@@ -54,7 +58,8 @@ class ScheduleRemoteDataSource implements IScheduleRemoteDataSource {
       final response = await apiClient.dio.post('/appointments', data: body);
       return AppointmentModel.fromJson(response.data);
     } on DioException catch (e) {
-      final errorMsg = e.response?.data?['message'] ?? 'Erro ao criar agendamento.';
+      final errorMsg =
+          e.response?.data?['message'] ?? 'Erro ao criar agendamento.';
       throw Exception(errorMsg);
     } catch (e) {
       throw Exception('Erro desconhecido ao criar agendamento: $e');
@@ -74,10 +79,14 @@ class ScheduleRemoteDataSource implements IScheduleRemoteDataSource {
         status: appointment.status,
         evaluationNote: appointment.evaluationNote,
       ).toJson();
-      final response = await apiClient.dio.put('/appointments/${appointment.id}', data: body);
+      final response = await apiClient.dio.put(
+        '/appointments/${appointment.id}',
+        data: body,
+      );
       return AppointmentModel.fromJson(response.data);
     } on DioException catch (e) {
-      final errorMsg = e.response?.data?['message'] ?? 'Erro ao atualizar agendamento.';
+      final errorMsg =
+          e.response?.data?['message'] ?? 'Erro ao atualizar agendamento.';
       throw Exception(errorMsg);
     } catch (e) {
       throw Exception('Erro desconhecido ao atualizar agendamento: $e');
@@ -89,7 +98,8 @@ class ScheduleRemoteDataSource implements IScheduleRemoteDataSource {
     try {
       await apiClient.dio.delete('/appointments/$id');
     } on DioException catch (e) {
-      final errorMsg = e.response?.data?['message'] ?? 'Erro ao excluir agendamento.';
+      final errorMsg =
+          e.response?.data?['message'] ?? 'Erro ao excluir agendamento.';
       throw Exception(errorMsg);
     } catch (e) {
       throw Exception('Erro desconhecido ao excluir agendamento: $e');
@@ -103,7 +113,9 @@ class ScheduleRemoteDataSource implements IScheduleRemoteDataSource {
       final list = response.data as List<dynamic>;
       return list.map((e) => e.toString()).toList();
     } on DioException catch (e) {
-      final errorMsg = e.response?.data?['message'] ?? 'Erro ao buscar pacientes disponíveis.';
+      final errorMsg =
+          e.response?.data?['message'] ??
+          'Erro ao buscar pacientes disponíveis.';
       throw Exception(errorMsg);
     } catch (e) {
       throw Exception('Erro desconhecido ao buscar pacientes: $e');

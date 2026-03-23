@@ -16,7 +16,10 @@ class PaymentMethodsSettingsScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Text(
           'Formas de Pagamento',
-          style: TextStyle(fontWeight: FontWeight.w800, color: Color(0xFF0F172A)),
+          style: TextStyle(
+            fontWeight: FontWeight.w800,
+            color: Color(0xFF0F172A),
+          ),
         ),
         backgroundColor: Colors.white,
         elevation: 0,
@@ -29,13 +32,15 @@ class PaymentMethodsSettingsScreen extends StatelessWidget {
             final methods = state.paymentMethods;
 
             if (methods.isEmpty) {
-              return const Center(child: Text('Nenhuma forma de pagamento cadastrada.'));
+              return const Center(
+                child: Text('Nenhuma forma de pagamento cadastrada.'),
+              );
             }
 
             return ListView.separated(
               padding: const EdgeInsets.all(16),
               itemCount: methods.length,
-              separatorBuilder: (_, __) => const SizedBox(height: 12),
+              separatorBuilder: (_, _) => const SizedBox(height: 12),
               itemBuilder: (context, index) {
                 final method = methods[index];
                 return _PaymentTile(method: method);
@@ -58,10 +63,7 @@ class PaymentMethodsSettingsScreen extends StatelessWidget {
   void _showPaymentDialog(BuildContext context, [PaymentMethod? method]) {
     showDialog(
       context: context,
-      builder: (ctx) => _PaymentDialog(
-        method: method,
-        blocContext: context,
-      ),
+      builder: (ctx) => _PaymentDialog(method: method, blocContext: context),
     );
   }
 }
@@ -79,9 +81,9 @@ class _PaymentTile extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-             color: Colors.black.withOpacity(0.04),
-             blurRadius: 6,
-             offset: const Offset(0, 2),
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 6,
+            offset: const Offset(0, 2),
           ),
         ],
       ),
@@ -106,7 +108,7 @@ class _PaymentTile extends StatelessWidget {
         ),
         trailing: Switch(
           value: method.isActive,
-          activeColor: AppTheme.primaryColor,
+          activeThumbColor: AppTheme.primaryColor,
           onChanged: (val) {
             final updated = method.copyWith(isActive: val);
             context.read<SettingsBloc>().add(UpdatePaymentMethod(updated));
@@ -115,10 +117,8 @@ class _PaymentTile extends StatelessWidget {
         onTap: () {
           showDialog(
             context: context,
-            builder: (ctx) => _PaymentDialog(
-              method: method,
-              blocContext: context,
-            ),
+            builder: (ctx) =>
+                _PaymentDialog(method: method, blocContext: context),
           );
         },
       ),
@@ -185,7 +185,9 @@ class _PaymentDialogState extends State<_PaymentDialog> {
                   labelText: 'Nome da Forma de Pagamento',
                   filled: true,
                   fillColor: Colors.grey.shade50,
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                     borderSide: const BorderSide(color: AppTheme.primaryColor),
@@ -204,27 +206,37 @@ class _PaymentDialogState extends State<_PaymentDialog> {
                 children: [
                   TextButton(
                     onPressed: () => Navigator.of(context).pop(),
-                    child: const Text('Cancelar', style: TextStyle(color: Colors.grey)),
+                    child: const Text(
+                      'Cancelar',
+                      style: TextStyle(color: Colors.grey),
+                    ),
                   ),
                   const SizedBox(width: 8),
                   ElevatedButton(
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppTheme.primaryColor,
                       foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 24,
+                        vertical: 12,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
                     ),
                     onPressed: () {
                       if (_formKey.currentState!.validate()) {
                         final name = _controller.text.trim();
                         if (isEditing) {
                           widget.blocContext.read<SettingsBloc>().add(
-                                UpdatePaymentMethod(
-                                  widget.method!.copyWith(name: name),
-                                ),
-                              );
+                            UpdatePaymentMethod(
+                              widget.method!.copyWith(name: name),
+                            ),
+                          );
                         } else {
-                          widget.blocContext.read<SettingsBloc>().add(AddPaymentMethod(name));
+                          widget.blocContext.read<SettingsBloc>().add(
+                            AddPaymentMethod(name),
+                          );
                         }
                         Navigator.of(context).pop();
                       }

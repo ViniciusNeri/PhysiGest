@@ -13,7 +13,7 @@ class LoadSchedule extends ScheduleEvent {}
 
 class UpdateAppointment extends ScheduleEvent {
   final Appointment appointment;
-  UpdateAppointment(this.appointment);
+  const UpdateAppointment(this.appointment);
 }
 
 class SelectDate extends ScheduleEvent {

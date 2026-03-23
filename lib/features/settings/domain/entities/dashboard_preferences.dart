@@ -1,37 +1,48 @@
 import 'package:equatable/equatable.dart';
 
 class DashboardPreferences extends Equatable {
-  final bool showDailyAppointments;
-  final bool showPendingPayments;
+  final String dashboardTheme;
   final bool showWeeklyAppointments;
-  final bool showExpiredRecords;
+  final bool showMonthlyIncome;
+  final bool showActivePayments;
+  final bool showNextAppointment;
+  final String categoryControlMode;
 
   const DashboardPreferences({
-    this.showDailyAppointments = true,
-    this.showPendingPayments = true,
+    this.dashboardTheme = 'light',
     this.showWeeklyAppointments = true,
-    this.showExpiredRecords = true,
+    this.showMonthlyIncome = true,
+    this.showActivePayments = true,
+    this.showNextAppointment = true,
+    this.categoryControlMode = 'none',
   });
 
   DashboardPreferences copyWith({
-    bool? showDailyAppointments,
-    bool? showPendingPayments,
+    String? dashboardTheme,
     bool? showWeeklyAppointments,
-    bool? showExpiredRecords,
+    bool? showMonthlyIncome,
+    bool? showActivePayments,
+    bool? showNextAppointment,
+    String? categoryControlMode,
   }) {
     return DashboardPreferences(
-      showDailyAppointments: showDailyAppointments ?? this.showDailyAppointments,
-      showPendingPayments: showPendingPayments ?? this.showPendingPayments,
-      showWeeklyAppointments: showWeeklyAppointments ?? this.showWeeklyAppointments,
-      showExpiredRecords: showExpiredRecords ?? this.showExpiredRecords,
+      dashboardTheme: dashboardTheme ?? this.dashboardTheme,
+      showWeeklyAppointments:
+          showWeeklyAppointments ?? this.showWeeklyAppointments,
+      showMonthlyIncome: showMonthlyIncome ?? this.showMonthlyIncome,
+      showActivePayments: showActivePayments ?? this.showActivePayments,
+      showNextAppointment: showNextAppointment ?? this.showNextAppointment,
+      categoryControlMode: categoryControlMode ?? this.categoryControlMode,
     );
   }
 
   @override
   List<Object?> get props => [
-        showDailyAppointments,
-        showPendingPayments,
+        dashboardTheme,
         showWeeklyAppointments,
-        showExpiredRecords,
+        showMonthlyIncome,
+        showActivePayments,
+        showNextAppointment,
+        categoryControlMode,
       ];
 }

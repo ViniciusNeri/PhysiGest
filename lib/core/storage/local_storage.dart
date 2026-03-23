@@ -1,8 +1,4 @@
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:injectable/injectable.dart';
-import 'dart:convert';
 import 'package:physigest/features/auth/domain/entities/auth_user.dart';
-
 
 abstract class LocalStorage {
   Future<void> saveToken(String token);

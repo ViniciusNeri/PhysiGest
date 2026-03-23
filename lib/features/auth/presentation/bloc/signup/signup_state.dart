@@ -21,7 +21,11 @@ class SignUpState extends Equatable {
 
   bool get isPasswordValid => password.length >= 8;
   bool get doPasswordsMatch => password == confirmPassword;
-  bool get isValid => name.isNotEmpty && email.isNotEmpty && isPasswordValid && doPasswordsMatch;
+  bool get isValid =>
+      name.isNotEmpty &&
+      email.isNotEmpty &&
+      isPasswordValid &&
+      doPasswordsMatch;
 
   SignUpState copyWith({
     String? name,
@@ -43,11 +47,11 @@ class SignUpState extends Equatable {
 
   @override
   List<Object?> get props => [
-        name,
-        email,
-        password,
-        confirmPassword,
-        status,
-        errorMessage,
-      ];
+    name,
+    email,
+    password,
+    confirmPassword,
+    status,
+    errorMessage,
+  ];
 }

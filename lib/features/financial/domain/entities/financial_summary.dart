@@ -14,5 +14,10 @@ class FinancialSummary extends Equatable {
   });
 
   @override
-  List<Object?> get props => [faturamentoTotal, contasReceber, despesasFixas, lucroLiquido];
+  List<Object?> get props => [
+    faturamentoTotal,
+    contasReceber,
+    despesasFixas,
+    lucroLiquido,
+  ];
 }

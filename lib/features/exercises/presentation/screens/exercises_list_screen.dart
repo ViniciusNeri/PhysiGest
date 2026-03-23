@@ -16,7 +16,14 @@ class ExercisesListScreen extends StatefulWidget {
 
 class _ExercisesListScreenState extends State<ExercisesListScreen> {
   final TextEditingController _searchController = TextEditingController();
-  final List<String> categories = ['Todos', 'Cervical', 'Ombro', 'Lombar', 'Membros Inferiores', 'Respiratório'];
+  final List<String> categories = [
+    'Todos',
+    'Cervical',
+    'Ombro',
+    'Lombar',
+    'Membros Inferiores',
+    'Respiratório',
+  ];
   String selectedCategory = 'Todos';
 
   @override
@@ -63,7 +70,11 @@ class _ExercisesListScreenState extends State<ExercisesListScreen> {
       children: [
         const Text(
           "Biblioteca de Exercícios",
-          style: TextStyle(fontSize: 32, fontWeight: FontWeight.w900, color: Color(0xFF1E293B)),
+          style: TextStyle(
+            fontSize: 32,
+            fontWeight: FontWeight.w900,
+            color: Color(0xFF1E293B),
+          ),
         ),
         const SizedBox(height: 8),
         const Text(
@@ -82,12 +93,16 @@ class _ExercisesListScreenState extends State<ExercisesListScreen> {
                 ),
                 child: TextField(
                   controller: _searchController,
-                  onChanged: (val) => getIt<ExerciseBloc>().add(SearchExercises(val)),
+                  onChanged: (val) =>
+                      getIt<ExerciseBloc>().add(SearchExercises(val)),
                   decoration: const InputDecoration(
                     hintText: "Buscar exercício por nome...",
                     prefixIcon: Icon(Icons.search, color: Color(0xFF94A3B8)),
                     border: InputBorder.none,
-                    contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                    contentPadding: EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 16,
+                    ),
                   ),
                 ),
               ),
@@ -96,11 +111,22 @@ class _ExercisesListScreenState extends State<ExercisesListScreen> {
             ElevatedButton.icon(
               onPressed: () {},
               icon: const Icon(Icons.add_rounded, color: Colors.white),
-              label: const Text("Novo Exercício", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
+              label: const Text(
+                "Novo Exercício",
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+              ),
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF0D9488),
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 20,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
             ),
           ],
@@ -129,11 +155,15 @@ class _ExercisesListScreenState extends State<ExercisesListScreen> {
               backgroundColor: Colors.white,
               selectedColor: const Color(0xFF0D9488).withOpacity(0.1),
               labelStyle: TextStyle(
-                color: isSelected ? const Color(0xFF0D9488) : const Color(0xFF64748B),
+                color: isSelected
+                    ? const Color(0xFF0D9488)
+                    : const Color(0xFF64748B),
                 fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
               ),
               side: BorderSide(
-                color: isSelected ? const Color(0xFF0D9488) : const Color(0xFFE2E8F0),
+                color: isSelected
+                    ? const Color(0xFF0D9488)
+                    : const Color(0xFFE2E8F0),
               ),
             ),
           );
@@ -152,7 +182,10 @@ class _ExercisesListScreenState extends State<ExercisesListScreen> {
             return const Center(
               child: Padding(
                 padding: EdgeInsets.all(48.0),
-                child: Text("Nenhum exercício encontrado.", style: TextStyle(color: Color(0xFF94A3B8), fontSize: 16)),
+                child: Text(
+                  "Nenhum exercício encontrado.",
+                  style: TextStyle(color: Color(0xFF94A3B8), fontSize: 16),
+                ),
               ),
             );
           }
@@ -160,9 +193,12 @@ class _ExercisesListScreenState extends State<ExercisesListScreen> {
           return LayoutBuilder(
             builder: (context, constraints) {
               int crossAxisCount = 1;
-              if (constraints.maxWidth > 1200) crossAxisCount = 4;
-              else if (constraints.maxWidth > 800) crossAxisCount = 3;
-              else if (constraints.maxWidth > 600) crossAxisCount = 2;
+              if (constraints.maxWidth > 1200) {
+                crossAxisCount = 4;
+              } else if (constraints.maxWidth > 800)
+                crossAxisCount = 3;
+              else if (constraints.maxWidth > 600)
+                crossAxisCount = 2;
 
               return GridView.builder(
                 shrinkWrap: true,
@@ -224,40 +260,58 @@ class _ExerciseCard extends StatelessWidget {
                 fit: StackFit.expand,
                 children: [
                   ClipRRect(
-                    borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+                    borderRadius: const BorderRadius.vertical(
+                      top: Radius.circular(20),
+                    ),
                     child: Image.network(
                       exercise.thumbnailUrl,
                       fit: BoxFit.cover,
                       errorBuilder: (context, error, stackTrace) => Container(
                         color: const Color(0xFFE2E8F0),
-                        child: const Icon(Icons.image_not_supported, color: Color(0xFF94A3B8)),
+                        child: const Icon(
+                          Icons.image_not_supported,
+                          color: Color(0xFF94A3B8),
+                        ),
                       ),
                     ),
                   ),
                   Container(
                     decoration: BoxDecoration(
-                      borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+                      borderRadius: const BorderRadius.vertical(
+                        top: Radius.circular(20),
+                      ),
                       color: Colors.black.withOpacity(0.2),
                     ),
                   ),
                   const Center(
-                    child: Icon(Icons.play_circle_fill_rounded, color: Colors.white, size: 48),
+                    child: Icon(
+                      Icons.play_circle_fill_rounded,
+                      color: Colors.white,
+                      size: 48,
+                    ),
                   ),
                   Positioned(
                     top: 12,
                     right: 12,
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
                         color: Colors.black.withOpacity(0.6),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Text(
                         exercise.category.toUpperCase(),
-                        style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
-                  )
+                  ),
                 ],
               ),
             ),
@@ -275,14 +329,22 @@ class _ExerciseCard extends StatelessWidget {
                       children: [
                         Text(
                           exercise.title,
-                          style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 16, color: Color(0xFF1E293B)),
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w900,
+                            fontSize: 16,
+                            color: Color(0xFF1E293B),
+                          ),
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                         ),
                         const SizedBox(height: 8),
                         Text(
                           exercise.recommendedRepetitions,
-                          style: const TextStyle(color: Color(0xFF7C3AED), fontWeight: FontWeight.bold, fontSize: 12),
+                          style: const TextStyle(
+                            color: Color(0xFF7C3AED),
+                            fontWeight: FontWeight.bold,
+                            fontSize: 12,
+                          ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -290,9 +352,20 @@ class _ExerciseCard extends StatelessWidget {
                     ),
                     const Row(
                       children: [
-                        Icon(Icons.send_rounded, size: 16, color: Color(0xFF0D9488)),
+                        Icon(
+                          Icons.send_rounded,
+                          size: 16,
+                          color: Color(0xFF0D9488),
+                        ),
                         SizedBox(width: 4),
-                        Text("Prescrever Aluno", style: TextStyle(color: Color(0xFF0D9488), fontSize: 13, fontWeight: FontWeight.bold)),
+                        Text(
+                          "Prescrever Aluno",
+                          style: TextStyle(
+                            color: Color(0xFF0D9488),
+                            fontSize: 13,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                       ],
                     ),
                   ],

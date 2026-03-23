@@ -22,7 +22,16 @@ class PaymentTransaction extends Equatable {
   });
 
   @override
-  List<Object?> get props => [id, title, serviceType, quantity, date, value, paymentMethod, status];
+  List<Object?> get props => [
+    id,
+    title,
+    serviceType,
+    quantity,
+    date,
+    value,
+    paymentMethod,
+    status,
+  ];
 }
 
 class Patient extends Equatable {
@@ -33,7 +42,8 @@ class Patient extends Equatable {
   final String birthDate;
   final String occupation;
   final Anamnesis anamnesis;
-  final List<String> photoPaths; // Lista de caminhos para as fotos locais mockadas
+  final List<String>
+  photoPaths; // Lista de caminhos para as fotos locais mockadas
   final List<PaymentTransaction> financialHistory; // Extrato do paciente
 
   const Patient({
@@ -73,7 +83,17 @@ class Patient extends Equatable {
   }
 
   @override
-  List<Object?> get props => [id, name, email, phone, birthDate, occupation, anamnesis, photoPaths, financialHistory];
+  List<Object?> get props => [
+    id,
+    name,
+    email,
+    phone,
+    birthDate,
+    occupation,
+    anamnesis,
+    photoPaths,
+    financialHistory,
+  ];
 }
 
 class Anamnesis extends Equatable {
@@ -125,14 +145,14 @@ class Anamnesis extends Equatable {
 
   @override
   List<Object?> get props => [
-        mainComplaint,
-        currentIllness,
-        historic,
-        familyHistory,
-        lifestyleHabits,
-        physicalExam,
-        clinicalDiagnosis,
-        treatmentPlan,
-        medications,
-      ];
+    mainComplaint,
+    currentIllness,
+    historic,
+    familyHistory,
+    lifestyleHabits,
+    physicalExam,
+    clinicalDiagnosis,
+    treatmentPlan,
+    medications,
+  ];
 }

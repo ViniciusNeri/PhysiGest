@@ -12,7 +12,8 @@ class AppointmentActionDialog extends StatefulWidget {
   });
 
   @override
-  State<AppointmentActionDialog> createState() => _AppointmentActionDialogState();
+  State<AppointmentActionDialog> createState() =>
+      _AppointmentActionDialogState();
 }
 
 class _AppointmentActionDialogState extends State<AppointmentActionDialog> {
@@ -23,7 +24,9 @@ class _AppointmentActionDialogState extends State<AppointmentActionDialog> {
   void initState() {
     super.initState();
     _selectedStatus = widget.appointment.status;
-    _noteController = TextEditingController(text: widget.appointment.evaluationNote ?? '');
+    _noteController = TextEditingController(
+      text: widget.appointment.evaluationNote ?? '',
+    );
   }
 
   @override
@@ -35,7 +38,9 @@ class _AppointmentActionDialogState extends State<AppointmentActionDialog> {
   void _submit() {
     final updatedApt = widget.appointment.copyWith(
       status: _selectedStatus,
-      evaluationNote: _noteController.text.trim().isEmpty ? null : _noteController.text.trim(),
+      evaluationNote: _noteController.text.trim().isEmpty
+          ? null
+          : _noteController.text.trim(),
     );
     widget.onSave(updatedApt);
     Navigator.of(context).pop();
@@ -60,30 +65,44 @@ class _AppointmentActionDialogState extends State<AppointmentActionDialog> {
               children: [
                 const Text(
                   "Status do Atendimento",
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: Color(0xFF0F172A)),
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w900,
+                    color: Color(0xFF0F172A),
+                  ),
                 ),
                 IconButton(
                   onPressed: () => Navigator.of(context).pop(),
                   icon: const Icon(Icons.close_rounded),
-                )
+                ),
               ],
             ),
             const SizedBox(height: 8),
             Text(
               "${widget.appointment.patientName} • ${widget.appointment.time}",
-              style: const TextStyle(color: Colors.black54, fontWeight: FontWeight.bold),
+              style: const TextStyle(
+                color: Colors.black54,
+                fontWeight: FontWeight.bold,
+              ),
             ),
             const SizedBox(height: 24),
             _buildStatusSelector(),
             if (isDone) ...[
               const SizedBox(height: 24),
-              const Text("Evolução Clínica / Anotações", style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF1E293B))),
+              const Text(
+                "Evolução Clínica / Anotações",
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF1E293B),
+                ),
+              ),
               const SizedBox(height: 12),
               TextField(
                 controller: _noteController,
                 maxLines: 5,
                 decoration: InputDecoration(
-                  hintText: "Descreva a evolução do paciente, procedimentos realizados e observações...",
+                  hintText:
+                      "Descreva a evolução do paciente, procedimentos realizados e observações...",
                   filled: true,
                   fillColor: const Color(0xFFF8FAFC),
                   border: OutlineInputBorder(
@@ -101,10 +120,19 @@ class _AppointmentActionDialogState extends State<AppointmentActionDialog> {
                 onPressed: _submit,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF4F46E5),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                   elevation: 0,
                 ),
-                child: const Text("Salvar Status", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
+                child: const Text(
+                  "Salvar Status",
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
               ),
             ),
           ],
@@ -122,10 +150,30 @@ class _AppointmentActionDialogState extends State<AppointmentActionDialog> {
       ),
       child: Row(
         children: [
-          Expanded(child: _buildStatusOption('agendado', 'Agendado', Icons.pending_rounded)),
-          Expanded(child: _buildStatusOption('realizado', 'Realizado', Icons.check_circle_rounded)),
-          Expanded(child: _buildStatusOption('falta', 'Falta', Icons.cancel_rounded)),
-          Expanded(child: _buildStatusOption('cancelado', 'Cancelado', Icons.event_busy_rounded)),
+          Expanded(
+            child: _buildStatusOption(
+              'agendado',
+              'Agendado',
+              Icons.pending_rounded,
+            ),
+          ),
+          Expanded(
+            child: _buildStatusOption(
+              'realizado',
+              'Realizado',
+              Icons.check_circle_rounded,
+            ),
+          ),
+          Expanded(
+            child: _buildStatusOption('falta', 'Falta', Icons.cancel_rounded),
+          ),
+          Expanded(
+            child: _buildStatusOption(
+              'cancelado',
+              'Cancelado',
+              Icons.event_busy_rounded,
+            ),
+          ),
         ],
       ),
     );
@@ -142,7 +190,14 @@ class _AppointmentActionDialogState extends State<AppointmentActionDialog> {
         decoration: BoxDecoration(
           color: isSelected ? Colors.white : Colors.transparent,
           borderRadius: BorderRadius.circular(12),
-          boxShadow: isSelected ? [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10)] : null,
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 10,
+                  ),
+                ]
+              : null,
         ),
         child: Column(
           children: [

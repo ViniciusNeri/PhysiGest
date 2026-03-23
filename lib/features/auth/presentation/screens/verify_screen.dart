@@ -12,7 +12,7 @@ class VerificationScreen extends StatelessWidget {
   const VerificationScreen({super.key, required this.email});
 
   @override
-  Widget build(BuildContext context) {  
+  Widget build(BuildContext context) {
     return BlocProvider(
       create: (_) => getIt<VerifyBloc>()..add(VerifyEmailChanged(email)),
       child: VerificationView(email: email),
@@ -63,7 +63,10 @@ class VerificationView extends StatelessWidget {
               child: ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 480),
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 40),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 40,
+                    vertical: 40,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(24),
@@ -99,13 +102,18 @@ class VerificationView extends StatelessWidget {
                       Text(
                         'Enviamos um código de 6 dígitos para\n$email',
                         textAlign: TextAlign.center,
-                        style: const TextStyle(color: Colors.black45, fontSize: 14),
+                        style: const TextStyle(
+                          color: Colors.black45,
+                          fontSize: 14,
+                        ),
                       ),
                       const SizedBox(height: 32),
 
                       _buildLabel('Código de Verificação'),
                       TextField(
-                        onChanged: (v) => context.read<VerifyBloc>().add(VerifyCodeChanged(v)),
+                        onChanged: (v) => context.read<VerifyBloc>().add(
+                          VerifyCodeChanged(v),
+                        ),
                         keyboardType: TextInputType.number,
                         textAlign: TextAlign.center,
                         style: const TextStyle(
@@ -114,9 +122,10 @@ class VerificationView extends StatelessWidget {
                           letterSpacing: 8,
                         ),
                         maxLength: 6,
-                        decoration: _inputDecoration('000000', Icons.numbers_rounded).copyWith(
-                          counterText: "",
-                        ),
+                        decoration: _inputDecoration(
+                          '000000',
+                          Icons.numbers_rounded,
+                        ).copyWith(counterText: ""),
                       ),
                       const SizedBox(height: 32),
 
@@ -126,18 +135,27 @@ class VerificationView extends StatelessWidget {
                               ? const Center(child: CircularProgressIndicator())
                               : ElevatedButton(
                                   onPressed: state.isCodeValid
-                                      ? () => context.read<VerifyBloc>().add(VerifySubmitted(email))
+                                      ? () => context.read<VerifyBloc>().add(
+                                          VerifySubmitted(email),
+                                        )
                                       : null,
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: primary,
                                     foregroundColor: Colors.white,
-                                    padding: const EdgeInsets.symmetric(vertical: 18),
-                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 18,
+                                    ),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
                                     elevation: 0,
                                   ),
                                   child: const Text(
                                     'Confirmar Código',
-                                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 16,
+                                    ),
                                   ),
                                 );
                         },
@@ -146,14 +164,22 @@ class VerificationView extends StatelessWidget {
 
                       Column(
                         children: [
-                          const Text('Não recebeu o código?', style: TextStyle(color: Colors.black54)),
+                          const Text(
+                            'Não recebeu o código?',
+                            style: TextStyle(color: Colors.black54),
+                          ),
                           TextButton(
                             onPressed: () {
-                              context.read<VerifyBloc>().add(VerifyResendCodeRequested(email));
+                              context.read<VerifyBloc>().add(
+                                VerifyResendCodeRequested(email),
+                              );
                             },
                             child: Text(
                               'Reenviar novo código',
-                              style: TextStyle(color: primary, fontWeight: FontWeight.bold),
+                              style: TextStyle(
+                                color: primary,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           ),
                           const SizedBox(height: 8),
@@ -161,7 +187,10 @@ class VerificationView extends StatelessWidget {
                             onPressed: () => context.pop(),
                             child: const Text(
                               'Alterar e-mail',
-                              style: TextStyle(color: Colors.black38, fontSize: 13),
+                              style: TextStyle(
+                                color: Colors.black38,
+                                fontSize: 13,
+                              ),
                             ),
                           ),
                         ],
@@ -182,7 +211,11 @@ class VerificationView extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: 6.0, left: 4),
       child: Text(
         text,
-        style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13, color: Color(0xFF334155)),
+        style: const TextStyle(
+          fontWeight: FontWeight.w700,
+          fontSize: 13,
+          color: Color(0xFF334155),
+        ),
       ),
     );
   }
@@ -202,7 +235,11 @@ class VerificationView extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         borderSide: const BorderSide(color: AppTheme.primaryColor, width: 1.5),
       ),
-      hintStyle: const TextStyle(color: Colors.black26, fontSize: 13, letterSpacing: 0),
+      hintStyle: const TextStyle(
+        color: Colors.black26,
+        fontSize: 13,
+        letterSpacing: 0,
+      ),
     );
   }
 }

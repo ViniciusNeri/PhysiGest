@@ -2,26 +2,26 @@ import 'package:equatable/equatable.dart';
 import 'package:physigest/features/schedule/domain/models/appointment.dart';
 
 class DashboardSummary extends Equatable {
-  final int atendimentosHoje;
-  final int mensalidadesVencer;
-  final int atendimentosSemana;
-  final int fichasVencidas;
-  final List<Appointment> atendimentosHojeList;
+  final int weeklyAppointments;
+  final double monthlyIncome;
+  final int activePayments;
+  final List<Appointment> todaysAppointments;
+  final Appointment? nextAppointment;
 
   const DashboardSummary({
-    required this.atendimentosHoje,
-    required this.mensalidadesVencer,
-    required this.atendimentosSemana,
-    required this.fichasVencidas,
-    required this.atendimentosHojeList,
+    required this.weeklyAppointments,
+    required this.monthlyIncome,
+    required this.activePayments,
+    required this.todaysAppointments,
+    this.nextAppointment,
   });
 
   @override
   List<Object?> get props => [
-        atendimentosHoje,
-        mensalidadesVencer,
-        atendimentosSemana,
-        fichasVencidas,
-        atendimentosHojeList,
+        weeklyAppointments,
+        monthlyIncome,
+        activePayments,
+        todaysAppointments,
+        nextAppointment,
       ];
 }

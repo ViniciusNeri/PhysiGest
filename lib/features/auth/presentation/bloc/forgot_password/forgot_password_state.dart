@@ -28,16 +28,16 @@ class ForgotPasswordState extends Equatable {
   }
 
   ForgotPasswordState copyWithNewPassword({
-  final String? newPassword,
-  final ForgotPasswordStatus? status,
-  final String? errorMessage,
-}) {
-  return ForgotPasswordState(
-    email: email,
-    status: status ?? this.status,
-    errorMessage: errorMessage ?? this.errorMessage,
-  );
-}
+    final String? newPassword,
+    final ForgotPasswordStatus? status,
+    final String? errorMessage,
+  }) {
+    return ForgotPasswordState(
+      email: email,
+      status: status ?? this.status,
+      errorMessage: errorMessage ?? this.errorMessage,
+    );
+  }
 
   @override
   List<Object?> get props => [email, status, errorMessage];

@@ -7,7 +7,6 @@ import 'package:physigest/features/auth/presentation/bloc/forgot_password/forgot
 import 'package:physigest/features/auth/presentation/bloc/forgot_password/forgot_password_event.dart';
 import 'package:physigest/features/auth/presentation/bloc/forgot_password/forgot_password_state.dart';
 
-
 class NewPasswordScreen extends StatefulWidget {
   final String token;
   const NewPasswordScreen({super.key, required this.token});
@@ -45,12 +44,18 @@ class _NewPasswordScreenState extends State<NewPasswordScreen> {
             listener: (context, state) {
               if (state.status == ForgotPasswordStatus.resetSuccess) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Senha alterada com sucesso!'), backgroundColor: Colors.green),
+                  const SnackBar(
+                    content: Text('Senha alterada com sucesso!'),
+                    backgroundColor: Colors.green,
+                  ),
                 );
                 context.go('/login');
               } else if (state.status == ForgotPasswordStatus.failure) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text(state.errorMessage), backgroundColor: Colors.redAccent),
+                  SnackBar(
+                    content: Text(state.errorMessage),
+                    backgroundColor: Colors.redAccent,
+                  ),
                 );
               }
             },
@@ -60,7 +65,10 @@ class _NewPasswordScreenState extends State<NewPasswordScreen> {
                 child: ConstrainedBox(
                   constraints: const BoxConstraints(maxWidth: 480),
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 40),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 40,
+                      vertical: 40,
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(24),
@@ -76,12 +84,20 @@ class _NewPasswordScreenState extends State<NewPasswordScreen> {
                       mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        const Icon(Icons.lock_reset_rounded, size: 48, color: AppTheme.primaryColor),
+                        const Icon(
+                          Icons.lock_reset_rounded,
+                          size: 48,
+                          color: AppTheme.primaryColor,
+                        ),
                         const SizedBox(height: 16),
                         const Text(
                           'Nova Senha',
                           textAlign: TextAlign.center,
-                          style: TextStyle(fontSize: 26, fontWeight: FontWeight.w900, color: Color(0xFF1E293B)),
+                          style: TextStyle(
+                            fontSize: 26,
+                            fontWeight: FontWeight.w900,
+                            color: Color(0xFF1E293B),
+                          ),
                         ),
                         const SizedBox(height: 8),
                         const Text(
@@ -95,19 +111,32 @@ class _NewPasswordScreenState extends State<NewPasswordScreen> {
                         TextField(
                           controller: _passwordController,
                           obscureText: !_isPasswordVisible,
-                          decoration: _inputDecoration('Sua nova senha', Icons.lock_outline_rounded).copyWith(
-                            suffixIcon: IconButton(
-                              icon: Icon(_isPasswordVisible ? Icons.visibility_off : Icons.visibility, color: Colors.black26),
-                              onPressed: () => setState(() => _isPasswordVisible = !_isPasswordVisible),
-                            ),
-                          ),
+                          decoration:
+                              _inputDecoration(
+                                'Sua nova senha',
+                                Icons.lock_outline_rounded,
+                              ).copyWith(
+                                suffixIcon: IconButton(
+                                  icon: Icon(
+                                    _isPasswordVisible
+                                        ? Icons.visibility_off
+                                        : Icons.visibility,
+                                    color: Colors.black26,
+                                  ),
+                                  onPressed: () => setState(
+                                    () => _isPasswordVisible =
+                                        !_isPasswordVisible,
+                                  ),
+                                ),
+                              ),
                         ),
                         const SizedBox(height: 32),
 
                         BlocBuilder<ForgotPasswordBloc, ForgotPasswordState>(
                           builder: (context, state) {
                             return ElevatedButton(
-                              onPressed: state.status == ForgotPasswordStatus.loading
+                              onPressed:
+                                  state.status == ForgotPasswordStatus.loading
                                   ? null
                                   : () {
                                       context.read<ForgotPasswordBloc>().add(
@@ -120,19 +149,40 @@ class _NewPasswordScreenState extends State<NewPasswordScreen> {
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: primary,
                                 foregroundColor: Colors.white,
-                                padding: const EdgeInsets.symmetric(vertical: 18),
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 18,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
                               ),
-                              child: state.status == ForgotPasswordStatus.loading
-                                  ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                                  : const Text('Redefinir Senha', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                              child:
+                                  state.status == ForgotPasswordStatus.loading
+                                  ? const SizedBox(
+                                      height: 20,
+                                      width: 20,
+                                      child: CircularProgressIndicator(
+                                        color: Colors.white,
+                                        strokeWidth: 2,
+                                      ),
+                                    )
+                                  : const Text(
+                                      'Redefinir Senha',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 16,
+                                      ),
+                                    ),
                             );
                           },
                         ),
                         const SizedBox(height: 16),
                         TextButton(
                           onPressed: () => context.go('/login'),
-                          child: const Text('Voltar ao login', style: TextStyle(color: Colors.black38)),
+                          child: const Text(
+                            'Voltar ao login',
+                            style: TextStyle(color: Colors.black38),
+                          ),
                         ),
                       ],
                     ),
@@ -146,12 +196,16 @@ class _NewPasswordScreenState extends State<NewPasswordScreen> {
     );
   }
 
- Widget _buildLabel(String text) {
+  Widget _buildLabel(String text) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 6.0, left: 4),
       child: Text(
         text,
-        style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13, color: Color(0xFF334155)),
+        style: const TextStyle(
+          fontWeight: FontWeight.w700,
+          fontSize: 13,
+          color: Color(0xFF334155),
+        ),
       ),
     );
   }
@@ -171,7 +225,11 @@ class _NewPasswordScreenState extends State<NewPasswordScreen> {
         borderRadius: BorderRadius.circular(12),
         borderSide: const BorderSide(color: AppTheme.primaryColor, width: 1.5),
       ),
-      hintStyle: const TextStyle(color: Colors.black26, fontSize: 13, letterSpacing: 0),
+      hintStyle: const TextStyle(
+        color: Colors.black26,
+        fontSize: 13,
+        letterSpacing: 0,
+      ),
     );
   }
 }

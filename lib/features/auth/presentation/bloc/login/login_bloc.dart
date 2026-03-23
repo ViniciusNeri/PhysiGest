@@ -19,17 +19,11 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
   }
 
   void _onEmailChanged(EmailChanged event, Emitter<LoginState> emit) {
-    emit(state.copyWith(
-      email: event.email,
-      status: LoginStatus.initial,
-    ));
+    emit(state.copyWith(email: event.email, status: LoginStatus.initial));
   }
 
   void _onPasswordChanged(PasswordChanged event, Emitter<LoginState> emit) {
-    emit(state.copyWith(
-      password: event.password,
-      status: LoginStatus.initial,
-    ));
+    emit(state.copyWith(password: event.password, status: LoginStatus.initial));
   }
 
   Future<void> _onLoginButtonPressed(
@@ -37,13 +31,15 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
     Emitter<LoginState> emit,
   ) async {
     if (!state.isValid) return;
-    
+
     emit(state.copyWith(status: LoginStatus.loading));
     try {
       final user = await _loginUseCase(state.email, state.password);
-      await getIt<LocalStorage>().saveToken(user.token!);
-      await getIt<LocalStorage>().saveUser(user);       
-      emit(state.copyWith(status: LoginStatus.authenticated, token: user.token));
+      await getIt<LocalStorage>().saveToken(user.token);
+      await getIt<LocalStorage>().saveUser(user);
+      emit(
+        state.copyWith(status: LoginStatus.authenticated, token: user.token),
+      );
     } catch (e) {
       final msg = e.toString().replaceAll('Exception: ', '');
       emit(state.copyWith(status: LoginStatus.failure, errorMessage: msg));
@@ -56,11 +52,16 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
   ) async {
     emit(state.copyWith(status: LoginStatus.loading));
     try {
-        // Mocked delay for google auth
+      // Mocked delay for google auth
       await Future.delayed(const Duration(seconds: 2));
       emit(state.copyWith(status: LoginStatus.success));
     } catch (e) {
-      emit(state.copyWith(status: LoginStatus.failure, errorMessage: 'Erro no login com Google'));
+      emit(
+        state.copyWith(
+          status: LoginStatus.failure,
+          errorMessage: 'Erro no login com Google',
+        ),
+      );
     }
   }
 

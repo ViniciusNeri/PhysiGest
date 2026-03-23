@@ -37,16 +37,20 @@ class PatientModel extends Patient {
         medications: anamnesisJson['medications'] ?? '',
       ),
       photoPaths: photosJson.map((e) => e.toString()).toList(),
-      financialHistory: financialJson.map((t) => PaymentTransaction(
-        id: t['id']?.toString() ?? '',
-        title: t['title'] ?? '',
-        serviceType: t['serviceType'] ?? '',
-        quantity: t['quantity'] as int? ?? 1,
-        date: t['date'] ?? '',
-        value: (t['value'] as num?)?.toDouble() ?? 0.0,
-        paymentMethod: t['paymentMethod'] ?? '',
-        status: t['status'] ?? 'PENDENTE',
-      )).toList(),
+      financialHistory: financialJson
+          .map(
+            (t) => PaymentTransaction(
+              id: t['id']?.toString() ?? '',
+              title: t['title'] ?? '',
+              serviceType: t['serviceType'] ?? '',
+              quantity: t['quantity'] as int? ?? 1,
+              date: t['date'] ?? '',
+              value: (t['value'] as num?)?.toDouble() ?? 0.0,
+              paymentMethod: t['paymentMethod'] ?? '',
+              status: t['status'] ?? 'PENDENTE',
+            ),
+          )
+          .toList(),
     );
   }
 

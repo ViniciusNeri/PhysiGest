@@ -26,7 +26,8 @@ class PatientRemoteDataSource implements IPatientRemoteDataSource {
       final list = response.data as List<dynamic>;
       return list.map((json) => PatientModel.fromJson(json)).toList();
     } on DioException catch (e) {
-      final errorMsg = e.response?.data?['message'] ?? 'Erro ao buscar pacientes.';
+      final errorMsg =
+          e.response?.data?['message'] ?? 'Erro ao buscar pacientes.';
       throw Exception(errorMsg);
     } catch (e) {
       throw Exception('Erro desconhecido ao buscar pacientes: $e');
@@ -39,7 +40,8 @@ class PatientRemoteDataSource implements IPatientRemoteDataSource {
       final response = await apiClient.dio.get('/patients/$id');
       return PatientModel.fromJson(response.data);
     } on DioException catch (e) {
-      final errorMsg = e.response?.data?['message'] ?? 'Erro ao buscar paciente.';
+      final errorMsg =
+          e.response?.data?['message'] ?? 'Erro ao buscar paciente.';
       throw Exception(errorMsg);
     } catch (e) {
       throw Exception('Erro desconhecido ao buscar paciente: $e');
@@ -63,7 +65,8 @@ class PatientRemoteDataSource implements IPatientRemoteDataSource {
       final response = await apiClient.dio.post('/patients', data: body);
       return PatientModel.fromJson(response.data);
     } on DioException catch (e) {
-      final errorMsg = e.response?.data?['message'] ?? 'Erro ao cadastrar paciente.';
+      final errorMsg =
+          e.response?.data?['message'] ?? 'Erro ao cadastrar paciente.';
       throw Exception(errorMsg);
     } catch (e) {
       throw Exception('Erro desconhecido ao cadastrar paciente: $e');
@@ -84,10 +87,14 @@ class PatientRemoteDataSource implements IPatientRemoteDataSource {
         photoPaths: patient.photoPaths,
         financialHistory: patient.financialHistory,
       ).toJson();
-      final response = await apiClient.dio.put('/patients/${patient.id}', data: body);
+      final response = await apiClient.dio.put(
+        '/patients/${patient.id}',
+        data: body,
+      );
       return PatientModel.fromJson(response.data);
     } on DioException catch (e) {
-      final errorMsg = e.response?.data?['message'] ?? 'Erro ao atualizar paciente.';
+      final errorMsg =
+          e.response?.data?['message'] ?? 'Erro ao atualizar paciente.';
       throw Exception(errorMsg);
     } catch (e) {
       throw Exception('Erro desconhecido ao atualizar paciente: $e');
@@ -99,7 +106,8 @@ class PatientRemoteDataSource implements IPatientRemoteDataSource {
     try {
       await apiClient.dio.delete('/patients/$id');
     } on DioException catch (e) {
-      final errorMsg = e.response?.data?['message'] ?? 'Erro ao excluir paciente.';
+      final errorMsg =
+          e.response?.data?['message'] ?? 'Erro ao excluir paciente.';
       throw Exception(errorMsg);
     } catch (e) {
       throw Exception('Erro desconhecido ao excluir paciente: $e');
@@ -107,7 +115,10 @@ class PatientRemoteDataSource implements IPatientRemoteDataSource {
   }
 
   @override
-  Future<PatientModel> updateAnamnesis(String patientId, Anamnesis anamnesis) async {
+  Future<PatientModel> updateAnamnesis(
+    String patientId,
+    Anamnesis anamnesis,
+  ) async {
     try {
       final body = {
         'mainComplaint': anamnesis.mainComplaint,
@@ -120,10 +131,14 @@ class PatientRemoteDataSource implements IPatientRemoteDataSource {
         'treatmentPlan': anamnesis.treatmentPlan,
         'medications': anamnesis.medications,
       };
-      final response = await apiClient.dio.put('/patients/$patientId/anamnesis', data: body);
+      final response = await apiClient.dio.put(
+        '/patients/$patientId/anamnesis',
+        data: body,
+      );
       return PatientModel.fromJson(response.data);
     } on DioException catch (e) {
-      final errorMsg = e.response?.data?['message'] ?? 'Erro ao atualizar anamnese.';
+      final errorMsg =
+          e.response?.data?['message'] ?? 'Erro ao atualizar anamnese.';
       throw Exception(errorMsg);
     } catch (e) {
       throw Exception('Erro desconhecido ao atualizar anamnese: $e');

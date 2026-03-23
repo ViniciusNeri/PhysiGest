@@ -13,48 +13,48 @@ class DashboardLoading extends DashboardState {
 }
 
 class DashboardLoaded extends DashboardState {
-  final int atendimentosHoje;
-  final int mensalidadesVencer;
-  final int atendimentosSemana;
-  final int fichasVencidas;
+  final int weeklyAppointments;
+  final double monthlyIncome;
+  final int activePayments;
+  final List<Appointment> todaysAppointments;
+  final Appointment? nextAppointment;
   final Map<DateTime, List<String>> agendamentosSemana;
-  final List<Appointment> atendimentosHojeList;
 
   const DashboardLoaded({
-    required this.atendimentosHoje,
-    required this.mensalidadesVencer,
-    required this.atendimentosSemana,
-    required this.fichasVencidas,
+    required this.weeklyAppointments,
+    required this.monthlyIncome,
+    required this.activePayments,
+    required this.todaysAppointments,
+    this.nextAppointment,
     required this.agendamentosSemana,
-    required this.atendimentosHojeList,
   });
 
   DashboardLoaded copyWith({
-    int? atendimentosHoje,
-    int? mensalidadesVencer,
-    int? atendimentosSemana,
-    int? fichasVencidas,
+    int? weeklyAppointments,
+    double? monthlyIncome,
+    int? activePayments,
+    List<Appointment>? todaysAppointments,
+    Appointment? nextAppointment,
     Map<DateTime, List<String>>? agendamentosSemana,
-    List<Appointment>? atendimentosHojeList,
   }) {
     return DashboardLoaded(
-      atendimentosHoje: atendimentosHoje ?? this.atendimentosHoje,
-      mensalidadesVencer: mensalidadesVencer ?? this.mensalidadesVencer,
-      atendimentosSemana: atendimentosSemana ?? this.atendimentosSemana,
-      fichasVencidas: fichasVencidas ?? this.fichasVencidas,
+      weeklyAppointments: weeklyAppointments ?? this.weeklyAppointments,
+      monthlyIncome: monthlyIncome ?? this.monthlyIncome,
+      activePayments: activePayments ?? this.activePayments,
+      todaysAppointments: todaysAppointments ?? this.todaysAppointments,
+      nextAppointment: nextAppointment ?? this.nextAppointment,
       agendamentosSemana: agendamentosSemana ?? this.agendamentosSemana,
-      atendimentosHojeList: atendimentosHojeList ?? this.atendimentosHojeList,
     );
   }
 
   @override
   List<Object?> get props => [
-        atendimentosHoje,
-        mensalidadesVencer,
-        atendimentosSemana,
-        fichasVencidas,
+        weeklyAppointments,
+        monthlyIncome,
+        activePayments,
+        todaysAppointments,
+        nextAppointment,
         agendamentosSemana,
-        atendimentosHojeList,
       ];
 }
 

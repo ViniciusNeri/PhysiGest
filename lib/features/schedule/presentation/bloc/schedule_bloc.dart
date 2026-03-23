@@ -14,7 +14,10 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
     on<UpdateAppointment>(_onUpdateAppointment);
   }
 
-  Future<void> _onLoadSchedule(LoadSchedule event, Emitter<ScheduleState> emit) async {
+  Future<void> _onLoadSchedule(
+    LoadSchedule event,
+    Emitter<ScheduleState> emit,
+  ) async {
     emit(state.copyWith(status: ScheduleStatus.loading));
 
     try {
@@ -71,7 +74,7 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
           date: today,
           time: '16:00',
           endTime: '17:00',
-        ),  
+        ),
         Appointment(
           id: '6',
           patientName: 'Roberto Almeida',
@@ -93,7 +96,7 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
           patientName: 'Roberto Almeida',
           type: 'Fisioterapia',
           date: today.add(const Duration(days: -3)),
-          time: '14:00',  
+          time: '14:00',
           endTime: '15:30',
         ),
         Appointment(
@@ -101,7 +104,7 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
           patientName: 'Roberto Almeida',
           type: 'Fisioterapia',
           date: today.add(const Duration(days: -2)),
-          time: '18:00',  
+          time: '18:00',
           endTime: '20:00',
         ),
         Appointment(
@@ -114,13 +117,20 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
         ),
       ];
 
-      emit(state.copyWith(
-        status: ScheduleStatus.success,
-        appointments: mockAppointments,
-        availablePatients: patients,
-      ));
+      emit(
+        state.copyWith(
+          status: ScheduleStatus.success,
+          appointments: mockAppointments,
+          availablePatients: patients,
+        ),
+      );
     } catch (e) {
-      emit(state.copyWith(status: ScheduleStatus.failure, errorMessage: 'Erro ao carregar agenda.'));
+      emit(
+        state.copyWith(
+          status: ScheduleStatus.failure,
+          errorMessage: 'Erro ao carregar agenda.',
+        ),
+      );
     }
   }
 
@@ -133,11 +143,15 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
   }
 
   void _onAddAppointment(AddAppointment event, Emitter<ScheduleState> emit) {
-    final updatedList = List<Appointment>.from(state.appointments)..add(event.appointment);
+    final updatedList = List<Appointment>.from(state.appointments)
+      ..add(event.appointment);
     emit(state.copyWith(appointments: updatedList));
   }
 
-  void _onUpdateAppointment(UpdateAppointment event, Emitter<ScheduleState> emit) {
+  void _onUpdateAppointment(
+    UpdateAppointment event,
+    Emitter<ScheduleState> emit,
+  ) {
     final updatedList = state.appointments.map((apt) {
       if (apt.id == event.appointment.id) {
         return event.appointment; // Substitui pelo novo
@@ -146,5 +160,4 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
     }).toList();
     emit(state.copyWith(appointments: updatedList));
   }
-
 }

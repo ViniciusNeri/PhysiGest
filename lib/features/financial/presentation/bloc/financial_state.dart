@@ -25,7 +25,13 @@ class FinancialLoaded extends FinancialState {
   });
 
   @override
-  List<Object?> get props => [faturamentoTotal, contasReceber, despesasFixas, lucroLiquido, transacoes];
+  List<Object?> get props => [
+    faturamentoTotal,
+    contasReceber,
+    despesasFixas,
+    lucroLiquido,
+    transacoes,
+  ];
 }
 
 class FinancialError extends FinancialState {

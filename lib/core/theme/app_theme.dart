@@ -12,9 +12,7 @@ class AppTheme {
       ),
       useMaterial3: true,
       inputDecorationTheme: InputDecorationTheme(
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8.0),
-        ),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8.0)),
         filled: true,
         fillColor: Colors.grey.shade100,
       ),

@@ -1,5 +1,6 @@
 import 'package:physigest/features/settings/domain/entities/attendance_category.dart';
 import 'package:physigest/features/settings/domain/entities/payment_method.dart';
+import 'package:physigest/features/settings/domain/entities/dashboard_preferences.dart';
 
 abstract class ISettingsRepository {
   Future<List<AttendanceCategory>> getCategories();
@@ -13,4 +14,7 @@ abstract class ISettingsRepository {
   Future<void> deletePaymentMethod(String id);
 
   Future<void> changePassword(String currentPassword, String newPassword);
+
+  Future<DashboardPreferences> getDashboardPreferences();
+  Future<void> updateDashboardPreferences(DashboardPreferences preferences);
 }
