@@ -1,0 +1,36 @@
+import 'package:injectable/injectable.dart';
+import 'package:physigest/features/schedule/domain/models/appointment.dart';
+import '../../domain/repositories/i_schedule_repository.dart';
+import '../datasources/schedule_remote_datasource.dart';
+
+@LazySingleton(as: IScheduleRepository)
+class ScheduleRepositoryImpl implements IScheduleRepository {
+  final IScheduleRemoteDataSource remoteDataSource;
+
+  ScheduleRepositoryImpl(this.remoteDataSource);
+
+  @override
+  Future<List<Appointment>> getAppointments(DateTime from, DateTime to) async {
+    return await remoteDataSource.getAppointments(from, to);
+  }
+
+  @override
+  Future<Appointment> createAppointment(Appointment appointment) async {
+    return await remoteDataSource.createAppointment(appointment);
+  }
+
+  @override
+  Future<Appointment> updateAppointment(Appointment appointment) async {
+    return await remoteDataSource.updateAppointment(appointment);
+  }
+
+  @override
+  Future<void> deleteAppointment(String id) async {
+    return await remoteDataSource.deleteAppointment(id);
+  }
+
+  @override
+  Future<List<String>> getAvailablePatients() async {
+    return await remoteDataSource.getAvailablePatients();
+  }
+}

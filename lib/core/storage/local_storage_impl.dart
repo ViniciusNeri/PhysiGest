@@ -66,7 +66,7 @@ Future<void> saveToken(String token) async {
   String? getUserName() {
     final json = _prefs.getString(_userKey);
     if (json == null) return null;
-    return AuthUser.fromJson(jsonDecode(json)).name;
+    return AuthUserModel.fromJson(jsonDecode(json)).name;
   }
 
 }
