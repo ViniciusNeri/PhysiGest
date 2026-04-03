@@ -129,9 +129,9 @@ class PatientSummaryView extends StatelessWidget {
                       color: Colors.white.withOpacity(0.2),
                       borderRadius: BorderRadius.circular(20),
                     ),
-                    child: const Text(
-                      "Idade N/A", // Pode ser calculado usando data de nascimento depois
-                      style: TextStyle(
+                    child: Text(
+                      patient.displayAge,
+                      style: const TextStyle(
                         color: Colors.white,
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
@@ -161,16 +161,23 @@ class PatientSummaryView extends StatelessWidget {
                     Colors.orange,
                   ),
                   _sidebarTile(
+                    Icons.wc_outlined,
+                    "Gênero",
+                    patient.displayGender,
+                    const Color(0xFFF3E8FF),
+                    Colors.indigo,
+                  ),
+                  _sidebarTile(
                     Icons.work_outline_rounded,
                     "Profissão",
-                    patient.occupation,
+                    patient.profession,
                     const Color(0xFFF0FDFA),
                     Colors.teal,
                   ),
                   _sidebarTile(
                     Icons.cake_outlined,
                     "Nascimento",
-                    patient.birthDate,
+                    patient.displayBirthDate,
                     const Color(0xFFF5F3FF),
                     Colors.purple,
                   ),
@@ -236,14 +243,14 @@ class PatientSummaryView extends StatelessWidget {
       return Row(
         children: [
           Expanded(
-            child: _statCard("12", "Total Sessões", Icons.verified_rounded, [
+            child: _statCard(patient.completedAppointments.toString(), "Total Sessões", Icons.verified_rounded, [
               primaryGradStart,
               primaryGradEnd,
             ]),
           ),
           const SizedBox(width: 16),
           Expanded(
-            child: _statCard("0", "Faltas", Icons.do_not_disturb_on_rounded, [
+            child: _statCard(patient.noShowAppointments.toString(), "Faltas", Icons.do_not_disturb_on_rounded, [
               Colors.redAccent,
               Colors.red,
             ]),
@@ -251,7 +258,7 @@ class PatientSummaryView extends StatelessWidget {
           const SizedBox(width: 16),
           Expanded(
             child: _statCard(
-              "05/03",
+              patient.displayNextAppointmentDate,
               "Próxima",
               Icons.event_available_rounded,
               [const Color(0xFFFBBF24), const Color(0xFFF59E0B)],
@@ -266,7 +273,7 @@ class PatientSummaryView extends StatelessWidget {
             children: [
               Expanded(
                 child: _statCard(
-                  "12",
+                  patient.completedAppointments.toString(),
                   "Total Sessões",
                   Icons.verified_rounded,
                   [primaryGradStart, primaryGradEnd],
@@ -275,7 +282,7 @@ class PatientSummaryView extends StatelessWidget {
               const SizedBox(width: 16),
               Expanded(
                 child: _statCard(
-                  "0",
+                  patient.noShowAppointments.toString(),
                   "Faltas",
                   Icons.do_not_disturb_on_rounded,
                   [Colors.redAccent, Colors.red],
@@ -288,7 +295,7 @@ class PatientSummaryView extends StatelessWidget {
             children: [
               Expanded(
                 child: _statCard(
-                  "05/03",
+                  patient.displayNextAppointmentDate,
                   "Próxima",
                   Icons.event_available_rounded,
                   [const Color(0xFFFBBF24), const Color(0xFFF59E0B)],

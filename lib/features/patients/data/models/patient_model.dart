@@ -1,4 +1,5 @@
 import 'package:physigest/features/patients/domain/models/patient.dart';
+import 'anamnesis_model.dart';
 
 class PatientModel extends Patient {
   const PatientModel({
@@ -7,7 +8,11 @@ class PatientModel extends Patient {
     required super.email,
     required super.phone,
     required super.birthDate,
-    required super.occupation,
+    required super.gender,
+    required super.profession,
+    super.completedAppointments = 0,
+    super.noShowAppointments = 0,
+    super.nextAppointmentDate,
     super.anamnesis = const Anamnesis(),
     super.photoPaths = const [],
     super.financialHistory = const [],
@@ -24,18 +29,12 @@ class PatientModel extends Patient {
       email: json['email'] ?? '',
       phone: json['phone'] ?? '',
       birthDate: json['birthDate'] ?? '',
-      occupation: json['occupation'] ?? '',
-      anamnesis: Anamnesis(
-        mainComplaint: anamnesisJson['mainComplaint'] ?? '',
-        currentIllness: anamnesisJson['currentIllness'] ?? '',
-        historic: anamnesisJson['historic'] ?? '',
-        familyHistory: anamnesisJson['familyHistory'] ?? '',
-        lifestyleHabits: anamnesisJson['lifestyleHabits'] ?? '',
-        physicalExam: anamnesisJson['physicalExam'] ?? '',
-        clinicalDiagnosis: anamnesisJson['clinicalDiagnosis'] ?? '',
-        treatmentPlan: anamnesisJson['treatmentPlan'] ?? '',
-        medications: anamnesisJson['medications'] ?? '',
-      ),
+      gender: json['gender'] ?? 'Não especificado',
+      profession: json['profession'] ?? json['occupation'] ?? '',
+      completedAppointments: json['completedAppointments'] ?? 0,
+      noShowAppointments: json['noShowAppointments'] ?? 0,
+      nextAppointmentDate: json['nextAppointmentDate'],
+      anamnesis: AnamnesisModel.fromJson(anamnesisJson),
       photoPaths: photosJson.map((e) => e.toString()).toList(),
       financialHistory: financialJson
           .map(
@@ -61,18 +60,26 @@ class PatientModel extends Patient {
       'email': email,
       'phone': phone,
       'birthDate': birthDate,
-      'occupation': occupation,
-      'anamnesis': {
-        'mainComplaint': anamnesis.mainComplaint,
-        'currentIllness': anamnesis.currentIllness,
-        'historic': anamnesis.historic,
-        'familyHistory': anamnesis.familyHistory,
-        'lifestyleHabits': anamnesis.lifestyleHabits,
-        'physicalExam': anamnesis.physicalExam,
-        'clinicalDiagnosis': anamnesis.clinicalDiagnosis,
-        'treatmentPlan': anamnesis.treatmentPlan,
-        'medications': anamnesis.medications,
-      },
+      'gender': gender,
+      'profession': profession,
+      'completedAppointments': completedAppointments,
+      'noShowAppointments': noShowAppointments,
+      'nextAppointmentDate': nextAppointmentDate,
+      'anamnesis': AnamnesisModel(
+        id: anamnesis.id,
+        date: anamnesis.date,
+        mainComplaint: anamnesis.mainComplaint,
+        currentIllness: anamnesis.currentIllness,
+        historic: anamnesis.historic,
+        familyHistory: anamnesis.familyHistory,
+        lifestyleHabits: anamnesis.lifestyleHabits,
+        physicalExam: anamnesis.physicalExam,
+        clinicalDiagnosis: anamnesis.clinicalDiagnosis,
+        treatmentPlan: anamnesis.treatmentPlan,
+        medications: anamnesis.medications,
+        weight: anamnesis.weight,
+        height: anamnesis.height,
+      ).toJson(),
     };
   }
 }

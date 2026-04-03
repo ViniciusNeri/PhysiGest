@@ -3,6 +3,9 @@ import 'package:injectable/injectable.dart';
 import '../../../../core/network/api_client.dart';
 import 'package:physigest/features/patients/domain/models/patient.dart';
 import '../models/patient_model.dart';
+import '../models/anamnesis_model.dart';
+import '../models/appointment_model.dart';
+import 'package:physigest/core/storage/local_storage.dart';
 
 abstract class IPatientRemoteDataSource {
   Future<List<PatientModel>> getPatients();
@@ -10,19 +13,25 @@ abstract class IPatientRemoteDataSource {
   Future<PatientModel> createPatient(Patient patient);
   Future<PatientModel> updatePatient(Patient patient);
   Future<void> deletePatient(String id);
-  Future<PatientModel> updateAnamnesis(String patientId, Anamnesis anamnesis);
+  Future<Anamnesis?> getLatestAnamnesis(String patientId);
+  Future<Anamnesis> createAnamnesis(String patientId, Anamnesis anamnesis);
+  Future<Anamnesis> updateAnamnesis(String patientId, String anamnesisId, Anamnesis anamnesis);
+  Future<List<AppointmentModel>> getPatientAgenda(String patientId);
 }
 
 @LazySingleton(as: IPatientRemoteDataSource)
 class PatientRemoteDataSource implements IPatientRemoteDataSource {
   final ApiClient apiClient;
+  final LocalStorage localStorage;
 
-  PatientRemoteDataSource(this.apiClient);
+  PatientRemoteDataSource(this.apiClient, this.localStorage);
 
   @override
   Future<List<PatientModel>> getPatients() async {
     try {
-      final response = await apiClient.dio.get('/patients');
+      final user = await localStorage.getUser();
+      final userId = user?.id ?? '';
+      final response = await apiClient.dio.get('/patients/user/$userId');
       final list = response.data as List<dynamic>;
       return list.map((json) => PatientModel.fromJson(json)).toList();
     } on DioException catch (e) {
@@ -57,11 +66,20 @@ class PatientRemoteDataSource implements IPatientRemoteDataSource {
         email: patient.email,
         phone: patient.phone,
         birthDate: patient.birthDate,
-        occupation: patient.occupation,
+        gender: patient.gender,
+        profession: patient.profession,
+        completedAppointments: patient.completedAppointments,
+        noShowAppointments: patient.noShowAppointments,
+        nextAppointmentDate: patient.nextAppointmentDate,
         anamnesis: patient.anamnesis,
         photoPaths: patient.photoPaths,
         financialHistory: patient.financialHistory,
       ).toJson();
+      
+      final user = await localStorage.getUser();
+      final userId = user?.id ?? '';
+      body['userId'] = userId;
+
       final response = await apiClient.dio.post('/patients', data: body);
       return PatientModel.fromJson(response.data);
     } on DioException catch (e) {
@@ -82,7 +100,11 @@ class PatientRemoteDataSource implements IPatientRemoteDataSource {
         email: patient.email,
         phone: patient.phone,
         birthDate: patient.birthDate,
-        occupation: patient.occupation,
+        gender: patient.gender,
+        profession: patient.profession,
+        completedAppointments: patient.completedAppointments,
+        noShowAppointments: patient.noShowAppointments,
+        nextAppointmentDate: patient.nextAppointmentDate,
         anamnesis: patient.anamnesis,
         photoPaths: patient.photoPaths,
         financialHistory: patient.financialHistory,
@@ -115,33 +137,63 @@ class PatientRemoteDataSource implements IPatientRemoteDataSource {
   }
 
   @override
-  Future<PatientModel> updateAnamnesis(
+  Future<Anamnesis?> getLatestAnamnesis(String patientId) async {
+    try {
+      final response = await apiClient.dio.get('/patients/$patientId/anamnesis/latest');
+      if (response.data == null || response.data.isEmpty) return null;
+      return AnamnesisModel.fromJson(response.data);
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 404) return null;
+      throw Exception(e.response?.data?['message'] ?? 'Erro ao buscar anamnese.');
+    } catch (e) {
+      throw Exception('Erro ao buscar anamnese: $e');
+    }
+  }
+
+  @override
+  Future<Anamnesis> createAnamnesis(String patientId, Anamnesis anamnesis) async {
+    try {
+      final body = AnamnesisModel.fromDomain(anamnesis).toJson();
+      final response = await apiClient.dio.post('/patients/$patientId/anamnesis', data: body);
+      return AnamnesisModel.fromJson(response.data);
+    } on DioException catch (e) {
+      throw Exception(e.response?.data?['message'] ?? 'Erro ao criar anamnese.');
+    } catch (e) {
+      throw Exception('Erro ao criar anamnese: $e');
+    }
+  }
+
+  @override
+  Future<Anamnesis> updateAnamnesis(
     String patientId,
+    String anamnesisId,
     Anamnesis anamnesis,
   ) async {
     try {
-      final body = {
-        'mainComplaint': anamnesis.mainComplaint,
-        'currentIllness': anamnesis.currentIllness,
-        'historic': anamnesis.historic,
-        'familyHistory': anamnesis.familyHistory,
-        'lifestyleHabits': anamnesis.lifestyleHabits,
-        'physicalExam': anamnesis.physicalExam,
-        'clinicalDiagnosis': anamnesis.clinicalDiagnosis,
-        'treatmentPlan': anamnesis.treatmentPlan,
-        'medications': anamnesis.medications,
-      };
+      final body = AnamnesisModel.fromDomain(anamnesis).toJson();
       final response = await apiClient.dio.put(
-        '/patients/$patientId/anamnesis',
+        '/patients/$patientId/anamnesis/$anamnesisId',
         data: body,
       );
-      return PatientModel.fromJson(response.data);
+      return AnamnesisModel.fromJson(response.data);
     } on DioException catch (e) {
-      final errorMsg =
-          e.response?.data?['message'] ?? 'Erro ao atualizar anamnese.';
+      throw Exception(e.response?.data?['message'] ?? 'Erro ao atualizar anamnese.');
+    } catch (e) {
+      throw Exception('Erro ao atualizar anamnese: $e');
+    }
+  }
+
+  @override
+  Future<List<AppointmentModel>> getPatientAgenda(String patientId) async {
+    try {
+      final response = await apiClient.dio.get('/patients/$patientId/agenda');
+      final list = response.data as List<dynamic>;
+      return list.map((json) => AppointmentModel.fromJson(json)).toList();
+    } on DioException catch (e) {
+      final errorMsg = e.response?.data?['message'] ?? 'Erro ao buscar agenda.';
       throw Exception(errorMsg);
     } catch (e) {
-      throw Exception('Erro desconhecido ao atualizar anamnese: $e');
+      throw Exception('Erro desconhecido ao buscar agenda: $e');
     }
   }
 }

@@ -16,7 +16,19 @@ class PatientsListScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (_) => getIt<PatientBloc>()..add(LoadPatients()),
-      child: const PatientsListView(),
+      child: BlocListener<PatientBloc, PatientState>(
+        listener: (context, state) {
+          if (state.status == PatientStatus.failure && state.errorMessage != null) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(state.errorMessage!),
+                backgroundColor: Colors.red,
+              ),
+            );
+          }
+        },
+        child: const PatientsListView(),
+      ),
     );
   }
 }
@@ -52,15 +64,20 @@ class _PatientsListViewState extends State<PatientsListView> {
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(32.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildPageHeader(context),
-            const SizedBox(height: 32),
-            _buildSearchField(context),
-            const SizedBox(height: 32),
-            _buildPatientsTable(context),
-          ],
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 1200),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildPageHeader(context),
+                const SizedBox(height: 32),
+                _buildSearchField(context),
+                const SizedBox(height: 32),
+                _buildPatientsTable(context),
+              ],
+            ),
+          ),
         ),
       ),
     );
@@ -91,10 +108,16 @@ class _PatientsListViewState extends State<PatientsListView> {
             ],
           ),
           ElevatedButton.icon(
-            onPressed: () => showDialog(
-              context: context,
-              builder: (_) => const EditPatientDialog(),
-            ),
+            onPressed: () {
+              final bloc = context.read<PatientBloc>();
+              showDialog(
+                context: context,
+                builder: (_) => BlocProvider.value(
+                  value: bloc,
+                  child: const EditPatientDialog(),
+                ),
+              );
+            },
             icon: const Icon(Icons.add_rounded, size: 20, color: Colors.white),
             label: const Text(
               "Novo Paciente",
@@ -133,10 +156,16 @@ class _PatientsListViewState extends State<PatientsListView> {
           SizedBox(
             width: double.infinity,
             child: ElevatedButton.icon(
-              onPressed: () => showDialog(
-                context: context,
-                builder: (_) => const EditPatientDialog(),
-              ),
+              onPressed: () {
+                final bloc = context.read<PatientBloc>();
+                showDialog(
+                  context: context,
+                  builder: (_) => BlocProvider.value(
+                    value: bloc,
+                    child: const EditPatientDialog(),
+                  ),
+                );
+              },
               icon: const Icon(
                 Icons.add_rounded,
                 size: 20,
@@ -251,7 +280,7 @@ class _PatientsListViewState extends State<PatientsListView> {
             const Expanded(
               flex: 2,
               child: Text(
-                "IDADE",
+                "NASCIMENTO",
                 style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w800,
@@ -345,9 +374,9 @@ class _PatientRow extends StatelessWidget {
             if (isDesktop)
               Expanded(
                 flex: 2,
-                child: const Text(
-                  "34 anos",
-                  style: TextStyle(color: Color(0xFF64748B)),
+                child: Text(
+                  patient.displayBirthDate,
+                  style: const TextStyle(color: Color(0xFF64748B)),
                 ),
               ),
             // Telefone
@@ -371,8 +400,8 @@ class _PatientRow extends StatelessWidget {
                   color: const Color(0xFFF1F5F9),
                   borderRadius: BorderRadius.circular(20),
                 ),
-                child: const Text(
-                  "8 sessões",
+                child: Text(
+                  "${patient.completedAppointments} sessões",
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 12,

@@ -41,6 +41,21 @@ class DeletePatientUseCase {
 class UpdateAnamnesisUseCase {
   final IPatientRepository repository;
   UpdateAnamnesisUseCase(this.repository);
-  Future<Patient> call(String patientId, Anamnesis anamnesis) =>
-      repository.updateAnamnesis(patientId, anamnesis);
+  Future<Anamnesis> call(String patientId, String anamnesisId, Anamnesis anamnesis) =>
+      repository.updateAnamnesis(patientId, anamnesisId, anamnesis);
+}
+
+@lazySingleton
+class GetLatestAnamnesisUseCase {
+  final IPatientRepository repository;
+  GetLatestAnamnesisUseCase(this.repository);
+  Future<Anamnesis?> call(String patientId) => repository.getLatestAnamnesis(patientId);
+}
+
+@lazySingleton
+class CreateAnamnesisUseCase {
+  final IPatientRepository repository;
+  CreateAnamnesisUseCase(this.repository);
+  Future<Anamnesis> call(String patientId, Anamnesis anamnesis) =>
+      repository.createAnamnesis(patientId, anamnesis);
 }

@@ -35,7 +35,21 @@ class PatientRepositoryImpl implements IPatientRepository {
   }
 
   @override
-  Future<Patient> updateAnamnesis(String patientId, Anamnesis anamnesis) async {
-    return await remoteDataSource.updateAnamnesis(patientId, anamnesis);
+  Future<Anamnesis?> getLatestAnamnesis(String patientId) async {
+    return await remoteDataSource.getLatestAnamnesis(patientId);
+  }
+
+  @override
+  Future<Anamnesis> createAnamnesis(String patientId, Anamnesis anamnesis) async {
+    return await remoteDataSource.createAnamnesis(patientId, anamnesis);
+  }
+
+  @override
+  Future<Anamnesis> updateAnamnesis(
+    String patientId,
+    String anamnesisId,
+    Anamnesis anamnesis,
+  ) async {
+    return await remoteDataSource.updateAnamnesis(patientId, anamnesisId, anamnesis);
   }
 }

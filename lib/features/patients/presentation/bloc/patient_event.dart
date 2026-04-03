@@ -37,3 +37,12 @@ class AddPhotoToPatient extends PatientEvent {
   @override
   List<Object?> get props => [patientId, photoPath];
 }
+
+class DeletePatient extends PatientEvent {
+  final String id;
+
+  const DeletePatient(this.id);
+
+  @override
+  List<Object?> get props => [id];
+}

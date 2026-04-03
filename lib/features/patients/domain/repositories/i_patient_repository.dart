@@ -6,5 +6,7 @@ abstract class IPatientRepository {
   Future<Patient> createPatient(Patient patient);
   Future<Patient> updatePatient(Patient patient);
   Future<void> deletePatient(String id);
-  Future<Patient> updateAnamnesis(String patientId, Anamnesis anamnesis);
+  Future<Anamnesis?> getLatestAnamnesis(String patientId);
+  Future<Anamnesis> createAnamnesis(String patientId, Anamnesis anamnesis);
+  Future<Anamnesis> updateAnamnesis(String patientId, String anamnesisId, Anamnesis anamnesis);
 }
