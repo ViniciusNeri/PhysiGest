@@ -52,4 +52,29 @@ class PatientRepositoryImpl implements IPatientRepository {
   ) async {
     return await remoteDataSource.updateAnamnesis(patientId, anamnesisId, anamnesis);
   }
+
+  @override
+  Future<PatientFinancialSummary> getFinancialSummary(String patientId) async {
+    return await remoteDataSource.getFinancialSummary(patientId);
+  }
+
+  @override
+  Future<void> addFinancialRecord(String patientId, PatientPayment payment) async {
+    return await remoteDataSource.addFinancialRecord(patientId, payment);
+  }
+
+  @override
+  Future<void> updateFinancialRecordStatus(
+    String patientId,
+    String paymentId,
+    String status, {
+    String? paymentMethod,
+  }) async {
+    return await remoteDataSource.updateFinancialRecordStatus(
+      patientId,
+      paymentId,
+      status,
+      paymentMethod: paymentMethod,
+    );
+  }
 }

@@ -5,6 +5,7 @@ import 'package:physigest/features/patients/domain/models/patient.dart';
 import '../models/patient_model.dart';
 import '../models/anamnesis_model.dart';
 import '../models/appointment_model.dart';
+import '../models/patient_financial_model.dart';
 import 'package:physigest/core/storage/local_storage.dart';
 
 abstract class IPatientRemoteDataSource {
@@ -17,6 +18,9 @@ abstract class IPatientRemoteDataSource {
   Future<Anamnesis> createAnamnesis(String patientId, Anamnesis anamnesis);
   Future<Anamnesis> updateAnamnesis(String patientId, String anamnesisId, Anamnesis anamnesis);
   Future<List<AppointmentModel>> getPatientAgenda(String patientId);
+  Future<PatientFinancialSummary> getFinancialSummary(String patientId);
+  Future<void> addFinancialRecord(String patientId, PatientPayment payment);
+  Future<void> updateFinancialRecordStatus(String patientId, String paymentId, String status, {String? paymentMethod});
 }
 
 @LazySingleton(as: IPatientRemoteDataSource)
@@ -73,7 +77,6 @@ class PatientRemoteDataSource implements IPatientRemoteDataSource {
         nextAppointmentDate: patient.nextAppointmentDate,
         anamnesis: patient.anamnesis,
         photoPaths: patient.photoPaths,
-        financialHistory: patient.financialHistory,
       ).toJson();
       
       final user = await localStorage.getUser();
@@ -107,7 +110,6 @@ class PatientRemoteDataSource implements IPatientRemoteDataSource {
         nextAppointmentDate: patient.nextAppointmentDate,
         anamnesis: patient.anamnesis,
         photoPaths: patient.photoPaths,
-        financialHistory: patient.financialHistory,
       ).toJson();
       final response = await apiClient.dio.put(
         '/patients/${patient.id}',
@@ -194,6 +196,70 @@ class PatientRemoteDataSource implements IPatientRemoteDataSource {
       throw Exception(errorMsg);
     } catch (e) {
       throw Exception('Erro desconhecido ao buscar agenda: $e');
+    }
+  }
+
+  @override
+  Future<PatientFinancialSummary> getFinancialSummary(String patientId) async {
+    try {
+      final response = await apiClient.dio.get('/patients/$patientId/financial/summary');
+      return PatientFinancialSummaryModel.fromJson(response.data);
+    } on DioException catch (e) {
+      throw Exception(e.response?.data?['message'] ?? 'Erro ao buscar resumo financeiro.');
+    } catch (e) {
+      throw Exception('Erro ao buscar resumo financeiro: $e');
+    }
+  }
+
+  @override
+  Future<void> addFinancialRecord(String patientId, PatientPayment payment) async {
+    try {
+      final body = PatientPaymentModel(
+        id: payment.id,
+        patientId: payment.patientId,
+        userId: payment.userId,
+        type: payment.type,
+        category: payment.category,
+        description: payment.description,
+        amount: payment.amount,
+        date: payment.date,
+        paymentMethod: payment.paymentMethod,
+        status: payment.status,
+        dueDate: payment.dueDate,
+        paymentDate: payment.paymentDate,
+        notes: payment.notes,
+        totalSessions: payment.totalSessions,
+      ).toJson();
+      await apiClient.dio.post('/patients/$patientId/financial', data: body);
+    } on DioException catch (e) {
+      throw Exception(e.response?.data?['message'] ?? 'Erro ao registrar pagamento.');
+    } catch (e) {
+      throw Exception('Erro ao registrar pagamento: $e');
+    }
+  }
+
+  @override
+  Future<void> updateFinancialRecordStatus(
+    String patientId,
+    String paymentId,
+    String status, {
+    String? paymentMethod,
+  }) async {
+    try {
+      final Map<String, dynamic> data = {};
+      if (paymentMethod != null) {
+        data['paymentMethod'] = paymentMethod;
+      }
+      await apiClient.dio.patch(
+        '/patients/$patientId/financial/$paymentId/pay',
+        data: data,
+      );
+    } on DioException catch (e) {
+      final errorMsg =
+          e.response?.data?['message'] ?? 'Erro ao atualizar status do pagamento.';
+      throw Exception(errorMsg);
+    } catch (e) {
+      throw Exception('Erro desconhecido ao atualizar status do pagamento: $e');
     }
   }
 }

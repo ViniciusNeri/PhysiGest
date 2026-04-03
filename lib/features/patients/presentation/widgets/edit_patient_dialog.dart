@@ -82,7 +82,6 @@ class _EditPatientDialogState extends State<EditPatientDialog> {
         profession: _professionCtrl.text,
         anamnesis: widget.patient?.anamnesis ?? const Anamnesis(),
         photoPaths: widget.patient?.photoPaths ?? const [],
-        financialHistory: widget.patient?.financialHistory ?? const [],
       );
 
       final bloc = context.read<PatientBloc>();

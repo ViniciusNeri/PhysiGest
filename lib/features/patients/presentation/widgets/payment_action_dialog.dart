@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:physigest/features/patients/domain/models/patient.dart';
 
 class PaymentActionDialog extends StatefulWidget {
-  final Function(PaymentTransaction) onSave;
+  final Function(PatientPayment) onSave;
   final List<String> availableCategories;
 
   const PaymentActionDialog({
@@ -22,7 +22,7 @@ class _PaymentActionDialogState extends State<PaymentActionDialog> {
   final _quantityController = TextEditingController(text: '1');
 
   late String _selectedServiceType;
-  String _selectedStatus = 'PAGO';
+  String _selectedStatus = 'paid';
   String _selectedMethod = 'Pix';
 
   final List<String> _methods = [
@@ -91,15 +91,40 @@ class _PaymentActionDialogState extends State<PaymentActionDialog> {
 
     final int qty = int.tryParse(_quantityController.text) ?? 1;
 
-    final transaction = PaymentTransaction(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
-      title: _titleController.text.trim(),
-      serviceType: _selectedServiceType,
-      quantity: qty,
-      date: dateStr,
-      value: parsedValue,
-      paymentMethod: _selectedMethod,
+    String mappedMethod = 'other';
+    switch (_selectedMethod) {
+      case 'Pix':
+        mappedMethod = 'pix';
+        break;
+      case 'Cartão de Crédito':
+        mappedMethod = 'credit_card';
+        break;
+      case 'Cartão de Débito':
+        mappedMethod = 'debit_card';
+        break;
+      case 'Dinheiro':
+        mappedMethod = 'cash';
+        break;
+      case 'Transferência':
+        mappedMethod = 'bank_transfer';
+        break;
+      default:
+        mappedMethod = 'other';
+    }
+
+    final transaction = PatientPayment(
+      id: '',
+      patientId: '',
+      userId: '',
+      type: 'income',
+      category: _selectedServiceType,
+      description: _titleController.text.trim(),
+      amount: parsedValue,
+      date: DateTime.now().toIso8601String(),
+      paymentMethod: mappedMethod,
       status: _selectedStatus,
+      notes: _titleController.text.trim(),
+      totalSessions: qty,
     );
 
     widget.onSave(transaction);
@@ -354,7 +379,7 @@ class _PaymentActionDialogState extends State<PaymentActionDialog> {
         children: [
           Expanded(
             child: _buildStatusOption(
-              'PAGO',
+              'paid',
               'Pago',
               Icons.check_circle_rounded,
               const Color(0xFF10B981),
@@ -362,7 +387,7 @@ class _PaymentActionDialogState extends State<PaymentActionDialog> {
           ),
           Expanded(
             child: _buildStatusOption(
-              'PENDENTE',
+              'pending',
               'Pendente',
               Icons.timer_rounded,
               const Color(0xFFF59E0B),

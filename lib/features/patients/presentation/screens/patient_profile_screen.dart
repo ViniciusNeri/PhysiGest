@@ -12,6 +12,8 @@ import '../views/patient_agenda_view.dart';
 import '../views/patient_anamnesis_view.dart';
 import '../views/patient_finance_view.dart';
 import '../views/patient_gallery_view.dart';
+import '../bloc/patient_financial_bloc.dart';
+import '../bloc/patient_financial_event.dart';
 import '../widgets/edit_patient_dialog.dart';
 
 class PatientProfileScreen extends StatefulWidget {
@@ -53,7 +55,11 @@ class _PatientProfileScreenState extends State<PatientProfileScreen>
                 PatientSummaryView(patient: p),
                 PatientAgendaView(patient: p),
                 PatientAnamnesisView(patient: p),
-                PatientFinanceView(patient: p),
+                BlocProvider(
+                  create: (context) => getIt<PatientFinancialBloc>()
+                    ..add(LoadFinancialSummary(p.id)),
+                  child: PatientFinanceView(patient: p),
+                ),
                 const Center(child: Text("Anexos em breve")),
                 PatientGalleryView(patient: p),
               ],

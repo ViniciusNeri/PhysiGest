@@ -9,4 +9,7 @@ abstract class IPatientRepository {
   Future<Anamnesis?> getLatestAnamnesis(String patientId);
   Future<Anamnesis> createAnamnesis(String patientId, Anamnesis anamnesis);
   Future<Anamnesis> updateAnamnesis(String patientId, String anamnesisId, Anamnesis anamnesis);
+  Future<PatientFinancialSummary> getFinancialSummary(String patientId);
+  Future<void> addFinancialRecord(String patientId, PatientPayment payment);
+  Future<void> updateFinancialRecordStatus(String patientId, String paymentId, String status, {String? paymentMethod});
 }

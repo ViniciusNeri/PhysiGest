@@ -59,3 +59,27 @@ class CreateAnamnesisUseCase {
   Future<Anamnesis> call(String patientId, Anamnesis anamnesis) =>
       repository.createAnamnesis(patientId, anamnesis);
 }
+
+@lazySingleton
+class GetFinancialSummaryUseCase {
+  final IPatientRepository repository;
+  GetFinancialSummaryUseCase(this.repository);
+  Future<PatientFinancialSummary> call(String patientId) =>
+      repository.getFinancialSummary(patientId);
+}
+
+@lazySingleton
+class AddFinancialRecordUseCase {
+  final IPatientRepository repository;
+  AddFinancialRecordUseCase(this.repository);
+  Future<void> call(String patientId, PatientPayment payment) =>
+      repository.addFinancialRecord(patientId, payment);
+}
+
+@lazySingleton
+class UpdateFinancialStatusUseCase {
+  final IPatientRepository repository;
+  UpdateFinancialStatusUseCase(this.repository);
+  Future<void> call(String patientId, String paymentId, String status, {String? paymentMethod}) =>
+      repository.updateFinancialRecordStatus(patientId, paymentId, status, paymentMethod: paymentMethod);
+}

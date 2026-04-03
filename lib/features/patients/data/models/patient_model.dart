@@ -15,13 +15,11 @@ class PatientModel extends Patient {
     super.nextAppointmentDate,
     super.anamnesis = const Anamnesis(),
     super.photoPaths = const [],
-    super.financialHistory = const [],
   });
 
   factory PatientModel.fromJson(Map<String, dynamic> json) {
     final anamnesisJson = json['anamnesis'] as Map<String, dynamic>? ?? {};
     final photosJson = json['photoPaths'] as List<dynamic>? ?? [];
-    final financialJson = json['financialHistory'] as List<dynamic>? ?? [];
 
     return PatientModel(
       id: json['id']?.toString() ?? '',
@@ -36,20 +34,6 @@ class PatientModel extends Patient {
       nextAppointmentDate: json['nextAppointmentDate'],
       anamnesis: AnamnesisModel.fromJson(anamnesisJson),
       photoPaths: photosJson.map((e) => e.toString()).toList(),
-      financialHistory: financialJson
-          .map(
-            (t) => PaymentTransaction(
-              id: t['id']?.toString() ?? '',
-              title: t['title'] ?? '',
-              serviceType: t['serviceType'] ?? '',
-              quantity: t['quantity'] as int? ?? 1,
-              date: t['date'] ?? '',
-              value: (t['value'] as num?)?.toDouble() ?? 0.0,
-              paymentMethod: t['paymentMethod'] ?? '',
-              status: t['status'] ?? 'PENDENTE',
-            ),
-          )
-          .toList(),
     );
   }
 

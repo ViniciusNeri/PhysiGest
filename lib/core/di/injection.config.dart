@@ -56,8 +56,8 @@ import '../../features/patients/domain/usecases/patient_usecases.dart' as _i160;
 import '../../features/patients/presentation/bloc/patient_bloc.dart' as _i1035;
 import '../../features/patients/presentation/bloc/agenda_bloc.dart' as _i9901;
 import '../../features/patients/presentation/bloc/anamnesis_bloc.dart' as _i9902;
-import '../../features/schedule/data/datasources/schedule_remote_datasource.dart'
-    as _i115;
+import '../../features/patients/presentation/bloc/patient_financial_bloc.dart' as _i9903;
+import '../../features/schedule/data/datasources/schedule_remote_datasource.dart' as _i115;
 import '../../features/schedule/data/repositories/schedule_repository_impl.dart'
     as _i688;
 import '../../features/schedule/domain/repositories/i_schedule_repository.dart'
@@ -271,6 +271,15 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i160.CreateAnamnesisUseCase>(
       () => _i160.CreateAnamnesisUseCase(gh<_i37.IPatientRepository>()),
     );
+    gh.lazySingleton<_i160.GetFinancialSummaryUseCase>(
+      () => _i160.GetFinancialSummaryUseCase(gh<_i37.IPatientRepository>()),
+    );
+    gh.lazySingleton<_i160.AddFinancialRecordUseCase>(
+      () => _i160.AddFinancialRecordUseCase(gh<_i37.IPatientRepository>()),
+    );
+    gh.lazySingleton<_i160.UpdateFinancialStatusUseCase>(
+      () => _i160.UpdateFinancialStatusUseCase(gh<_i37.IPatientRepository>()),
+    );
     gh.factory<_i72.DashboardBloc>(
       () => _i72.DashboardBloc(gh<_i527.GetDashboardSummaryUseCase>()),
     );
@@ -317,6 +326,13 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i160.GetLatestAnamnesisUseCase>(),
         gh<_i160.CreateAnamnesisUseCase>(),
         gh<_i160.UpdateAnamnesisUseCase>(),
+      ),
+    );
+    gh.factory<_i9903.PatientFinancialBloc>(
+      () => _i9903.PatientFinancialBloc(
+        gh<_i160.GetFinancialSummaryUseCase>(),
+        gh<_i160.AddFinancialRecordUseCase>(),
+        gh<_i160.UpdateFinancialStatusUseCase>(),
       ),
     );
     return this;

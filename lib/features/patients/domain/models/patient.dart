@@ -1,37 +1,73 @@
 import 'package:equatable/equatable.dart';
 
-class PaymentTransaction extends Equatable {
+class PatientPayment extends Equatable {
   final String id;
-  final String title;
-  final String serviceType;
-  final int quantity;
+  final String patientId;
+  final String userId;
+  final String type; // 'income' or 'expense'
+  final String category;
+  final String description;
+  final double amount;
   final String date;
-  final double value;
   final String paymentMethod;
-  final String status; // 'PAGO' or 'PENDENTE'
+  final String status; // 'paid', 'pending', 'overdue'
+  final String? dueDate;
+  final String? paymentDate;
+  final String? notes;
+  final int totalSessions;
 
-  const PaymentTransaction({
+  const PatientPayment({
     required this.id,
-    required this.title,
-    required this.serviceType,
-    required this.quantity,
+    required this.patientId,
+    required this.userId,
+    required this.type,
+    required this.category,
+    required this.description,
+    required this.amount,
     required this.date,
-    required this.value,
     required this.paymentMethod,
     required this.status,
+    this.dueDate,
+    this.paymentDate,
+    this.notes,
+    this.totalSessions = 1,
   });
 
   @override
   List<Object?> get props => [
-    id,
-    title,
-    serviceType,
-    quantity,
-    date,
-    value,
-    paymentMethod,
-    status,
-  ];
+        id,
+        patientId,
+        userId,
+        type,
+        category,
+        description,
+        amount,
+        date,
+        paymentMethod,
+        status,
+        dueDate,
+        paymentDate,
+        notes,
+        totalSessions,
+      ];
+}
+
+class PatientFinancialSummary extends Equatable {
+  final double outstandingBalance;
+  final int totalSessions;
+  final double totalPaidAmount;
+  final List<PatientPayment> payments;
+
+  const PatientFinancialSummary({
+    this.outstandingBalance = 0,
+    this.totalSessions = 0,
+    this.totalPaidAmount = 0,
+    this.payments = const [],
+  });
+
+  @override
+  List<Object?> get props =>
+      [outstandingBalance, totalSessions, totalPaidAmount, payments];
 }
 
 class Patient extends Equatable {
@@ -48,7 +84,6 @@ class Patient extends Equatable {
   final Anamnesis anamnesis;
   final List<String>
   photoPaths; // Lista de caminhos para as fotos locais mockadas
-  final List<PaymentTransaction> financialHistory; // Extrato do paciente
 
   const Patient({
     required this.id,
@@ -63,7 +98,6 @@ class Patient extends Equatable {
     this.nextAppointmentDate,
     this.anamnesis = const Anamnesis(),
     this.photoPaths = const [],
-    this.financialHistory = const [],
   });
 
   String get displayBirthDate {
@@ -141,7 +175,6 @@ class Patient extends Equatable {
     String? nextAppointmentDate,
     Anamnesis? anamnesis,
     List<String>? photoPaths,
-    List<PaymentTransaction>? financialHistory,
   }) {
     return Patient(
       id: id ?? this.id,
@@ -156,7 +189,6 @@ class Patient extends Equatable {
       nextAppointmentDate: nextAppointmentDate ?? this.nextAppointmentDate,
       anamnesis: anamnesis ?? this.anamnesis,
       photoPaths: photoPaths ?? this.photoPaths,
-      financialHistory: financialHistory ?? this.financialHistory,
     );
   }
 
@@ -174,7 +206,6 @@ class Patient extends Equatable {
     nextAppointmentDate,
     anamnesis,
     photoPaths,
-    financialHistory,
   ];
 }
 
