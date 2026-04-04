@@ -5,11 +5,13 @@ import 'package:physigest/features/patients/domain/models/patient.dart';
 class PaymentActionDialog extends StatefulWidget {
   final Function(PatientPayment) onSave;
   final List<String> availableCategories;
+  final List<String> availableMethods;
 
   const PaymentActionDialog({
     super.key,
     required this.onSave,
     required this.availableCategories,
+    required this.availableMethods,
   });
 
   @override
@@ -23,15 +25,7 @@ class _PaymentActionDialogState extends State<PaymentActionDialog> {
 
   late String _selectedServiceType;
   String _selectedStatus = 'paid';
-  String _selectedMethod = 'Pix';
-
-  final List<String> _methods = [
-    'Pix',
-    'Cartão de Crédito',
-    'Cartão de Débito',
-    'Dinheiro',
-    'Transferência',
-  ];
+  late String _selectedMethod;
 
   @override
   void initState() {
@@ -39,6 +33,9 @@ class _PaymentActionDialogState extends State<PaymentActionDialog> {
     _selectedServiceType = widget.availableCategories.isNotEmpty
         ? widget.availableCategories.first
         : 'Sessão';
+    _selectedMethod = widget.availableMethods.isNotEmpty
+        ? widget.availableMethods.first
+        : 'Pix';
   }
 
   @override
@@ -91,26 +88,7 @@ class _PaymentActionDialogState extends State<PaymentActionDialog> {
 
     final int qty = int.tryParse(_quantityController.text) ?? 1;
 
-    String mappedMethod = 'other';
-    switch (_selectedMethod) {
-      case 'Pix':
-        mappedMethod = 'pix';
-        break;
-      case 'Cartão de Crédito':
-        mappedMethod = 'credit_card';
-        break;
-      case 'Cartão de Débito':
-        mappedMethod = 'debit_card';
-        break;
-      case 'Dinheiro':
-        mappedMethod = 'cash';
-        break;
-      case 'Transferência':
-        mappedMethod = 'bank_transfer';
-        break;
-      default:
-        mappedMethod = 'other';
-    }
+    String mappedMethod = _mapPaymentMethod(_selectedMethod);
 
     final transaction = PatientPayment(
       id: '',
@@ -133,6 +111,20 @@ class _PaymentActionDialogState extends State<PaymentActionDialog> {
 
   @override
   Widget build(BuildContext context) {
+    // Desduplicar as listas para evitar assertion do DropdownButton
+    // caso a API retorne itens repetidos.
+    final uniqueMethods = widget.availableMethods.toSet().toList();
+    final uniqueCategories = widget.availableCategories.toSet().toList();
+
+    // Validação defensiva: garante que o valor selecionado existe na lista.
+    if (uniqueMethods.isNotEmpty && !uniqueMethods.contains(_selectedMethod)) {
+      _selectedMethod = uniqueMethods.first;
+    }
+    if (uniqueCategories.isNotEmpty &&
+        !uniqueCategories.contains(_selectedServiceType)) {
+      _selectedServiceType = uniqueCategories.first;
+    }
+
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
       backgroundColor: Colors.white,
@@ -194,7 +186,7 @@ class _PaymentActionDialogState extends State<PaymentActionDialog> {
                             child: DropdownButton<String>(
                               value: _selectedServiceType,
                               isExpanded: true,
-                              items: widget.availableCategories
+                              items: uniqueCategories
                                   .map(
                                     (m) => DropdownMenuItem(
                                       value: m,
@@ -317,7 +309,7 @@ class _PaymentActionDialogState extends State<PaymentActionDialog> {
                   child: DropdownButton<String>(
                     value: _selectedMethod,
                     isExpanded: true,
-                    items: _methods
+                    items: uniqueMethods
                         .map((m) => DropdownMenuItem(value: m, child: Text(m)))
                         .toList(),
                     onChanged: (val) {
@@ -442,5 +434,24 @@ class _PaymentActionDialogState extends State<PaymentActionDialog> {
         ),
       ),
     );
+  }
+
+  String _mapPaymentMethod(String method) {
+    switch (method) {
+      case 'Pix':
+        return 'pix';
+      case 'Cartão de Crédito':
+        return 'credit_card';
+      case 'Cartão de Débito':
+        return 'debit_card';
+      case 'Dinheiro':
+        return 'cash';
+      case 'Transferência':
+        return 'bank_transfer';
+      case 'Cheque':
+        return 'check';
+      default:
+        return method.toLowerCase().replaceAll(' ', '_');
+    }
   }
 }

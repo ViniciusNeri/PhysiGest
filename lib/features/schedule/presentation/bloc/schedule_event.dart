@@ -42,3 +42,11 @@ class AddAppointment extends ScheduleEvent {
   @override
   List<Object?> get props => [appointment];
 }
+class DeleteAppointment extends ScheduleEvent {
+  final String id;
+
+  const DeleteAppointment(this.id);
+
+  @override
+  List<Object?> get props => [id];
+}

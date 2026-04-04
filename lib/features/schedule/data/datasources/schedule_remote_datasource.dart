@@ -3,59 +3,58 @@ import 'package:injectable/injectable.dart';
 import '../../../../core/network/api_client.dart';
 import 'package:physigest/features/schedule/domain/models/appointment.dart';
 import '../models/appointment_model.dart';
+import 'package:physigest/core/storage/local_storage.dart';
 
 abstract class IScheduleRemoteDataSource {
-  Future<List<AppointmentModel>> getAppointments(DateTime from, DateTime to);
+  Future<List<AppointmentModel>> getAppointments();
   Future<AppointmentModel> createAppointment(Appointment appointment);
   Future<AppointmentModel> updateAppointment(Appointment appointment);
   Future<void> deleteAppointment(String id);
-  Future<List<String>> getAvailablePatients();
+  Future<List<Map<String, dynamic>>> getAvailablePatients();
+  Future<List<Map<String, dynamic>>> getCategories();
 }
 
 @LazySingleton(as: IScheduleRemoteDataSource)
 class ScheduleRemoteDataSource implements IScheduleRemoteDataSource {
   final ApiClient apiClient;
+  final LocalStorage localStorage;
 
-  ScheduleRemoteDataSource(this.apiClient);
+  ScheduleRemoteDataSource(this.apiClient, this.localStorage);
 
   @override
-  Future<List<AppointmentModel>> getAppointments(
-    DateTime from,
-    DateTime to,
-  ) async {
+  Future<List<AppointmentModel>> getAppointments() async {
     try {
-      final response = await apiClient.dio.get(
-        '/appointments',
-        queryParameters: {
-          'from': from.toIso8601String(),
-          'to': to.toIso8601String(),
-        },
-      );
+      final response = await apiClient.dio.get('/agendas');
       final list = response.data as List<dynamic>;
       return list.map((json) => AppointmentModel.fromJson(json)).toList();
     } on DioException catch (e) {
       final errorMsg =
-          e.response?.data?['message'] ?? 'Erro ao buscar agendamentos.';
+          e.response?.data?['message'] ?? 'Erro ao buscar agendas.';
       throw Exception(errorMsg);
     } catch (e) {
-      throw Exception('Erro desconhecido ao buscar agendamentos: $e');
+      throw Exception('Erro desconhecido ao buscar agendas: $e');
     }
   }
 
   @override
   Future<AppointmentModel> createAppointment(Appointment appointment) async {
     try {
+      final user = await localStorage.getUser();
+      final userId = user?.id ?? '';
+      
       final body = AppointmentModel(
         id: appointment.id,
         patientName: appointment.patientName,
-        type: appointment.type,
-        date: appointment.date,
-        time: appointment.time,
-        endTime: appointment.endTime,
+        patientId: appointment.patientId,
+        userId: appointment.userId ?? userId,
+        categoryId: appointment.categoryId,
+        startDate: appointment.startDate,
+        endDate: appointment.endDate,
         status: appointment.status,
-        evaluationNote: appointment.evaluationNote,
+        description: appointment.description,
+        notes: appointment.notes,
       ).toJson();
-      final response = await apiClient.dio.post('/appointments', data: body);
+      final response = await apiClient.dio.post('/agendas', data: body);
       return AppointmentModel.fromJson(response.data);
     } on DioException catch (e) {
       final errorMsg =
@@ -72,15 +71,17 @@ class ScheduleRemoteDataSource implements IScheduleRemoteDataSource {
       final body = AppointmentModel(
         id: appointment.id,
         patientName: appointment.patientName,
-        type: appointment.type,
-        date: appointment.date,
-        time: appointment.time,
-        endTime: appointment.endTime,
+        patientId: appointment.patientId,
+        userId: appointment.userId,
+        categoryId: appointment.categoryId,
+        startDate: appointment.startDate,
+        endDate: appointment.endDate,
         status: appointment.status,
-        evaluationNote: appointment.evaluationNote,
+        description: appointment.description,
+        notes: appointment.notes,
       ).toJson();
       final response = await apiClient.dio.put(
-        '/appointments/${appointment.id}',
+        '/agendas/${appointment.id}',
         data: body,
       );
       return AppointmentModel.fromJson(response.data);
@@ -96,7 +97,7 @@ class ScheduleRemoteDataSource implements IScheduleRemoteDataSource {
   @override
   Future<void> deleteAppointment(String id) async {
     try {
-      await apiClient.dio.delete('/appointments/$id');
+      await apiClient.dio.delete('/agendas/$id');
     } on DioException catch (e) {
       final errorMsg =
           e.response?.data?['message'] ?? 'Erro ao excluir agendamento.';
@@ -107,11 +108,18 @@ class ScheduleRemoteDataSource implements IScheduleRemoteDataSource {
   }
 
   @override
-  Future<List<String>> getAvailablePatients() async {
+  Future<List<Map<String, dynamic>>> getAvailablePatients() async {
     try {
-      final response = await apiClient.dio.get('/patients/names');
+      final user = await localStorage.getUser();
+      final userId = user?.id ?? '';
+      if (userId.isEmpty) return [];
+
+      final response = await apiClient.dio.get('/patients/user/$userId');
       final list = response.data as List<dynamic>;
-      return list.map((e) => e.toString()).toList();
+      return list.map((e) => {
+        'id': e['_id']?.toString() ?? e['id']?.toString() ?? '',
+        'name': e['name']?.toString() ?? '',
+      }).toList();
     } on DioException catch (e) {
       final errorMsg =
           e.response?.data?['message'] ??
@@ -119,6 +127,29 @@ class ScheduleRemoteDataSource implements IScheduleRemoteDataSource {
       throw Exception(errorMsg);
     } catch (e) {
       throw Exception('Erro desconhecido ao buscar pacientes: $e');
+    }
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> getCategories() async {
+    try {
+      final user = await localStorage.getUser();
+      final userId = user?.id ?? '';
+      if (userId.isEmpty) return [];
+
+      final response = await apiClient.dio.get('/categories/user/$userId');
+      final list = response.data as List<dynamic>;
+      return list.map((e) => {
+        'id': e['_id']?.toString() ?? e['id']?.toString() ?? '',
+        'name': e['description']?.toString() ?? '',
+      }).toList();
+    } on DioException catch (e) {
+      final errorMsg =
+          e.response?.data?['message'] ??
+          'Erro ao buscar categorias disponíveis.';
+      throw Exception(errorMsg);
+    } catch (e) {
+      throw Exception('Erro desconhecido ao buscar categorias: $e');
     }
   }
 }

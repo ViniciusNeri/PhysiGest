@@ -6,8 +6,7 @@ import '../repositories/i_schedule_repository.dart';
 class GetAppointmentsUseCase {
   final IScheduleRepository repository;
   GetAppointmentsUseCase(this.repository);
-  Future<List<Appointment>> call(DateTime from, DateTime to) =>
-      repository.getAppointments(from, to);
+  Future<List<Appointment>> call() => repository.getAppointments();
 }
 
 @lazySingleton
@@ -37,5 +36,12 @@ class DeleteAppointmentUseCase {
 class GetAvailablePatientsUseCase {
   final IScheduleRepository repository;
   GetAvailablePatientsUseCase(this.repository);
-  Future<List<String>> call() => repository.getAvailablePatients();
+  Future<List<Map<String, dynamic>>> call() => repository.getAvailablePatients();
+}
+
+@lazySingleton
+class GetCategoriesUseCase {
+  final IScheduleRepository repository;
+  GetCategoriesUseCase(this.repository);
+  Future<List<Map<String, dynamic>>> call() => repository.getCategories();
 }

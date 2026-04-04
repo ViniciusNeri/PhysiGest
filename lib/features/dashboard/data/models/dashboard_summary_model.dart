@@ -31,11 +31,10 @@ class DashboardSummaryModel extends DashboardSummary {
       patientName: json['patientName'] ?? 'Paciente', // Default if missing
       patientId: json['patientId']?.toString(),
       description: json['description'] ?? '',
-      type: json['description'] ?? 'Consulta', // Map description to type
-      date: DateTime.tryParse(json['date'] ?? '') ?? DateTime.now(),
-      time: json['time'] ?? '00:00',
-      endTime: '00:00', // Default
-      status: 'agendado',
+      categoryId: json['description'] ?? 'Consulta', // Map description to categoryId
+      startDate: DateTime.tryParse(json['date'] ?? '') ?? DateTime.now(),
+      endDate: DateTime.tryParse(json['date'] ?? '')?.add(const Duration(hours: 1)) ?? DateTime.now().add(const Duration(hours: 1)),
+      status: 'scheduled',
     );
   }
 

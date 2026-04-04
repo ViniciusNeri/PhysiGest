@@ -4,24 +4,32 @@ class AppointmentModel extends Appointment {
   const AppointmentModel({
     required super.id,
     required super.patientName,
-    required super.type,
-    required super.date,
-    required super.time,
-    required super.endTime,
-    super.status = 'agendado',
-    super.evaluationNote,
+    required super.startDate,
+    required super.endDate,
+    super.patientId,
+    super.userId,
+    super.categoryId,
+    super.status = 'scheduled',
+    super.description,
+    super.notes,
   });
 
   factory AppointmentModel.fromJson(Map<String, dynamic> json) {
     return AppointmentModel(
       id: json['id']?.toString() ?? '',
-      patientName: json['patientName'] ?? '',
-      type: json['type'] ?? '',
-      date: DateTime.tryParse(json['date'] ?? '') ?? DateTime.now(),
-      time: json['time'] ?? '00:00',
-      endTime: json['endTime'] ?? '00:00',
-      status: json['status'] ?? 'agendado',
-      evaluationNote: json['evaluationNote'] as String?,
+      patientName: json['patientName'] ?? 'Paciente Não Informado',
+      patientId: json['patientId'],
+      userId: json['userId'],
+      categoryId: json['categoryId'],
+      startDate: json['startDate'] != null
+          ? DateTime.parse(json['startDate']).toLocal()
+          : DateTime.now(),
+      endDate: json['endDate'] != null
+          ? DateTime.parse(json['endDate']).toLocal()
+          : DateTime.now().add(const Duration(hours: 1)),
+      status: json['status'] ?? 'scheduled',
+      description: json['description'] as String?,
+      notes: json['notes'] as String?,
     );
   }
 
@@ -29,12 +37,14 @@ class AppointmentModel extends Appointment {
     return {
       'id': id,
       'patientName': patientName,
-      'type': type,
-      'date': date.toIso8601String(),
-      'time': time,
-      'endTime': endTime,
+      'patientId': patientId,
+      'userId': userId,
+      'categoryId': categoryId,
+      'startDate': startDate.toUtc().toIso8601String(),
+      'endDate': endDate.toUtc().toIso8601String(),
       'status': status,
-      'evaluationNote': evaluationNote,
+      'description': description,
+      'notes': notes,
     };
   }
 }

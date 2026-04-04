@@ -11,6 +11,7 @@ import 'package:physigest/features/schedule/presentation/widgets/appointment_act
 import 'package:physigest/core/storage/local_storage.dart';
 import 'package:physigest/features/settings/presentation/bloc/settings/settings_bloc.dart';
 import 'package:physigest/features/settings/presentation/bloc/settings/settings_state.dart';
+import 'package:intl/intl.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -471,7 +472,7 @@ class HomeView extends StatelessWidget {
             ),
           ),
           Text(
-            "${next.type} • ${next.time}",
+            "${next.categoryId ?? 'Consulta'} • ${DateFormat('HH:mm').format(next.startDate)}",
             style: const TextStyle(color: Colors.white70, fontSize: 12),
           ),
           const SizedBox(height: 10),
@@ -646,7 +647,7 @@ class HomeView extends StatelessWidget {
         child: Row(
           children: [
             Text(
-              apt.time,
+              DateFormat('HH:mm').format(apt.startDate),
               style: const TextStyle(
                 fontWeight: FontWeight.w900,
                 color: primary,
@@ -672,7 +673,7 @@ class HomeView extends StatelessWidget {
                     ),
                   ),
                   Text(
-                    apt.type,
+                    apt.categoryId ?? 'Atendimento',
                     style: const TextStyle(fontSize: 11, color: Colors.black54),
                   ),
                 ],

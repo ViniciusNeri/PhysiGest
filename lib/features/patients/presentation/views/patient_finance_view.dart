@@ -1,9 +1,8 @@
-// lib/features/patients/presentation/views/patient_finance_view.dart
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:physigest/core/di/injection.dart';
 import 'package:physigest/features/settings/presentation/bloc/settings/settings_bloc.dart';
+import 'package:physigest/features/settings/presentation/bloc/settings/settings_event.dart';
 import 'package:physigest/features/settings/presentation/bloc/settings/settings_state.dart';
 import '../../domain/models/patient.dart';
 import '../bloc/patient_financial_bloc.dart';
@@ -26,6 +25,17 @@ class _PatientFinanceViewState extends State<PatientFinanceView> {
   static const Color textSecondary = Color(0xFF94A3B8);
   static const Color borderColor = Color(0xFFE2E8F0);
   static const Color bgGrey = Color(0xFFF1F5F9);
+
+  @override
+  void initState() {
+    super.initState();
+    // Garante que as configurações sejam carregadas para ter categorias e
+    // métodos de pagamento da API disponíveis quando o diálogo abrir.
+    final settingsState = context.read<SettingsBloc>().state;
+    if (settingsState is SettingsInitial) {
+      context.read<SettingsBloc>().add(LoadSettings());
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -296,19 +306,37 @@ class _PatientFinanceViewState extends State<PatientFinanceView> {
             child: ElevatedButton.icon(
               onPressed: () {
                 final settingsState = context.read<SettingsBloc>().state;
+
                 List<String> categories = ['Sessões', 'Avaliação', 'Pacote'];
+                List<String> methods = [
+                  'Pix',
+                  'Cartão de Crédito',
+                  'Cartão de Débito',
+                  'Dinheiro',
+                  'Transferência',
+                ];
+
                 if (settingsState is SettingsLoaded) {
                   final activeCats = settingsState.categories
                       .where((c) => c.isActive)
                       .map((c) => c.name)
+                      .toSet()
                       .toList();
                   if (activeCats.isNotEmpty) categories = activeCats;
+
+                  final activeMethods = settingsState.paymentMethods
+                      .where((m) => m.isActive)
+                      .map((m) => m.name)
+                      .toSet()
+                      .toList();
+                  if (activeMethods.isNotEmpty) methods = activeMethods;
                 }
 
                 showDialog(
                   context: context,
                   builder: (dlgContext) => PaymentActionDialog(
                     availableCategories: categories,
+                    availableMethods: methods,
                     onSave: (payment) {
                       context.read<PatientFinancialBloc>().add(
                             AddFinancialPayment(
@@ -375,7 +403,7 @@ class _PatientFinanceViewState extends State<PatientFinanceView> {
 
           String displayDate = tx.date;
           try {
-            final date = DateTime.parse(tx.date);
+            final date = DateTime.parse(tx.date).toLocal();
             displayDate =
                 '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}';
           } catch (_) {}

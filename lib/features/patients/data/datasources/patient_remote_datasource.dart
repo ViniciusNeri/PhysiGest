@@ -188,7 +188,7 @@ class PatientRemoteDataSource implements IPatientRemoteDataSource {
   @override
   Future<List<AppointmentModel>> getPatientAgenda(String patientId) async {
     try {
-      final response = await apiClient.dio.get('/patients/$patientId/agenda');
+      final response = await apiClient.dio.get('/agendas/patient/$patientId');
       final list = response.data as List<dynamic>;
       return list.map((json) => AppointmentModel.fromJson(json)).toList();
     } on DioException catch (e) {

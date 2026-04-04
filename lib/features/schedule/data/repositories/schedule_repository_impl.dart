@@ -10,8 +10,8 @@ class ScheduleRepositoryImpl implements IScheduleRepository {
   ScheduleRepositoryImpl(this.remoteDataSource);
 
   @override
-  Future<List<Appointment>> getAppointments(DateTime from, DateTime to) async {
-    return await remoteDataSource.getAppointments(from, to);
+  Future<List<Appointment>> getAppointments() async {
+    return await remoteDataSource.getAppointments();
   }
 
   @override
@@ -30,7 +30,12 @@ class ScheduleRepositoryImpl implements IScheduleRepository {
   }
 
   @override
-  Future<List<String>> getAvailablePatients() async {
+  Future<List<Map<String, dynamic>>> getAvailablePatients() async {
     return await remoteDataSource.getAvailablePatients();
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> getCategories() async {
+    return await remoteDataSource.getCategories();
   }
 }

@@ -25,7 +25,7 @@ class _AppointmentActionDialogState extends State<AppointmentActionDialog> {
     super.initState();
     _selectedStatus = widget.appointment.status;
     _noteController = TextEditingController(
-      text: widget.appointment.evaluationNote ?? '',
+      text: widget.appointment.notes ?? '',
     );
   }
 
@@ -38,7 +38,7 @@ class _AppointmentActionDialogState extends State<AppointmentActionDialog> {
   void _submit() {
     final updatedApt = widget.appointment.copyWith(
       status: _selectedStatus,
-      evaluationNote: _noteController.text.trim().isEmpty
+      notes: _noteController.text.trim().isEmpty
           ? null
           : _noteController.text.trim(),
     );
@@ -79,7 +79,7 @@ class _AppointmentActionDialogState extends State<AppointmentActionDialog> {
             ),
             const SizedBox(height: 8),
             Text(
-              "${widget.appointment.patientName} • ${widget.appointment.time}",
+              "${widget.appointment.patientName} • ${_formatTime(widget.appointment.startDate)}",
               style: const TextStyle(
                 color: Colors.black54,
                 fontWeight: FontWeight.bold,
@@ -231,5 +231,9 @@ class _AppointmentActionDialogState extends State<AppointmentActionDialog> {
       default:
         return const Color(0xFF64748B); // Normal/Grey
     }
+  }
+
+  String _formatTime(DateTime dateTime) {
+    return "${dateTime.hour.toString().padLeft(2, '0')}:${dateTime.minute.toString().padLeft(2, '0')}";
   }
 }

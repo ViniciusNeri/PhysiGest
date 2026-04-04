@@ -3,65 +3,65 @@ import 'package:equatable/equatable.dart';
 class Appointment extends Equatable {
   final String id;
   final String patientName;
-  final String type;
-  final DateTime date;
-  final String time;
-  final String endTime;
-  final String status; // 'agendado', 'realizado', 'falta', 'cancelado'
-  final String? evaluationNote;
   final String? patientId;
+  final String? userId;
+  final String? categoryId;
+  final DateTime startDate;
+  final DateTime endDate;
+  final String status; // 'scheduled', 'completed', 'cancelled', 'no_show'
   final String? description;
+  final String? notes;
 
   const Appointment({
     required this.id,
     required this.patientName,
-    required this.type,
-    required this.date,
-    required this.time,
-    required this.endTime,
-    this.status = 'agendado',
-    this.evaluationNote,
+    required this.startDate,
+    required this.endDate,
     this.patientId,
+    this.userId,
+    this.categoryId,
+    this.status = 'scheduled',
     this.description,
+    this.notes,
   });
 
   Appointment copyWith({
     String? id,
     String? patientName,
-    String? type,
-    DateTime? date,
-    String? time,
-    String? endTime,
-    String? status,
-    String? evaluationNote,
     String? patientId,
+    String? userId,
+    String? categoryId,
+    DateTime? startDate,
+    DateTime? endDate,
+    String? status,
     String? description,
+    String? notes,
   }) {
     return Appointment(
       id: id ?? this.id,
       patientName: patientName ?? this.patientName,
-      type: type ?? this.type,
-      date: date ?? this.date,
-      time: time ?? this.time,
-      endTime: endTime ?? this.endTime,
-      status: status ?? this.status,
-      evaluationNote: evaluationNote ?? this.evaluationNote,
       patientId: patientId ?? this.patientId,
+      userId: userId ?? this.userId,
+      categoryId: categoryId ?? this.categoryId,
+      startDate: startDate ?? this.startDate,
+      endDate: endDate ?? this.endDate,
+      status: status ?? this.status,
       description: description ?? this.description,
+      notes: notes ?? this.notes,
     );
   }
 
   @override
   List<Object?> get props => [
-    id,
-    patientName,
-    type,
-    date,
-    time,
-    endTime,
-    status,
-    evaluationNote,
-    patientId,
-    description,
-  ];
+        id,
+        patientName,
+        patientId,
+        userId,
+        categoryId,
+        startDate,
+        endDate,
+        status,
+        description,
+        notes,
+      ];
 }

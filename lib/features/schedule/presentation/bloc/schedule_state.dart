@@ -10,7 +10,8 @@ class ScheduleState extends Equatable {
   final ScheduleViewMode viewMode;
   final DateTime selectedDate;
   final List<Appointment> appointments;
-  final List<String> availablePatients;
+  final List<Map<String, dynamic>> availablePatients;
+  final List<Map<String, dynamic>> activeCategories;
   final String? errorMessage;
 
   const ScheduleState({
@@ -19,14 +20,15 @@ class ScheduleState extends Equatable {
     required this.selectedDate,
     this.appointments = const [],
     this.availablePatients = const [],
+    this.activeCategories = const [],
     this.errorMessage,
   });
 
   List<Appointment> get selectedDayAppointments {
     return appointments.where((apt) {
-      return apt.date.year == selectedDate.year &&
-          apt.date.month == selectedDate.month &&
-          apt.date.day == selectedDate.day;
+      return apt.startDate.year == selectedDate.year &&
+          apt.startDate.month == selectedDate.month &&
+          apt.startDate.day == selectedDate.day;
     }).toList();
   }
 
@@ -35,7 +37,8 @@ class ScheduleState extends Equatable {
     ScheduleViewMode? viewMode,
     DateTime? selectedDate,
     List<Appointment>? appointments,
-    List<String>? availablePatients,
+    List<Map<String, dynamic>>? availablePatients,
+    List<Map<String, dynamic>>? activeCategories,
     String? errorMessage,
   }) {
     return ScheduleState(
@@ -44,6 +47,7 @@ class ScheduleState extends Equatable {
       selectedDate: selectedDate ?? this.selectedDate,
       appointments: appointments ?? this.appointments,
       availablePatients: availablePatients ?? this.availablePatients,
+      activeCategories: activeCategories ?? this.activeCategories,
       errorMessage: errorMessage ?? this.errorMessage,
     );
   }
@@ -55,6 +59,7 @@ class ScheduleState extends Equatable {
     selectedDate,
     appointments,
     availablePatients,
+    activeCategories,
     errorMessage,
   ];
 }

@@ -53,11 +53,13 @@ import '../../features/patients/data/repositories/patient_repository_impl.dart'
 import '../../features/patients/domain/repositories/i_patient_repository.dart'
     as _i37;
 import '../../features/patients/domain/usecases/patient_usecases.dart' as _i160;
+import '../../features/patients/presentation/bloc/agenda_bloc.dart' as _i776;
+import '../../features/patients/presentation/bloc/anamnesis_bloc.dart' as _i834;
 import '../../features/patients/presentation/bloc/patient_bloc.dart' as _i1035;
-import '../../features/patients/presentation/bloc/agenda_bloc.dart' as _i9901;
-import '../../features/patients/presentation/bloc/anamnesis_bloc.dart' as _i9902;
-import '../../features/patients/presentation/bloc/patient_financial_bloc.dart' as _i9903;
-import '../../features/schedule/data/datasources/schedule_remote_datasource.dart' as _i115;
+import '../../features/patients/presentation/bloc/patient_financial_bloc.dart'
+    as _i220;
+import '../../features/schedule/data/datasources/schedule_remote_datasource.dart'
+    as _i115;
 import '../../features/schedule/data/repositories/schedule_repository_impl.dart'
     as _i688;
 import '../../features/schedule/domain/repositories/i_schedule_repository.dart'
@@ -96,7 +98,6 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.factory<_i238.LoggerInterceptor>(() => _i238.LoggerInterceptor());
     gh.factory<_i911.FinancialBloc>(() => _i911.FinancialBloc());
-    gh.factory<_i1063.ScheduleBloc>(() => _i1063.ScheduleBloc());
     gh.lazySingleton<_i29.ExerciseBloc>(() => _i29.ExerciseBloc());
     gh.factory<_i329.LocalStorage>(
       () => _i28.LocalStorageImpl(gh<_i460.SharedPreferences>()),
@@ -135,10 +136,16 @@ extension GetItInjectableX on _i174.GetIt {
       () => _i153.AuthRepositoryImpl(gh<_i161.IAuthRemoteDataSource>()),
     );
     gh.lazySingleton<_i115.IScheduleRemoteDataSource>(
-      () => _i115.ScheduleRemoteDataSource(gh<_i557.ApiClient>()),
+      () => _i115.ScheduleRemoteDataSource(
+        gh<_i557.ApiClient>(),
+        gh<_i329.LocalStorage>(),
+      ),
     );
     gh.lazySingleton<_i226.IScheduleRepository>(
       () => _i688.ScheduleRepositoryImpl(gh<_i115.IScheduleRemoteDataSource>()),
+    );
+    gh.factory<_i776.AgendaBloc>(
+      () => _i776.AgendaBloc(gh<_i286.IPatientRemoteDataSource>()),
     );
     gh.lazySingleton<_i657.ISettingsRepository>(
       () => _i955.SettingsRepositoryImpl(gh<_i140.ISettingsRemoteDataSource>()),
@@ -197,6 +204,9 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.lazySingleton<_i399.GetAvailablePatientsUseCase>(
       () => _i399.GetAvailablePatientsUseCase(gh<_i226.IScheduleRepository>()),
+    );
+    gh.lazySingleton<_i399.GetCategoriesUseCase>(
+      () => _i399.GetCategoriesUseCase(gh<_i226.IScheduleRepository>()),
     );
     gh.factory<_i228.SettingsBloc>(
       () => _i228.SettingsBloc(
@@ -304,11 +314,35 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i63.DeleteTransactionUseCase>(
       () => _i63.DeleteTransactionUseCase(gh<_i644.IFinancialRepository>()),
     );
+    gh.factory<_i1063.ScheduleBloc>(
+      () => _i1063.ScheduleBloc(
+        gh<_i399.GetAppointmentsUseCase>(),
+        gh<_i399.CreateAppointmentUseCase>(),
+        gh<_i399.UpdateAppointmentUseCase>(),
+        gh<_i399.GetAvailablePatientsUseCase>(),
+        gh<_i399.GetCategoriesUseCase>(),
+        gh<_i399.DeleteAppointmentUseCase>(),
+      ),
+    );
     gh.factory<_i208.LoginBloc>(
       () => _i208.LoginBloc(gh<_i188.LoginUseCase>()),
     );
     gh.factory<_i173.SignUpBloc>(
       () => _i173.SignUpBloc(gh<_i188.SignUpUseCase>()),
+    );
+    gh.factory<_i834.AnamnesisBloc>(
+      () => _i834.AnamnesisBloc(
+        gh<_i160.GetLatestAnamnesisUseCase>(),
+        gh<_i160.CreateAnamnesisUseCase>(),
+        gh<_i160.UpdateAnamnesisUseCase>(),
+      ),
+    );
+    gh.factory<_i220.PatientFinancialBloc>(
+      () => _i220.PatientFinancialBloc(
+        gh<_i160.GetFinancialSummaryUseCase>(),
+        gh<_i160.AddFinancialRecordUseCase>(),
+        gh<_i160.UpdateFinancialStatusUseCase>(),
+      ),
     );
     gh.factory<_i1035.PatientBloc>(
       () => _i1035.PatientBloc(
@@ -316,23 +350,6 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i160.CreatePatientUseCase>(),
         gh<_i160.UpdatePatientUseCase>(),
         gh<_i160.DeletePatientUseCase>(),
-      ),
-    );
-    gh.factory<_i9901.AgendaBloc>(
-      () => _i9901.AgendaBloc(gh<_i286.IPatientRemoteDataSource>()),
-    );
-    gh.factory<_i9902.AnamnesisBloc>(
-      () => _i9902.AnamnesisBloc(
-        gh<_i160.GetLatestAnamnesisUseCase>(),
-        gh<_i160.CreateAnamnesisUseCase>(),
-        gh<_i160.UpdateAnamnesisUseCase>(),
-      ),
-    );
-    gh.factory<_i9903.PatientFinancialBloc>(
-      () => _i9903.PatientFinancialBloc(
-        gh<_i160.GetFinancialSummaryUseCase>(),
-        gh<_i160.AddFinancialRecordUseCase>(),
-        gh<_i160.UpdateFinancialStatusUseCase>(),
       ),
     );
     return this;

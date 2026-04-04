@@ -3,13 +3,15 @@ import 'package:intl/intl.dart';
 import 'package:physigest/features/schedule/domain/models/appointment.dart';
 
 class AddAppointmentDialog extends StatefulWidget {
-  final List<String> availablePatients;
+  final List<Map<String, dynamic>> availablePatients;
+  final List<Map<String, dynamic>> activeCategories;
   final DateTime initialDate;
   final Appointment? appointmentToEdit;
 
   const AddAppointmentDialog({
     super.key,
     required this.availablePatients,
+    required this.activeCategories,
     required this.initialDate,
     this.appointmentToEdit,
   });
@@ -19,20 +21,15 @@ class AddAppointmentDialog extends StatefulWidget {
 }
 
 class _AddAppointmentDialogState extends State<AddAppointmentDialog> {
-  String? selectedPatient;
-  String selectedType = 'Fisioterapia';
+  String? selectedPatientId;
+  String? selectedPatientName;
+  String? selectedCategoryId;
+  String? selectedCategoryName;
   late DateTime selectedDate;
 
   // Estados para o intervalo de tempo
   late TimeOfDay startTime;
   late TimeOfDay endTime;
-
-  final List<String> types = [
-    'Fisioterapia',
-    'Pilates',
-    'Avaliação Inicial',
-    'RPG',
-  ];
 
   @override
   void initState() {
@@ -41,24 +38,35 @@ class _AddAppointmentDialogState extends State<AddAppointmentDialog> {
     if (widget.appointmentToEdit != null) {
       // Modo Edição
       final apt = widget.appointmentToEdit!;
-      selectedPatient = apt.patientName;
-      selectedType = apt.type;
-      selectedDate = apt.date;
+      final matchingPatient = widget.availablePatients
+          .where((e) => e['id'].toString() == apt.patientId?.toString())
+          .firstOrNull;
+      selectedPatientId = matchingPatient?['id']?.toString();
+      selectedPatientName = apt.patientName;
+      
+      final matchingCat = widget.activeCategories
+          .where((e) => e['id'].toString() == apt.categoryId?.toString())
+          .firstOrNull;
+      selectedCategoryId = matchingCat?['id']?.toString();
+      selectedCategoryName = matchingCat?['name']?.toString();
+      selectedDate = apt.startDate;
 
-      // Converte String "HH:mm" de volta para TimeOfDay
-      final startParts = apt.time.split(':');
       startTime = TimeOfDay(
-        hour: int.parse(startParts[0]),
-        minute: int.parse(startParts[1]),
+        hour: apt.startDate.hour,
+        minute: apt.startDate.minute,
       );
 
-      final endParts = apt.endTime.split(':');
       endTime = TimeOfDay(
-        hour: int.parse(endParts[0]),
-        minute: int.parse(endParts[1]),
+        hour: apt.endDate.hour,
+        minute: apt.endDate.minute,
       );
     } else {
       // Modo Novo Agendamento
+      if (widget.activeCategories.isNotEmpty) {
+        selectedCategoryId = widget.activeCategories.first['id'];
+        selectedCategoryName = widget.activeCategories.first['name'];
+      }
+      
       selectedDate = widget.initialDate;
       startTime = TimeOfDay(hour: widget.initialDate.hour, minute: 0);
       endTime = TimeOfDay(hour: (widget.initialDate.hour + 1) % 24, minute: 0);
@@ -189,7 +197,7 @@ class _AddAppointmentDialogState extends State<AddAppointmentDialog> {
       ),
       child: DropdownButtonHideUnderline(
         child: DropdownButton<String>(
-          value: selectedPatient,
+          value: selectedPatientId,
           hint: const Text(
             "Selecione o paciente",
             style: TextStyle(color: Colors.black26, fontSize: 14),
@@ -199,41 +207,57 @@ class _AddAppointmentDialogState extends State<AddAppointmentDialog> {
             Icons.keyboard_arrow_down_rounded,
             color: Colors.black45,
           ),
-          items: widget.availablePatients
-              .map((p) => DropdownMenuItem(value: p, child: Text(p)))
+          items: {for (var p in widget.availablePatients) p['id'].toString(): p}
+              .values
+              .map((p) => DropdownMenuItem(value: p['id'].toString(), child: Text(p['name'].toString())))
               .toList(),
-          onChanged: (val) => setState(() => selectedPatient = val),
+          onChanged: (val) {
+            setState(() {
+              selectedPatientId = val;
+              selectedPatientName = widget.availablePatients.firstWhere((p) => p['id'] == val)['name'];
+            });
+          },
         ),
       ),
     );
   }
 
   Widget _buildTypeSelector() {
-    return Wrap(
-      spacing: 8,
-      runSpacing: 8,
-      children: types.map((type) {
-        bool isSelected = selectedType == type;
-        return ChoiceChip(
-          label: Text(type),
-          selected: isSelected,
-          onSelected: (_) => setState(() => selectedType = type),
-          selectedColor: const Color(0xFF0F172A),
-          backgroundColor: Colors.white,
-          labelStyle: TextStyle(
-            color: isSelected ? Colors.white : const Color(0xFF475569),
-            fontWeight: FontWeight.bold,
-            fontSize: 13,
+    if (widget.activeCategories.isEmpty) {
+      return const Text("Nenhuma categoria ativa encontrada.", style: TextStyle(color: Colors.black54));
+    }
+    
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+      ),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<String>(
+          value: selectedCategoryId,
+          hint: const Text(
+            "Selecione a categoria",
+            style: TextStyle(color: Colors.black26, fontSize: 14),
           ),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-            side: BorderSide(
-              color: isSelected ? Colors.transparent : const Color(0xFFE2E8F0),
-            ),
+          isExpanded: true,
+          icon: const Icon(
+            Icons.keyboard_arrow_down_rounded,
+            color: Colors.black45,
           ),
-          showCheckmark: false,
-        );
-      }).toList(),
+          items: {for (var c in widget.activeCategories) c['id'].toString(): c}
+              .values
+              .map((c) => DropdownMenuItem(value: c['id'].toString(), child: Text(c['name'].toString())))
+              .toList(),
+          onChanged: (val) {
+            setState(() {
+              selectedCategoryId = val;
+              selectedCategoryName = widget.activeCategories.firstWhere((c) => c['id'] == val)['name'];
+            });
+          },
+        ),
+      ),
     );
   }
 
@@ -363,20 +387,45 @@ class _AddAppointmentDialogState extends State<AddAppointmentDialog> {
               ),
             ),
           ),
+          if (widget.appointmentToEdit != null) ...[
+            const SizedBox(width: 8),
+            IconButton(
+              onPressed: () => Navigator.pop(context, 'delete'),
+              icon: const Icon(Icons.delete_outline_rounded, color: Colors.redAccent),
+              style: IconButton.styleFrom(
+                backgroundColor: Colors.red.withOpacity(0.1),
+              ),
+            ),
+          ],
           const SizedBox(width: 16),
           Expanded(
             flex: 2,
             child: ElevatedButton(
-              onPressed: selectedPatient == null
+              onPressed: selectedPatientId == null || selectedCategoryId == null
                   ? null
                   : () {
+                      final newStartDate = DateTime(
+                        selectedDate.year,
+                        selectedDate.month,
+                        selectedDate.day,
+                        startTime.hour,
+                        startTime.minute,
+                      );
+                      final newEndDate = DateTime(
+                        selectedDate.year,
+                        selectedDate.month,
+                        selectedDate.day,
+                        endTime.hour,
+                        endTime.minute,
+                      );
+                      
                       final newApt = Appointment(
-                        id: DateTime.now().millisecondsSinceEpoch.toString(),
-                        patientName: selectedPatient!,
-                        type: selectedType,
-                        date: selectedDate,
-                        time: _formatTime(startTime),
-                        endTime: _formatTime(endTime),
+                        id: widget.appointmentToEdit?.id ?? DateTime.now().millisecondsSinceEpoch.toString(),
+                        patientName: selectedPatientName ?? '',
+                        patientId: selectedPatientId,
+                        categoryId: selectedCategoryId,
+                        startDate: newStartDate,
+                        endDate: newEndDate,
                       );
                       Navigator.pop(context, newApt);
                     },

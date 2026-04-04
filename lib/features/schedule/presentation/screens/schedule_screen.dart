@@ -48,6 +48,7 @@ class ScheduleView extends StatelessWidget {
           alignment: Alignment.centerRight,
           child: AddAppointmentDialog(
             availablePatients: state.availablePatients,
+            activeCategories: state.activeCategories,
             initialDate: initialDate,
           ),
         );
@@ -125,7 +126,18 @@ class ScheduleView extends StatelessWidget {
               children: [
                 _buildTopBar(context),
                 Expanded(
-                  child: BlocBuilder<ScheduleBloc, ScheduleState>(
+                  child: BlocConsumer<ScheduleBloc, ScheduleState>(
+                    listener: (context, state) {
+                      if (state.status == ScheduleStatus.failure && state.errorMessage != null) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(state.errorMessage!),
+                            backgroundColor: Colors.redAccent,
+                            behavior: SnackBarBehavior.floating,
+                          ),
+                        );
+                      }
+                    },
                     builder: (context, state) {
                       if (state.status == ScheduleStatus.loading) {
                         return const Center(
@@ -372,7 +384,7 @@ class ScheduleView extends StatelessWidget {
         calendarBuilders: CalendarBuilders(
           markerBuilder: (context, date, events) {
             final dayApts = state.appointments
-                .where((a) => DateUtils.isSameDay(a.date, date))
+                .where((a) => DateUtils.isSameDay(a.startDate, date))
                 .toList();
             if (dayApts.isEmpty) return const SizedBox();
 
@@ -386,7 +398,7 @@ class ScheduleView extends StatelessWidget {
                     width: 6,
                     height: 6,
                     decoration: BoxDecoration(
-                      color: _getTypeColor(apt.type),
+                      color: _getCategoryColor(apt.categoryId ?? ''),
                       shape: BoxShape.circle,
                     ),
                   );
@@ -405,7 +417,7 @@ class ScheduleView extends StatelessWidget {
     DateTime day,
   ) {
     final dayApts = state.appointments
-        .where((a) => DateUtils.isSameDay(a.date, day))
+        .where((a) => DateUtils.isSameDay(a.startDate, day))
         .toList();
 
     return GestureDetector(
@@ -444,18 +456,11 @@ class ScheduleView extends StatelessWidget {
               ),
             ),
             ...dayApts.map((apt) {
-              final startTimeParts = apt.time.split(':');
-              final endTimeParts = apt.endTime.split(
-                ':',
-              ); // Pega o horário de término
-
               // Converter para double (horas + fração de minutos)
               final double start =
-                  double.parse(startTimeParts[0]) +
-                  (double.parse(startTimeParts[1]) / 60);
+                  apt.startDate.hour + (apt.startDate.minute / 60);
               final double end =
-                  double.parse(endTimeParts[0]) +
-                  (double.parse(endTimeParts[1]) / 60);
+                  apt.endDate.hour + (apt.endDate.minute / 60);
 
               // Cálculo da duração em horas (ex: 1.5 para 1h30min)
               final double duration = end - start;
@@ -526,7 +531,15 @@ class ScheduleView extends StatelessWidget {
     ScheduleState state,
     Appointment apt,
   ) {
-    Color baseColor = _getTypeColor(apt.type);
+    Color baseColor = _getCategoryColor(apt.categoryId ?? '');
+    String categoryName = 'Atendimento';
+    
+    if (apt.categoryId != null && apt.categoryId!.isNotEmpty) {
+      final found = state.activeCategories.where((c) => c['id'] == apt.categoryId).firstOrNull;
+      if (found != null && found['name'] != null) {
+        categoryName = found['name'];
+      }
+    }
 
     // Altera opacidade dependendo do status
     if (apt.status == 'falta' || apt.status == 'cancelado') {
@@ -594,7 +607,7 @@ class ScheduleView extends StatelessWidget {
                       ),
                       const SizedBox(width: 4),
                       Text(
-                        "${apt.time} - ${apt.endTime}",
+                        "${DateFormat('HH:mm').format(apt.startDate)} - ${DateFormat('HH:mm').format(apt.endDate)}",
                         style: const TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.bold,
@@ -611,7 +624,7 @@ class ScheduleView extends StatelessWidget {
                   children: [
                     Expanded(
                       child: Text(
-                        apt.type.toUpperCase(),
+                        categoryName.toUpperCase(),
                         style: TextStyle(
                           fontSize: 9,
                           fontWeight: FontWeight.w900,
@@ -733,12 +746,61 @@ class ScheduleView extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 20),
-          _buildFilterItem("Fisioterapia", AppTheme.primaryColor),
-          _buildFilterItem("Pilates", Colors.teal),
-          _buildFilterItem("Avaliação", Colors.orange),
+          Expanded(
+            child: SingleChildScrollView(
+              physics: const BouncingScrollPhysics(),
+              child: BlocBuilder<ScheduleBloc, ScheduleState>(
+                builder: (context, state) {
+                  if (state.activeCategories.isEmpty) {
+                    return const Text("Nenhuma categoria encontrada.",
+                        style: TextStyle(fontSize: 12, color: Colors.black38));
+                  }
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: state.activeCategories.map((c) {
+                      return _buildFilterItem(
+                          c['name']?.toString() ?? '',
+                          _getCategoryColor(c['id']?.toString() ?? ''));
+                    }).toList(),
+                  );
+                },
+              ),
+            ),
+          ),
         ],
       ),
     );
+  }
+
+  static final Map<String, Color> _categoryColorCache = {};
+  static int _colorIndex = 0;
+
+  Color _getCategoryColor(String id) {
+    if (id.isEmpty) return AppTheme.primaryColor;
+    
+    if (_categoryColorCache.containsKey(id)) {
+      return _categoryColorCache[id]!;
+    }
+    
+    final colors = [
+      AppTheme.primaryColor,
+      Colors.teal,
+      Colors.orange,
+      const Color(0xFF6366F1), // Indigo
+      Colors.pink,
+      const Color(0xFFEAB308), // Amber mais sofisticado
+      Colors.cyan,
+      const Color(0xFF8B5CF6), // Violet (DeepPurple)
+      const Color(0xFF3B82F6), // Blue
+      const Color(0xFFEF4444), // Red
+      const Color(0xFF10B981), // Emerald/Green
+    ];
+    
+    final color = colors[_colorIndex % colors.length];
+    _categoryColorCache[id] = color;
+    _colorIndex++;
+    
+    return color;
   }
 
   Widget _buildFilterItem(String label, Color color) {
@@ -752,12 +814,15 @@ class ScheduleView extends StatelessWidget {
             decoration: BoxDecoration(color: color, shape: BoxShape.circle),
           ),
           const SizedBox(width: 12),
-          Text(
-            label,
-            style: const TextStyle(
-              fontWeight: FontWeight.bold,
-              color: Color(0xFF475569),
-              fontSize: 14,
+          Expanded(
+            child: Text(
+              label,
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF475569),
+                fontSize: 14,
+              ),
+              overflow: TextOverflow.ellipsis,
             ),
           ),
         ],
@@ -864,7 +929,7 @@ class ScheduleView extends StatelessWidget {
     ScheduleState state,
     Appointment apt,
   ) async {
-    final result = await showGeneralDialog<Appointment>(
+    final result = await showGeneralDialog<dynamic>(
       context: context,
       // ... mesmas configurações de animação do showGeneralDialog ...
       pageBuilder: (context, anim1, anim2) {
@@ -872,7 +937,8 @@ class ScheduleView extends StatelessWidget {
           alignment: Alignment.centerRight,
           child: AddAppointmentDialog(
             availablePatients: state.availablePatients,
-            initialDate: apt.date,
+            activeCategories: state.activeCategories,
+            initialDate: apt.startDate,
             appointmentToEdit: apt,
           ),
         );
@@ -880,23 +946,11 @@ class ScheduleView extends StatelessWidget {
     );
 
     if (result != null && context.mounted) {
-      // Aqui você enviaria um evento de Update em vez de Add
-      context.read<ScheduleBloc>().add(UpdateAppointment(result));
-    }
-  }
-
-  Color _getTypeColor(String type) {
-    switch (type) {
-      case 'Avaliação Inicial':
-        return const Color(0xFFFB923C);
-      case 'Fisioterapia':
-        return const Color(0xFF60A5FA);
-      case 'Pilates':
-        return const Color(0xFF94A3B8);
-      case 'RPG':
-        return const Color(0xFFF87171);
-      default:
-        return const Color(0xFF4ADE80);
+      if (result == 'delete') {
+        context.read<ScheduleBloc>().add(DeleteAppointment(apt.id));
+      } else if (result is Appointment) {
+        context.read<ScheduleBloc>().add(UpdateAppointment(result));
+      }
     }
   }
 }
