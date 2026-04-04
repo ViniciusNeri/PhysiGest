@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:physigest/core/di/injection.dart';
+import 'package:physigest/core/utils/currency_formatter.dart';
 import 'package:physigest/core/widgets/side_menu.dart';
 // Nota: Você precisará criar o FinancialBloc ou adaptar o DashboardBloc para prover estes dados
 import 'package:physigest/features/financial/presentation/bloc/financial_bloc.dart';
@@ -124,7 +125,7 @@ class _FinancialViewState extends State<FinancialView> {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(
-                  'Lançamento salvo: R\$ ${result['amount']} - ${result['description']}',
+                  'Lançamento salvo: ${CurrencyFormatter.format(result['amount'])} - ${result['description']}',
                 ),
                 backgroundColor: FinancialView.azulPetroleo,
               ),
@@ -214,21 +215,21 @@ class _FinancialViewState extends State<FinancialView> {
                             _FinancialSummaryCard(
                               title: 'Faturamento Total',
                               subtitle: 'Total bruto recebido no mês',
-                              value: 'R\$ 12.450', // Exemplo: vindo do state
+                              value: CurrencyFormatter.format(12450.0), // Exemplo: vindo do state
                               iconText: '💰',
                               color: FinancialView.azulPetroleo,
                             ),
                             _FinancialSummaryCard(
                               title: 'Contas a Receber',
                               subtitle: 'Sessões realizadas não pagas',
-                              value: 'R\$ 2.180',
+                              value: CurrencyFormatter.format(2180.0),
                               iconText: '⏳',
                               color: FinancialView.roxoClaro,
                             ),
                             _FinancialSummaryCard(
                               title: 'Despesas Fixas',
                               subtitle: 'Aluguel, luz e materiais',
-                              value: 'R\$ 3.200',
+                              value: CurrencyFormatter.format(3200.0),
                               iconText: '📉',
                               color: const Color(
                                 0xFFFF7A00,
@@ -237,7 +238,7 @@ class _FinancialViewState extends State<FinancialView> {
                             _FinancialSummaryCard(
                               title: 'Lucro Líquido',
                               subtitle: 'O que sobra após as despesas',
-                              value: 'R\$ 9.250',
+                              value: CurrencyFormatter.format(9250.0),
                               iconText: '📈',
                               color: const Color(
                                 0xFF10B981,
@@ -459,7 +460,7 @@ class _RecentTransactionsCard extends StatelessWidget {
                   isExpense ? 'Despesa Variável' : 'Particular (Pix)',
                 ),
                 trailing: Text(
-                  isExpense ? '- R\$ 80,00' : '+ R\$ 150,00',
+                  isExpense ? '- ${CurrencyFormatter.format(80.0)}' : '+ ${CurrencyFormatter.format(150.0)}',
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
                     color: isExpense ? Colors.red : FinancialView.azulPetroleo,

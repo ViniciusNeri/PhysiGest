@@ -68,11 +68,14 @@ class ScheduleRemoteDataSource implements IScheduleRemoteDataSource {
   @override
   Future<AppointmentModel> updateAppointment(Appointment appointment) async {
     try {
+      final user = await localStorage.getUser();
+      final currentUserId = user?.id ?? '';
+
       final body = AppointmentModel(
         id: appointment.id,
         patientName: appointment.patientName,
         patientId: appointment.patientId,
-        userId: appointment.userId,
+        userId: appointment.userId ?? currentUserId,
         categoryId: appointment.categoryId,
         startDate: appointment.startDate,
         endDate: appointment.endDate,

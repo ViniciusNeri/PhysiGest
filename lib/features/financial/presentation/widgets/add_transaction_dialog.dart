@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:physigest/core/theme/app_theme.dart';
+import 'package:physigest/core/utils/currency_formatter.dart';
 
 class AddTransactionDialog extends StatefulWidget {
   const AddTransactionDialog({super.key});
@@ -462,7 +463,7 @@ class _AddTransactionDialogState extends State<AddTransactionDialog> {
     Navigator.of(context).pop({
       'type': _transactionType, // 'revenue' ou 'expense'
       'description': description,
-      'amount': amount,
+      'amount': CurrencyFormatter.parse(amount) ?? 0.0,
       'paymentMethod': _paymentMethod,
       'billingType': _transactionType == 'revenue'
           ? _revenueType

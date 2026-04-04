@@ -5,6 +5,7 @@ import 'package:physigest/features/settings/presentation/bloc/settings/settings_
 import 'package:physigest/features/settings/presentation/bloc/settings/settings_event.dart';
 import 'package:physigest/features/settings/presentation/bloc/settings/settings_state.dart';
 import '../../domain/models/patient.dart';
+import 'package:physigest/core/utils/currency_formatter.dart';
 import '../bloc/patient_financial_bloc.dart';
 import '../bloc/patient_financial_event.dart';
 import '../bloc/patient_financial_state.dart';
@@ -161,10 +162,8 @@ class _PatientFinanceViewState extends State<PatientFinanceView> {
   }
 
   Widget _buildTopCards(bool isDesktop, PatientFinancialSummary summary) {
-    final outstanding =
-        "R\$ ${summary.outstandingBalance.toStringAsFixed(2).replaceAll('.', ',')}";
-    final totalPaid =
-        "R\$ ${summary.totalPaidAmount.toStringAsFixed(2).replaceAll('.', ',')}";
+    final outstanding = CurrencyFormatter.format(summary.outstandingBalance);
+    final totalPaid = CurrencyFormatter.format(summary.totalPaidAmount);
 
     if (isDesktop) {
       return Row(
@@ -414,7 +413,7 @@ class _PatientFinanceViewState extends State<PatientFinanceView> {
                 context,
                 tx,
                 displayDate,
-                "R\$ ${tx.amount.toStringAsFixed(2).replaceAll('.', ',')}",
+                CurrencyFormatter.format(tx.amount),
                 color,
               ),
               if (!isLast) const Divider(height: 1, color: borderColor),

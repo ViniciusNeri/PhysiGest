@@ -9,18 +9,41 @@ class AppointmentModel extends Appointment {
     required super.description,
     required super.date,
     required super.status,
+    super.categoryName,
+    super.notes,
     required super.createdAt,
   });
 
   factory AppointmentModel.fromJson(Map<String, dynamic> json) {
+    String rawStatus = (json['status'] ?? 'scheduled').toString().toLowerCase();
+    String normalizedStatus;
+    switch (rawStatus) {
+      case 'agendado':
+        normalizedStatus = 'scheduled';
+        break;
+      case 'realizado':
+        normalizedStatus = 'completed';
+        break;
+      case 'cancelado':
+        normalizedStatus = 'cancelled';
+        break;
+      case 'falta':
+        normalizedStatus = 'no_show';
+        break;
+      default:
+        normalizedStatus = rawStatus;
+    }
+
     return AppointmentModel(
-      id: json['id'] ?? json['_id'] ?? '',
-      patientId: json['patientId'] ?? '',
-      userId: json['userId'] ?? '',
-      title: json['title'] ?? '',
+      id: json['id']?.toString() ?? json['_id']?.toString() ?? '',
+      patientId: json['patientId']?.toString() ?? '',
+      userId: json['userId']?.toString() ?? '',
+      title: json['title'] ?? json['patientName'] ?? 'Consulta',
       description: json['description'] ?? '',
-      date: json['date'] ?? '',
-      status: json['status'] ?? 'scheduled',
+      date: json['date'] ?? json['startDate'] ?? '',
+      status: normalizedStatus,
+      categoryName: json['categoryName'],
+      notes: json['notes'],
       createdAt: json['createdAt'] ?? '',
     );
   }

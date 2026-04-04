@@ -8,6 +8,7 @@ import 'package:physigest/features/patients/presentation/bloc/patient_state.dart
 
 // Import das novas Views
 import '../views/patient_summary_view.dart';
+import '../bloc/patient_activities_bloc.dart';
 import '../views/patient_agenda_view.dart';
 import '../views/patient_anamnesis_view.dart';
 import '../views/patient_finance_view.dart';
@@ -52,7 +53,11 @@ class _PatientProfileScreenState extends State<PatientProfileScreen>
             body: TabBarView(
               controller: _tabController,
               children: [
-                PatientSummaryView(patient: p),
+                BlocProvider(
+                  create: (context) => getIt<PatientActivitiesBloc>()
+                    ..add(LoadPatientActivities(p.id)),
+                  child: PatientSummaryView(patient: p),
+                ),
                 PatientAgendaView(patient: p),
                 PatientAnamnesisView(patient: p),
                 BlocProvider(

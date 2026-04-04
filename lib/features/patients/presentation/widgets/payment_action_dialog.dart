@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:physigest/core/utils/currency_formatter.dart';
 import 'package:physigest/features/patients/domain/models/patient.dart';
 
 class PaymentActionDialog extends StatefulWidget {
@@ -57,9 +58,7 @@ class _PaymentActionDialogState extends State<PaymentActionDialog> {
       return;
     }
 
-    final double? parsedValue = double.tryParse(
-      _valueController.text.replaceAll(',', '.'),
-    );
+    final double? parsedValue = CurrencyFormatter.parse(_valueController.text);
     if (parsedValue == null) {
       ScaffoldMessenger.of(
         context,

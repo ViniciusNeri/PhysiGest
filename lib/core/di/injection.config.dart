@@ -56,6 +56,8 @@ import '../../features/patients/domain/usecases/patient_usecases.dart' as _i160;
 import '../../features/patients/presentation/bloc/agenda_bloc.dart' as _i776;
 import '../../features/patients/presentation/bloc/anamnesis_bloc.dart' as _i834;
 import '../../features/patients/presentation/bloc/patient_bloc.dart' as _i1035;
+import '../../features/patients/presentation/bloc/patient_activities_bloc.dart'
+    as _i888;
 import '../../features/patients/presentation/bloc/patient_financial_bloc.dart'
     as _i220;
 import '../../features/schedule/data/datasources/schedule_remote_datasource.dart'
@@ -290,11 +292,17 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i160.UpdateFinancialStatusUseCase>(
       () => _i160.UpdateFinancialStatusUseCase(gh<_i37.IPatientRepository>()),
     );
-    gh.factory<_i72.DashboardBloc>(
-      () => _i72.DashboardBloc(gh<_i527.GetDashboardSummaryUseCase>()),
+    gh.lazySingleton<_i160.GetPatientActivitiesUseCase>(
+      () => _i160.GetPatientActivitiesUseCase(gh<_i37.IPatientRepository>()),
     );
     gh.factory<_i6.VerifyBloc>(
       () => _i6.VerifyBloc(gh<_i188.ConfirmSignUpUseCase>()),
+    );
+    gh.factory<_i72.DashboardBloc>(
+      () => _i72.DashboardBloc(
+        gh<_i527.GetDashboardSummaryUseCase>(),
+        gh<_i399.UpdateAppointmentUseCase>(),
+      ),
     );
     gh.factory<_i1055.ForgotPasswordBloc>(
       () => _i1055.ForgotPasswordBloc(
@@ -351,6 +359,9 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i160.UpdatePatientUseCase>(),
         gh<_i160.DeletePatientUseCase>(),
       ),
+    );
+    gh.factory<_i888.PatientActivitiesBloc>(
+      () => _i888.PatientActivitiesBloc(gh<_i160.GetPatientActivitiesUseCase>()),
     );
     return this;
   }

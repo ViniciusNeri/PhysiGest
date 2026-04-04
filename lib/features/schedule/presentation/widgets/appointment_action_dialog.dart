@@ -48,7 +48,7 @@ class _AppointmentActionDialogState extends State<AppointmentActionDialog> {
 
   @override
   Widget build(BuildContext context) {
-    final isDone = _selectedStatus == 'realizado';
+    final isDone = _selectedStatus == 'completed';
 
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
@@ -152,24 +152,24 @@ class _AppointmentActionDialogState extends State<AppointmentActionDialog> {
         children: [
           Expanded(
             child: _buildStatusOption(
-              'agendado',
+              'scheduled',
               'Agendado',
               Icons.pending_rounded,
             ),
           ),
           Expanded(
             child: _buildStatusOption(
-              'realizado',
+              'completed',
               'Realizado',
               Icons.check_circle_rounded,
             ),
           ),
           Expanded(
-            child: _buildStatusOption('falta', 'Falta', Icons.cancel_rounded),
+            child: _buildStatusOption('no_show', 'Falta', Icons.cancel_rounded),
           ),
           Expanded(
             child: _buildStatusOption(
-              'cancelado',
+              'cancelled',
               'Cancelado',
               Icons.event_busy_rounded,
             ),
@@ -222,11 +222,11 @@ class _AppointmentActionDialogState extends State<AppointmentActionDialog> {
 
   Color _getStatusColor(String status) {
     switch (status) {
-      case 'realizado':
+      case 'completed':
         return const Color(0xFF10B981); // Success
-      case 'falta':
+      case 'no_show':
         return const Color(0xFFEF4444); // Error/Red
-      case 'cancelado':
+      case 'cancelled':
         return const Color(0xFFF59E0B); // Warning/Orange
       default:
         return const Color(0xFF64748B); // Normal/Grey

@@ -6,6 +6,8 @@ class Appointment {
   final String description;
   final String date;
   final String status;
+  final String? categoryName;
+  final String? notes;
   final String createdAt;
 
   const Appointment({
@@ -16,13 +18,15 @@ class Appointment {
     required this.description,
     required this.date,
     required this.status,
+    this.categoryName,
+    this.notes,
     required this.createdAt,
   });
 
   // Formata a data para exibição: "05 Mar" e "14:00"
   String get displayDate {
     try {
-      final dt = DateTime.parse(date);
+      final dt = DateTime.parse(date).toLocal();
       const months = [
         'Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun',
         'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez',
@@ -35,7 +39,7 @@ class Appointment {
 
   String get displayTime {
     try {
-      final dt = DateTime.parse(date);
+      final dt = DateTime.parse(date).toLocal();
       return '${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
     } catch (_) {
       return '';
@@ -45,11 +49,15 @@ class Appointment {
   String get displayStatus {
     switch (status.toLowerCase()) {
       case 'scheduled':
+      case 'agendado':
         return 'AGENDADO';
+      case 'realizado':
       case 'completed':
-        return 'CONCLUÍDO';
+        return 'REALIZADO';
+      case 'cancelado':
       case 'cancelled':
         return 'CANCELADO';
+      case 'falta':
       case 'no_show':
         return 'FALTA';
       default:
@@ -61,11 +69,14 @@ class Appointment {
   String get statusColorKey {
     switch (status.toLowerCase()) {
       case 'scheduled':
-        return 'orange';
+      case 'agendado':
+        return 'yellow';
+      case 'realizado':
       case 'completed':
         return 'teal';
+      case 'cancelado':
       case 'cancelled':
-        return 'red';
+      case 'falta':
       case 'no_show':
         return 'red';
       default:

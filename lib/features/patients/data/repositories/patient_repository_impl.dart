@@ -1,5 +1,7 @@
 import 'package:injectable/injectable.dart';
 import 'package:physigest/features/patients/domain/models/patient.dart';
+import 'package:physigest/features/patients/domain/models/appointment.dart';
+import 'package:physigest/features/patients/domain/models/patient_activity.dart';
 import '../../domain/repositories/i_patient_repository.dart';
 import '../datasources/patient_remote_datasource.dart';
 
@@ -51,6 +53,16 @@ class PatientRepositoryImpl implements IPatientRepository {
     Anamnesis anamnesis,
   ) async {
     return await remoteDataSource.updateAnamnesis(patientId, anamnesisId, anamnesis);
+  }
+
+  @override
+  Future<List<Appointment>> getPatientAgenda(String patientId) async {
+    return await remoteDataSource.getPatientAgenda(patientId);
+  }
+
+  @override
+  Future<List<PatientActivity>> getPatientActivities(String patientId) async {
+    return await remoteDataSource.getPatientActivities(patientId);
   }
 
   @override

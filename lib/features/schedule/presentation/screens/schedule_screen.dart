@@ -542,7 +542,7 @@ class ScheduleView extends StatelessWidget {
     }
 
     // Altera opacidade dependendo do status
-    if (apt.status == 'falta' || apt.status == 'cancelado') {
+    if (apt.status == 'no_show' || apt.status == 'cancelled') {
       baseColor = baseColor.withOpacity(0.5);
     }
 
@@ -570,7 +570,7 @@ class ScheduleView extends StatelessWidget {
             ),
           ),
           Padding(
-            padding: const EdgeInsets.all(12),
+            padding: const EdgeInsets.all(8),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.center,
@@ -580,18 +580,18 @@ class ScheduleView extends StatelessWidget {
                   maxLines: 1,
                   style: const TextStyle(
                     fontWeight: FontWeight.w900,
-                    fontSize: 14,
+                    fontSize: 13,
                     color: Colors.white,
                     overflow: TextOverflow.ellipsis,
                     shadows: [Shadow(color: Colors.black12, blurRadius: 2)],
                   ),
                 ),
-                const SizedBox(height: 4),
+                const SizedBox(height: 2),
                 // Containerzinho para o horário (estilo Badge)
                 Container(
                   padding: const EdgeInsets.symmetric(
-                    horizontal: 6,
-                    vertical: 2,
+                    horizontal: 5,
+                    vertical: 1,
                   ),
                   decoration: BoxDecoration(
                     color: Colors.white.withOpacity(0.2),
@@ -602,35 +602,38 @@ class ScheduleView extends StatelessWidget {
                     children: [
                       const Icon(
                         Icons.access_time_filled,
-                        size: 12,
+                        size: 10,
                         color: Colors.white,
                       ),
-                      const SizedBox(width: 4),
+                      const SizedBox(width: 3),
                       Text(
                         "${DateFormat('HH:mm').format(apt.startDate)} - ${DateFormat('HH:mm').format(apt.endDate)}",
                         style: const TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.bold,
-                          fontSize: 11,
+                          fontSize: 10,
                         ),
                       ),
                     ],
                   ),
                 ),
-                const SizedBox(height: 6),
+                const SizedBox(height: 4),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
-                    Expanded(
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
                       child: Text(
-                        categoryName.toUpperCase(),
-                        style: TextStyle(
-                          fontSize: 9,
+                        apt.displayStatus,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 8,
                           fontWeight: FontWeight.w900,
-                          color: Colors.white.withOpacity(0.7),
-                          letterSpacing: 0.5,
-                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
                     ),
@@ -650,19 +653,19 @@ class ScheduleView extends StatelessWidget {
                         );
                       },
                       child: Container(
-                        padding: const EdgeInsets.all(4),
+                        padding: const EdgeInsets.all(3),
                         decoration: BoxDecoration(
                           color: Colors.white.withOpacity(0.25),
                           shape: BoxShape.circle,
                         ),
                         child: Icon(
-                          apt.status == 'realizado'
+                          apt.status == 'completed'
                               ? Icons.check_circle_rounded
-                              : (apt.status == 'falta' ||
-                                        apt.status == 'cancelado'
+                              : (apt.status == 'no_show' ||
+                                        apt.status == 'cancelled'
                                     ? Icons.cancel_rounded
                                     : Icons.fact_check_rounded),
-                          size: 14,
+                          size: 12,
                           color: Colors.white,
                         ),
                       ),
@@ -672,7 +675,7 @@ class ScheduleView extends StatelessWidget {
               ],
             ),
           ),
-          if (apt.status == 'realizado')
+          if (apt.status == 'completed')
             Positioned(
               top: 8,
               right: 8,

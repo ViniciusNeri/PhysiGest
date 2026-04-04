@@ -155,13 +155,13 @@ class PatientAgendaView extends StatelessWidget {
   Color _statusColor(Appointment a) {
     switch (a.statusColorKey) {
       case 'teal':
-        return primaryTeal;
-      case 'orange':
-        return Colors.orange;
+        return const Color(0xFF10B981); // Green/Realizado
+      case 'yellow':
+        return const Color(0xFFF59E0B); // Amber/Yellow/Agendado
       case 'red':
-        return Colors.red;
+        return const Color(0xFFEF4444); // Red/Falta/Cancelado
       default:
-        return Colors.grey;
+        return const Color(0xFF94A3B8);
     }
   }
 
@@ -169,8 +169,8 @@ class PatientAgendaView extends StatelessWidget {
     switch (a.statusColorKey) {
       case 'teal':
         return Icons.check_circle_rounded;
-      case 'orange':
-        return Icons.event_note_rounded;
+      case 'yellow':
+        return Icons.pending_rounded;
       case 'red':
         return Icons.cancel_rounded;
       default:
@@ -254,22 +254,24 @@ class PatientAgendaView extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          appointment.title,
+                          appointment.categoryName ?? appointment.title,
                           style: const TextStyle(
                             fontWeight: FontWeight.w800,
                             fontSize: 16,
                             color: textMain,
                           ),
                         ),
-                        if (appointment.description.isNotEmpty) ...[
-                          const SizedBox(height: 2),
+                        if (appointment.notes != null &&
+                            appointment.notes!.isNotEmpty) ...[
+                          const SizedBox(height: 4),
                           Text(
-                            appointment.description,
+                            appointment.notes!,
                             style: const TextStyle(
                               color: textSecondary,
                               fontSize: 13,
+                              fontStyle: FontStyle.italic,
                             ),
-                            maxLines: 1,
+                            maxLines: 2,
                             overflow: TextOverflow.ellipsis,
                           ),
                         ],

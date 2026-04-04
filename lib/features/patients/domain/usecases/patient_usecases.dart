@@ -1,5 +1,6 @@
 import 'package:injectable/injectable.dart';
 import 'package:physigest/features/patients/domain/models/patient.dart';
+import 'package:physigest/features/patients/domain/models/patient_activity.dart';
 import '../repositories/i_patient_repository.dart';
 
 @lazySingleton
@@ -82,4 +83,12 @@ class UpdateFinancialStatusUseCase {
   UpdateFinancialStatusUseCase(this.repository);
   Future<void> call(String patientId, String paymentId, String status, {String? paymentMethod}) =>
       repository.updateFinancialRecordStatus(patientId, paymentId, status, paymentMethod: paymentMethod);
+}
+
+@lazySingleton
+class GetPatientActivitiesUseCase {
+  final IPatientRepository repository;
+  GetPatientActivitiesUseCase(this.repository);
+  Future<List<PatientActivity>> call(String patientId) =>
+      repository.getPatientActivities(patientId);
 }

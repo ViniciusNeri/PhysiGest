@@ -424,6 +424,7 @@ class _AddAppointmentDialogState extends State<AddAppointmentDialog> {
                         patientName: selectedPatientName ?? '',
                         patientId: selectedPatientId,
                         categoryId: selectedCategoryId,
+                        categoryName: selectedCategoryName,
                         startDate: newStartDate,
                         endDate: newEndDate,
                       );

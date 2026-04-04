@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:physigest/core/di/injection.dart';
+import 'package:physigest/core/utils/currency_formatter.dart';
 import 'package:physigest/core/widgets/side_menu.dart';
 import 'package:physigest/features/dashboard/presentation/bloc/dashboard/dashboard_bloc.dart';
 import 'package:physigest/features/dashboard/presentation/bloc/dashboard/dashboard_event.dart';
@@ -33,6 +34,7 @@ class HomeView extends StatelessWidget {
   static const Color success = Color(0xFF10B981);
   static const Color warning = Color(0xFFF59E0B);
   static const Color info = Color(0xFF0EA5E9);
+  static const Color danger = Color(0xFFEF4444);
   static const Color bg = Color(0xFFF8FAFC);
 
   @override
@@ -124,17 +126,17 @@ class HomeView extends StatelessWidget {
                               _buildMetricCard(
                                 width,
                                 "Faturamento mês",
-                                "R\$ ${state.monthlyIncome.toStringAsFixed(0)}",
+                                CurrencyFormatter.format(state.monthlyIncome),
                                 Icons.account_balance_wallet,
                                 success,
                               ),
                             if (showPayments)
                               _buildMetricCard(
                                 width,
-                                "Pagamentos ativos",
+                                "Pagamentos pendentes",
                                 state.activePayments.toString(),
                                 Icons.payment_rounded,
-                                info,
+                                danger,
                               ),
                           ],
                         ),
@@ -472,7 +474,7 @@ class HomeView extends StatelessWidget {
             ),
           ),
           Text(
-            "${next.categoryId ?? 'Consulta'} • ${DateFormat('HH:mm').format(next.startDate)}",
+            '${next.categoryName ?? next.categoryId ?? 'Consulta'} • ${DateFormat("dd/MM 'às' HH:mm").format(next.startDate)}',
             style: const TextStyle(color: Colors.white70, fontSize: 12),
           ),
           const SizedBox(height: 10),
@@ -611,13 +613,13 @@ class HomeView extends StatelessWidget {
     IconData statusIcon = Icons.access_time_rounded;
     Color statusColor = warning;
 
-    if (apt.status == 'realizado') {
+    if (apt.status == 'completed') {
       statusIcon = Icons.check_circle_rounded;
       statusColor = success;
-    } else if (apt.status == 'falta') {
+    } else if (apt.status == 'no_show') {
       statusIcon = Icons.cancel_rounded;
       statusColor = Colors.redAccent;
-    } else if (apt.status == 'cancelado') {
+    } else if (apt.status == 'cancelled') {
       statusIcon = Icons.event_busy_rounded;
       statusColor = Colors.orangeAccent;
     }
@@ -645,6 +647,7 @@ class HomeView extends StatelessWidget {
           border: Border.all(color: Colors.black12.withValues(alpha: 0.05)),
         ),
         child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Text(
               DateFormat('HH:mm').format(apt.startDate),
@@ -658,24 +661,48 @@ class HomeView extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    apt.patientName,
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      decoration:
-                          (apt.status == 'cancelado' || apt.status == 'falta')
-                          ? TextDecoration.lineThrough
-                          : null,
-                      color:
-                          (apt.status == 'cancelado' || apt.status == 'falta')
-                          ? Colors.black38
-                          : Colors.black87,
+                  Wrap(
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    spacing: 8,
+                    children: [
+                      Text(
+                        apt.patientName,
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          decoration:
+                              (apt.status == 'cancelled' || apt.status == 'no_show')
+                              ? TextDecoration.lineThrough
+                              : null,
+                          color:
+                              (apt.status == 'cancelled' || apt.status == 'no_show')
+                              ? Colors.black38
+                              : Colors.black87,
+                        ),
+                      ),
+                      Text(
+                        '(${apt.categoryName ?? apt.categoryId ?? "Atendimento"})',
+                        style: const TextStyle(
+                          fontSize: 11,
+                          color: Colors.black54,
+                          fontWeight: FontWeight.normal,
+                        ),
+                      ),
+                    ],
+                  ),
+                  if (apt.notes != null && apt.notes!.isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 4),
+                      child: Text(
+                        apt.notes!,
+                        style: const TextStyle(
+                          fontSize: 10,
+                          color: Colors.black45,
+                          fontStyle: FontStyle.italic,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
-                  ),
-                  Text(
-                    apt.categoryId ?? 'Atendimento',
-                    style: const TextStyle(fontSize: 11, color: Colors.black54),
-                  ),
                 ],
               ),
             ),

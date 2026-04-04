@@ -6,6 +6,7 @@ import '../models/patient_model.dart';
 import '../models/anamnesis_model.dart';
 import '../models/appointment_model.dart';
 import '../models/patient_financial_model.dart';
+import '../models/patient_activity_model.dart';
 import 'package:physigest/core/storage/local_storage.dart';
 
 abstract class IPatientRemoteDataSource {
@@ -18,6 +19,7 @@ abstract class IPatientRemoteDataSource {
   Future<Anamnesis> createAnamnesis(String patientId, Anamnesis anamnesis);
   Future<Anamnesis> updateAnamnesis(String patientId, String anamnesisId, Anamnesis anamnesis);
   Future<List<AppointmentModel>> getPatientAgenda(String patientId);
+  Future<List<PatientActivityModel>> getPatientActivities(String patientId);
   Future<PatientFinancialSummary> getFinancialSummary(String patientId);
   Future<void> addFinancialRecord(String patientId, PatientPayment payment);
   Future<void> updateFinancialRecordStatus(String patientId, String paymentId, String status, {String? paymentMethod});
@@ -196,6 +198,20 @@ class PatientRemoteDataSource implements IPatientRemoteDataSource {
       throw Exception(errorMsg);
     } catch (e) {
       throw Exception('Erro desconhecido ao buscar agenda: $e');
+    }
+  }
+
+  @override
+  Future<List<PatientActivityModel>> getPatientActivities(String patientId) async {
+    try {
+      final response = await apiClient.dio.get('/patients/$patientId/activities');
+      final list = response.data as List<dynamic>;
+      return list.map((json) => PatientActivityModel.fromJson(json)).toList();
+    } on DioException catch (e) {
+      final errorMsg = e.response?.data?['message'] ?? 'Erro ao buscar atividades.';
+      throw Exception(errorMsg);
+    } catch (e) {
+      throw Exception('Erro desconhecido ao buscar atividades: $e');
     }
   }
 

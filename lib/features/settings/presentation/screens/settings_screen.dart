@@ -319,10 +319,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
             color: Color(0xFFF1F5F9),
           ),
           _buildToggle(
-            title: 'Pagamentos Ativos',
-            subtitle: 'Exibir quantidade de mensalidades e cobranças ativas.',
+            title: 'Pagamentos Pendentes',
+            subtitle: 'Exibir quantidade de mensalidades e cobranças pendentes.',
             icon: Icons.receipt_long_rounded,
-            color: Colors.orange,
+            color: Colors.red,
             value: prefs.showActivePayments,
             onChanged: (val) {
               final newPrefs = prefs.copyWith(showActivePayments: val);

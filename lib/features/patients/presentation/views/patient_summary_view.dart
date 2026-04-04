@@ -1,6 +1,9 @@
 // lib/features/patients/presentation/views/patient_summary_view.dart
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../domain/models/patient.dart';
+import '../bloc/patient_activities_bloc.dart';
+import '../../domain/models/patient_activity.dart';
 
 class PatientSummaryView extends StatelessWidget {
   final Patient patient;
@@ -414,21 +417,90 @@ class PatientSummaryView extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 16),
-          _historyItem(
-            "Sessão Realizada",
-            "26 de Fevereiro",
-            Icons.check_circle_rounded,
-            Colors.green,
-          ),
-          _historyItem(
-            "Pagamento Recebido",
-            "20 de Fevereiro",
-            Icons.account_balance_wallet_rounded,
-            Colors.blue,
+          BlocBuilder<PatientActivitiesBloc, PatientActivitiesState>(
+            builder: (context, state) {
+              if (state.status == PatientActivitiesStatus.loading) {
+                return const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 20),
+                  child: Center(child: CircularProgressIndicator()),
+                );
+              }
+              if (state.status == PatientActivitiesStatus.failure) {
+                return Text(
+                  "Erro: ${state.errorMessage}",
+                  style: const TextStyle(color: Colors.red, fontSize: 12),
+                );
+              }
+              if (state.activities.isEmpty) {
+                return const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 20),
+                  child: Text(
+                    "Nenhuma atividade recente encontrada.",
+                    style: TextStyle(color: textSecondary, fontSize: 13),
+                  ),
+                );
+              }
+
+              return Column(
+                children: state.activities.map((activity) {
+                  return _historyItem(
+                    activity.description,
+                    activity.displayDate,
+                    _getActivityIcon(activity.type),
+                    _getActivityColor(activity.type),
+                  );
+                }).toList(),
+              );
+            },
           ),
         ],
       ),
     );
+  }
+
+  IconData _getActivityIcon(String type) {
+    switch (type) {
+      case 'appointment_completed':
+        return Icons.check_circle_rounded;
+      case 'appointment_scheduled':
+      case 'appointment_created':
+        return Icons.event_note_rounded;
+      case 'appointment_cancelled':
+        return Icons.cancel_rounded;
+      case 'appointment_no_show':
+        return Icons.event_busy_rounded;
+      case 'payment_paid':
+        return Icons.payments_rounded;
+      case 'payment_pending':
+        return Icons.pending_actions_rounded;
+      case 'note_added':
+      case 'anamnesis_updated':
+        return Icons.assignment_ind_rounded;
+      default:
+        return Icons.info_outline_rounded;
+    }
+  }
+
+  Color _getActivityColor(String type) {
+    switch (type) {
+      case 'appointment_completed':
+      case 'payment_paid':
+        return Colors.green;
+      case 'appointment_scheduled':
+      case 'appointment_created':
+        return Colors.blue;
+      case 'appointment_cancelled':
+        return Colors.red;
+      case 'appointment_no_show':
+        return Colors.orange;
+      case 'payment_pending':
+        return Colors.amber;
+      case 'note_added':
+      case 'anamnesis_updated':
+        return Colors.indigo;
+      default:
+        return Colors.grey;
+    }
   }
 
   Widget _historyItem(String title, String date, IconData icon, Color color) {
