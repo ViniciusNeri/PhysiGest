@@ -77,7 +77,7 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
         ),
       );
     } catch (e) {
-      emit(SettingsError('Erro ao carregar configurações: $e'));
+      emit(SettingsError(e.toString().replaceAll('Exception: ', '')));
     }
   }
 
@@ -91,7 +91,7 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
         await _updateDashboardPreferencesUseCase(event.preferences);
         emit(currentState.copyWith(dashboardPreferences: event.preferences));
       } catch (e) {
-        emit(SettingsError('Erro ao atualizar preferências: $e'));
+        emit(SettingsError(e.toString().replaceAll('Exception: ', '')));
       }
     }
   }
@@ -112,7 +112,7 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
           ),
         );
       } catch (e) {
-        emit(SettingsError('Erro ao adicionar categoria: $e'));
+        emit(SettingsError(e.toString().replaceAll('Exception: ', '')));
       }
     }
   }
@@ -130,7 +130,7 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
         }).toList();
         emit(currentState.copyWith(categories: updatedCategories));
       } catch (e) {
-        emit(SettingsError('Erro ao atualizar categoria: $e'));
+        emit(SettingsError(e.toString().replaceAll('Exception: ', '')));
       }
     }
   }
@@ -148,7 +148,7 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
             .toList();
         emit(currentState.copyWith(categories: filteredCategories));
       } catch (e) {
-        emit(SettingsError('Erro ao excluir categoria: $e'));
+        emit(SettingsError(e.toString().replaceAll('Exception: ', '')));
       }
     }
   }
@@ -168,7 +168,7 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
           ),
         );
       } catch (e) {
-        emit(SettingsError('Erro ao adicionar método de pagamento: $e'));
+        emit(SettingsError(e.toString().replaceAll('Exception: ', '')));
       }
     }
   }
@@ -186,7 +186,7 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
         }).toList();
         emit(currentState.copyWith(paymentMethods: updatedMethods));
       } catch (e) {
-        emit(SettingsError('Erro ao atualizar método de pagamento: $e'));
+        emit(SettingsError(e.toString().replaceAll('Exception: ', '')));
       }
     }
   }
@@ -204,7 +204,7 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
             .toList();
         emit(currentState.copyWith(paymentMethods: filteredMethods));
       } catch (e) {
-        emit(SettingsError('Erro ao excluir método de pagamento: $e'));
+        emit(SettingsError(e.toString().replaceAll('Exception: ', '')));
       }
     }
   }

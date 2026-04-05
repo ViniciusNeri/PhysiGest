@@ -1,12 +1,28 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
+import 'package:physigest/core/storage/local_storage.dart';
+import '../../domain/entities/transaction.dart';
+import '../../domain/usecases/financial_usecases.dart';
 import 'financial_event.dart';
 import 'financial_state.dart';
 
-@injectable // Se estiver usando o injectable para gerar o injection.config
+@injectable
 class FinancialBloc extends Bloc<FinancialEvent, FinancialState> {
-  FinancialBloc() : super(FinancialLoading()) {
+  final GetConsolidatedFinancialDataUseCase _getConsolidatedData;
+  final CreateTransactionUseCase _createTransaction;
+  final DeleteTransactionUseCase _deleteTransaction;
+  final LocalStorage _storage;
+
+  FinancialBloc(
+    this._getConsolidatedData,
+    this._createTransaction,
+    this._deleteTransaction,
+    this._storage,
+  ) : super(FinancialLoading()) {
     on<LoadFinancialData>(_onLoadFinancialData);
+    on<AddTransaction>(_onAddTransaction);
+    on<DeleteTransaction>(_onDeleteTransaction);
+    on<UpdateDateFilter>(_onUpdateDateFilter);
   }
 
   Future<void> _onLoadFinancialData(
@@ -16,52 +32,136 @@ class FinancialBloc extends Bloc<FinancialEvent, FinancialState> {
     try {
       emit(FinancialLoading());
 
-      // Simulando chamada de API
-      await Future.delayed(const Duration(seconds: 1));
+      final user = await _storage.getUser();
+      if (user == null) {
+        emit(const FinancialError("Usuário não autenticado."));
+        return;
+      }
 
-      // Mock de dados financeiros
-      final transacoesMock = [
-        {
-          'titulo': 'Sessão: Ana Paula',
-          'subtitulo': 'Particular (Pix)',
-          'valor': 150.0,
-          'isExpense': false,
-          'data': '26 Out',
-        },
-        {
-          'titulo': 'Fornecedor de Luvas',
-          'subtitulo': 'Despesa Variável',
-          'valor': 80.0,
-          'isExpense': true,
-          'data': '25 Out',
-        },
-        {
-          'titulo': 'Sessão: Marcos Vinicius',
-          'subtitulo': 'Convênio Unimed',
-          'valor': 120.0,
-          'isExpense': false,
-          'data': '25 Out',
-        },
-        {
-          'titulo': 'Aluguel Clínica',
-          'subtitulo': 'Despesa Fixa',
-          'valor': 1200.0,
-          'isExpense': true,
-          'data': '20 Out',
-        },
-      ];
+      final now = DateTime.now();
+      final month = now.month;
+      final year = now.year;
+
+      final (summary, transactions) = await _getConsolidatedData(
+        user.id,
+        month,
+        year,
+      );
 
       emit(
         FinancialLoaded(
-          faturamentoTotal: 12450.00,
-          contasReceber: 2180.00,
-          despesasFixas: 3200.00,
-          lucroLiquido: 9250.00,
-          transacoes: transacoesMock,
+          faturamentoTotal: summary.faturamentoTotal,
+          contasReceber: summary.contasReceber,
+          despesasFixas: summary.despesasFixas,
+          lucroLiquido: summary.lucroLiquido,
+          incomeByMethod: summary.incomeByMethod,
+          expenseByMethod: summary.expenseByMethod,
+          transacoes: transactions,
+          selectedMonth: month,
+          selectedYear: year,
         ),
       );
     } catch (e) {
-      emit(const FinancialError("Erro ao carregar dados financeiros."));
+      final msg = e.toString().replaceAll('Exception: ', '');
+      emit(FinancialError(msg));
+    }
+  }
+
+  Future<void> _onUpdateDateFilter(
+    UpdateDateFilter event,
+    Emitter<FinancialState> emit,
+  ) async {
+    try {
+      final user = await _storage.getUser();
+      if (user == null) return;
+
+      emit(FinancialLoading());
+
+      final (summary, transactions) = await _getConsolidatedData(
+        user.id,
+        event.month,
+        event.year,
+      );
+
+      emit(
+        FinancialLoaded(
+          faturamentoTotal: summary.faturamentoTotal,
+          contasReceber: summary.contasReceber,
+          despesasFixas: summary.despesasFixas,
+          lucroLiquido: summary.lucroLiquido,
+          incomeByMethod: summary.incomeByMethod,
+          expenseByMethod: summary.expenseByMethod,
+          transacoes: transactions,
+          selectedMonth: event.month,
+          selectedYear: event.year,
+        ),
+      );
+    } catch (e) {
+      final msg = e.toString().replaceAll('Exception: ', '');
+      emit(FinancialError(msg));
+    }
+  }
+
+  Future<void> _onAddTransaction(
+    AddTransaction event,
+    Emitter<FinancialState> emit,
+  ) async {
+    try {
+      final user = await _storage.getUser();
+      if (user == null) return;
+
+      final data = event.transaction;
+      final type = data['type'] == 'revenue' ? 'income' : 'expense';
+      final amount = (data['amount'] as num).toDouble();
+      final now = DateTime.now();
+      
+      // Criar a entidade para a API
+      final transaction = Transaction(
+        id: '', // API vai gerar
+        titulo: data['description'] ?? '',
+        subtitulo: '',
+        valor: amount,
+        isExpense: type == 'expense',
+        data: now.toIso8601String(),
+        paymentMethod: data['paymentMethod'] ?? 'cash',
+        patientId: data['patientId'],
+        type: type,
+        status: 'paid', // Confirmado pelo usuário
+        category: (data['patientId'] != null) ? 'Sessão' : (data['category'] ?? 'Outros'),
+        expenseType: data['expenseType'],
+        description: data['description'] ?? '',
+        userId: user.id,
+      );
+
+      await _createTransaction(transaction);
+
+      // Recarregar os dados após criação
+      if (state is FinancialLoaded) {
+        final current = state as FinancialLoaded;
+        add(UpdateDateFilter(current.selectedMonth, current.selectedYear));
+      } else {
+        add(LoadFinancialData());
+      }
+    } catch (e) {
+      final msg = e.toString().replaceAll('Exception: ', '');
+      emit(FinancialError(msg));
+    }
+  }
+
+  Future<void> _onDeleteTransaction(
+    DeleteTransaction event,
+    Emitter<FinancialState> emit,
+  ) async {
+    if (state is FinancialLoaded) {
+      final current = state as FinancialLoaded;
+      try {
+        await _deleteTransaction(event.id, event.source);
+        add(UpdateDateFilter(current.selectedMonth, current.selectedYear));
+      } catch (e) {
+        final msg = e.toString().replaceAll('Exception: ', '');
+        emit(FinancialError(msg));
+      }
     }
   }
 }
+

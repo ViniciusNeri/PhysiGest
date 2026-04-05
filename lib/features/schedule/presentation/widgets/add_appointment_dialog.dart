@@ -393,7 +393,7 @@ class _AddAppointmentDialogState extends State<AddAppointmentDialog> {
               onPressed: () => Navigator.pop(context, 'delete'),
               icon: const Icon(Icons.delete_outline_rounded, color: Colors.redAccent),
               style: IconButton.styleFrom(
-                backgroundColor: Colors.red.withOpacity(0.1),
+                backgroundColor: Colors.red.withValues(alpha: 0.1),
               ),
             ),
           ],

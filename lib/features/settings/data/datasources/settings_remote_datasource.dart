@@ -42,11 +42,9 @@ class SettingsRemoteDataSource implements ISettingsRemoteDataSource {
           .map((json) => AttendanceCategoryModel.fromJson(json))
           .toList();
     } on DioException catch (e) {
-      final errorMsg =
-          e.response?.data?['message'] ?? 'Erro ao buscar categorias.';
-      throw Exception(errorMsg);
+      throw Exception(e.message);
     } catch (e) {
-      throw Exception('Erro ao buscar categorias: $e');
+      throw Exception('Erro inesperado: $e');
     }
   }
 
@@ -66,11 +64,9 @@ class SettingsRemoteDataSource implements ISettingsRemoteDataSource {
       );
       return AttendanceCategoryModel.fromJson(response.data);
     } on DioException catch (e) {
-      final errorMsg =
-          e.response?.data?['message'] ?? 'Erro ao criar categoria.';
-      throw Exception(errorMsg);
+      throw Exception(e.message);
     } catch (e) {
-      throw Exception('Erro ao criar categoria: $e');
+      throw Exception('Erro inesperado: $e');
     }
   }
 
@@ -90,11 +86,9 @@ class SettingsRemoteDataSource implements ISettingsRemoteDataSource {
       );
       return AttendanceCategoryModel.fromJson(response.data);
     } on DioException catch (e) {
-      final errorMsg =
-          e.response?.data?['message'] ?? 'Erro ao atualizar categoria.';
-      throw Exception(errorMsg);
+      throw Exception(e.message);
     } catch (e) {
-      throw Exception('Erro ao atualizar categoria: $e');
+      throw Exception('Erro inesperado: $e');
     }
   }
 
@@ -103,11 +97,9 @@ class SettingsRemoteDataSource implements ISettingsRemoteDataSource {
     try {
       await apiClient.dio.delete('/categories/$id');
     } on DioException catch (e) {
-      final errorMsg =
-          e.response?.data?['message'] ?? 'Erro ao excluir categoria.';
-      throw Exception(errorMsg);
+      throw Exception(e.message);
     } catch (e) {
-      throw Exception('Erro ao excluir categoria: $e');
+      throw Exception('Erro inesperado: $e');
     }
   }
 
@@ -121,11 +113,9 @@ class SettingsRemoteDataSource implements ISettingsRemoteDataSource {
       final list = response.data as List<dynamic>;
       return list.map((json) => PaymentMethodModel.fromJson(json)).toList();
     } on DioException catch (e) {
-      final errorMsg =
-          e.response?.data?['message'] ?? 'Erro ao buscar formas de pagamento.';
-      throw Exception(errorMsg);
+      throw Exception(e.message);
     } catch (e) {
-      throw Exception('Erro ao buscar formas de pagamento: $e');
+      throw Exception('Erro inesperado: $e');
     }
   }
 
@@ -143,11 +133,9 @@ class SettingsRemoteDataSource implements ISettingsRemoteDataSource {
       );
       return PaymentMethodModel.fromJson(response.data);
     } on DioException catch (e) {
-      final errorMsg =
-          e.response?.data?['message'] ?? 'Erro ao criar forma de pagamento.';
-      throw Exception(errorMsg);
+      throw Exception(e.message);
     } catch (e) {
-      throw Exception('Erro ao criar forma de pagamento: $e');
+      throw Exception('Erro inesperado: $e');
     }
   }
 
@@ -165,12 +153,9 @@ class SettingsRemoteDataSource implements ISettingsRemoteDataSource {
       );
       return PaymentMethodModel.fromJson(response.data);
     } on DioException catch (e) {
-      final errorMsg =
-          e.response?.data?['message'] ??
-          'Erro ao atualizar forma de pagamento.';
-      throw Exception(errorMsg);
+      throw Exception(e.message);
     } catch (e) {
-      throw Exception('Erro ao atualizar forma de pagamento: $e');
+      throw Exception('Erro inesperado: $e');
     }
   }
 
@@ -179,11 +164,9 @@ class SettingsRemoteDataSource implements ISettingsRemoteDataSource {
     try {
       await apiClient.dio.delete('/payment-methods/$id');
     } on DioException catch (e) {
-      final errorMsg =
-          e.response?.data?['message'] ?? 'Erro ao excluir forma de pagamento.';
-      throw Exception(errorMsg);
+      throw Exception(e.message);
     } catch (e) {
-      throw Exception('Erro ao excluir forma de pagamento: $e');
+      throw Exception('Erro inesperado: $e');
     }
   }
 
@@ -198,10 +181,9 @@ class SettingsRemoteDataSource implements ISettingsRemoteDataSource {
         data: {'currentPassword': currentPassword, 'newPassword': newPassword},
       );
     } on DioException catch (e) {
-      final errorMsg = e.response?.data?['message'] ?? 'Erro ao alterar senha.';
-      throw Exception(errorMsg);
+      throw Exception(e.message);
     } catch (e) {
-      throw Exception('Erro ao alterar senha: $e');
+      throw Exception('Erro inesperado: $e');
     }
   }
 
@@ -216,12 +198,9 @@ class SettingsRemoteDataSource implements ISettingsRemoteDataSource {
       }
       return DashboardPreferencesModel.fromJson(data);
     } on DioException catch (e) {
-      final errorMsg =
-          e.response?.data?['message'] ??
-          'Erro ao buscar preferências do dashboard.';
-      throw Exception(errorMsg);
+      throw Exception(e.message);
     } catch (e) {
-      throw Exception('Erro ao buscar preferências: $e');
+      throw Exception('Erro inesperado: $e');
     }
   }
 
@@ -240,12 +219,9 @@ class SettingsRemoteDataSource implements ISettingsRemoteDataSource {
       ).toJson();
       await apiClient.dio.put('/settings', data: body);
     } on DioException catch (e) {
-      final errorMsg =
-          e.response?.data?['message'] ??
-          'Erro ao atualizar preferências do dashboard.';
-      throw Exception(errorMsg);
+      throw Exception(e.message);
     } catch (e) {
-      throw Exception('Erro ao atualizar preferências: $e');
+      throw Exception('Erro inesperado: $e');
     }
   }
 }

@@ -41,11 +41,9 @@ class PatientRemoteDataSource implements IPatientRemoteDataSource {
       final list = response.data as List<dynamic>;
       return list.map((json) => PatientModel.fromJson(json)).toList();
     } on DioException catch (e) {
-      final errorMsg =
-          e.response?.data?['message'] ?? 'Erro ao buscar pacientes.';
-      throw Exception(errorMsg);
+      throw Exception(e.message);
     } catch (e) {
-      throw Exception('Erro desconhecido ao buscar pacientes: $e');
+      throw Exception('Erroinesperado: $e');
     }
   }
 
@@ -55,11 +53,9 @@ class PatientRemoteDataSource implements IPatientRemoteDataSource {
       final response = await apiClient.dio.get('/patients/$id');
       return PatientModel.fromJson(response.data);
     } on DioException catch (e) {
-      final errorMsg =
-          e.response?.data?['message'] ?? 'Erro ao buscar paciente.';
-      throw Exception(errorMsg);
+      throw Exception(e.message);
     } catch (e) {
-      throw Exception('Erro desconhecido ao buscar paciente: $e');
+      throw Exception('Erro inesperado: $e');
     }
   }
 
@@ -88,11 +84,9 @@ class PatientRemoteDataSource implements IPatientRemoteDataSource {
       final response = await apiClient.dio.post('/patients', data: body);
       return PatientModel.fromJson(response.data);
     } on DioException catch (e) {
-      final errorMsg =
-          e.response?.data?['message'] ?? 'Erro ao cadastrar paciente.';
-      throw Exception(errorMsg);
+      throw Exception(e.message);
     } catch (e) {
-      throw Exception('Erro desconhecido ao cadastrar paciente: $e');
+      throw Exception('Erro inesperado: $e');
     }
   }
 
@@ -119,11 +113,9 @@ class PatientRemoteDataSource implements IPatientRemoteDataSource {
       );
       return PatientModel.fromJson(response.data);
     } on DioException catch (e) {
-      final errorMsg =
-          e.response?.data?['message'] ?? 'Erro ao atualizar paciente.';
-      throw Exception(errorMsg);
+      throw Exception(e.message);
     } catch (e) {
-      throw Exception('Erro desconhecido ao atualizar paciente: $e');
+      throw Exception('Erro inesperado: $e');
     }
   }
 
@@ -132,11 +124,9 @@ class PatientRemoteDataSource implements IPatientRemoteDataSource {
     try {
       await apiClient.dio.delete('/patients/$id');
     } on DioException catch (e) {
-      final errorMsg =
-          e.response?.data?['message'] ?? 'Erro ao excluir paciente.';
-      throw Exception(errorMsg);
+      throw Exception(e.message);
     } catch (e) {
-      throw Exception('Erro desconhecido ao excluir paciente: $e');
+      throw Exception('Erro inesperado: $e');
     }
   }
 
@@ -148,9 +138,9 @@ class PatientRemoteDataSource implements IPatientRemoteDataSource {
       return AnamnesisModel.fromJson(response.data);
     } on DioException catch (e) {
       if (e.response?.statusCode == 404) return null;
-      throw Exception(e.response?.data?['message'] ?? 'Erro ao buscar anamnese.');
+      throw Exception(e.message);
     } catch (e) {
-      throw Exception('Erro ao buscar anamnese: $e');
+      throw Exception('Erro inesperado: $e');
     }
   }
 
@@ -161,9 +151,9 @@ class PatientRemoteDataSource implements IPatientRemoteDataSource {
       final response = await apiClient.dio.post('/patients/$patientId/anamnesis', data: body);
       return AnamnesisModel.fromJson(response.data);
     } on DioException catch (e) {
-      throw Exception(e.response?.data?['message'] ?? 'Erro ao criar anamnese.');
+      throw Exception(e.message);
     } catch (e) {
-      throw Exception('Erro ao criar anamnese: $e');
+      throw Exception('Erro inesperado: $e');
     }
   }
 
@@ -181,9 +171,9 @@ class PatientRemoteDataSource implements IPatientRemoteDataSource {
       );
       return AnamnesisModel.fromJson(response.data);
     } on DioException catch (e) {
-      throw Exception(e.response?.data?['message'] ?? 'Erro ao atualizar anamnese.');
+      throw Exception(e.message);
     } catch (e) {
-      throw Exception('Erro ao atualizar anamnese: $e');
+      throw Exception('Erro inesperado: $e');
     }
   }
 
@@ -194,10 +184,9 @@ class PatientRemoteDataSource implements IPatientRemoteDataSource {
       final list = response.data as List<dynamic>;
       return list.map((json) => AppointmentModel.fromJson(json)).toList();
     } on DioException catch (e) {
-      final errorMsg = e.response?.data?['message'] ?? 'Erro ao buscar agenda.';
-      throw Exception(errorMsg);
+      throw Exception(e.message);
     } catch (e) {
-      throw Exception('Erro desconhecido ao buscar agenda: $e');
+      throw Exception('Erro inesperado: $e');
     }
   }
 
@@ -208,10 +197,9 @@ class PatientRemoteDataSource implements IPatientRemoteDataSource {
       final list = response.data as List<dynamic>;
       return list.map((json) => PatientActivityModel.fromJson(json)).toList();
     } on DioException catch (e) {
-      final errorMsg = e.response?.data?['message'] ?? 'Erro ao buscar atividades.';
-      throw Exception(errorMsg);
+      throw Exception(e.message);
     } catch (e) {
-      throw Exception('Erro desconhecido ao buscar atividades: $e');
+      throw Exception('Erro inesperado: $e');
     }
   }
 
@@ -221,9 +209,9 @@ class PatientRemoteDataSource implements IPatientRemoteDataSource {
       final response = await apiClient.dio.get('/patients/$patientId/financial/summary');
       return PatientFinancialSummaryModel.fromJson(response.data);
     } on DioException catch (e) {
-      throw Exception(e.response?.data?['message'] ?? 'Erro ao buscar resumo financeiro.');
+      throw Exception(e.message);
     } catch (e) {
-      throw Exception('Erro ao buscar resumo financeiro: $e');
+      throw Exception('Erro inesperado: $e');
     }
   }
 
@@ -248,9 +236,9 @@ class PatientRemoteDataSource implements IPatientRemoteDataSource {
       ).toJson();
       await apiClient.dio.post('/patients/$patientId/financial', data: body);
     } on DioException catch (e) {
-      throw Exception(e.response?.data?['message'] ?? 'Erro ao registrar pagamento.');
+      throw Exception(e.message);
     } catch (e) {
-      throw Exception('Erro ao registrar pagamento: $e');
+      throw Exception('Erro inesperado: $e');
     }
   }
 
@@ -271,11 +259,9 @@ class PatientRemoteDataSource implements IPatientRemoteDataSource {
         data: data,
       );
     } on DioException catch (e) {
-      final errorMsg =
-          e.response?.data?['message'] ?? 'Erro ao atualizar status do pagamento.';
-      throw Exception(errorMsg);
+      throw Exception(e.message);
     } catch (e) {
-      throw Exception('Erro desconhecido ao atualizar status do pagamento: $e');
+      throw Exception('Erro inesperado: $e');
     }
   }
 }

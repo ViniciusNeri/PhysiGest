@@ -55,7 +55,7 @@ class SignUpBloc extends Bloc<SignUpEvent, SignUpState> {
     emit(state.copyWith(status: SignUpStatus.loading));
     try {
       // Chama o caso de uso que conecta na API
-      final user = await _signUpUseCase(
+      await _signUpUseCase(
         state.name,
         state.email,
         state.password,

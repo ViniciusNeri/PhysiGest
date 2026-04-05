@@ -6,6 +6,7 @@ import 'package:physigest/features/patients/domain/models/patient.dart';
 import 'package:physigest/features/patients/presentation/bloc/agenda_bloc.dart';
 import 'package:physigest/features/patients/presentation/bloc/agenda_event.dart';
 import 'package:physigest/features/patients/presentation/bloc/agenda_state.dart';
+import 'package:physigest/core/widgets/app_error_view.dart';
 
 class PatientAgendaView extends StatelessWidget {
   final Patient patient;
@@ -87,25 +88,13 @@ class PatientAgendaView extends StatelessWidget {
                           );
                         }
                         if (state.status == AgendaStatus.failure) {
-                          return Center(
-                            child: Column(
-                              children: [
-                                const Icon(Icons.error_outline,
-                                    color: Colors.red, size: 48),
-                                const SizedBox(height: 16),
-                                Text(
-                                  state.errorMessage ?? 'Erro ao carregar agenda.',
-                                  style: const TextStyle(color: Colors.red),
-                                  textAlign: TextAlign.center,
-                                ),
-                                const SizedBox(height: 16),
-                                ElevatedButton(
-                                  onPressed: () => context
-                                      .read<AgendaBloc>()
-                                      .add(LoadAgenda(patient.id)),
-                                  child: const Text('Tentar novamente'),
-                                ),
-                              ],
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 40),
+                            child: AppErrorView(
+                              message: state.errorMessage ?? 'Erro ao carregar agenda.',
+                              onRetry: () => context
+                                  .read<AgendaBloc>()
+                                  .add(LoadAgenda(patient.id)),
                             ),
                           );
                         }

@@ -39,7 +39,7 @@ class PatientBloc extends Bloc<PatientEvent, PatientState> {
       emit(
         state.copyWith(
           status: PatientStatus.failure,
-          errorMessage: 'Erro ao carregar pacientes.',
+          errorMessage: e.toString().replaceAll('Exception: ', ''),
         ),
       );
     }
@@ -56,7 +56,7 @@ class PatientBloc extends Bloc<PatientEvent, PatientState> {
     } catch (e) {
       emit(state.copyWith(
         status: PatientStatus.failure,
-        errorMessage: 'Erro ao cadastrar paciente.',
+        errorMessage: e.toString().replaceAll('Exception: ', ''),
       ));
     }
   }
@@ -72,7 +72,7 @@ class PatientBloc extends Bloc<PatientEvent, PatientState> {
     } catch (e) {
       emit(state.copyWith(
         status: PatientStatus.failure,
-        errorMessage: 'Erro ao atualizar paciente.',
+        errorMessage: e.toString().replaceAll('Exception: ', ''),
       ));
     }
   }
@@ -86,7 +86,7 @@ class PatientBloc extends Bloc<PatientEvent, PatientState> {
     } catch (e) {
       emit(state.copyWith(
         status: PatientStatus.failure,
-        errorMessage: 'Erro ao excluir paciente.',
+        errorMessage: e.toString().replaceAll('Exception: ', ''),
       ));
     }
   }

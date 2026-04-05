@@ -90,7 +90,7 @@ class SideMenu extends StatelessWidget {
               gradient: LinearGradient(
                 colors: [
                   AppTheme.primaryColor,
-                  AppTheme.primaryColor.withOpacity(0.7),
+                  AppTheme.primaryColor.withValues(alpha: 0.7),
                 ],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
@@ -98,7 +98,7 @@ class SideMenu extends StatelessWidget {
               borderRadius: BorderRadius.circular(14),
               boxShadow: [
                 BoxShadow(
-                  color: AppTheme.primaryColor.withOpacity(0.3),
+                  color: AppTheme.primaryColor.withValues(alpha: 0.3),
                   blurRadius: 10,
                   offset: const Offset(0, 4),
                 ),
@@ -182,7 +182,7 @@ class _MenuTile extends StatelessWidget {
           padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
           decoration: BoxDecoration(
             color: isSelected
-                ? effectiveColor.withOpacity(0.08)
+                ? effectiveColor.withValues(alpha: 0.08)
                 : Colors.transparent,
             borderRadius: BorderRadius.circular(12),
           ),
@@ -193,8 +193,8 @@ class _MenuTile extends StatelessWidget {
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
                   color: isSelected
-                      ? effectiveColor.withOpacity(0.12)
-                      : effectiveColor.withOpacity(0.05),
+                      ? effectiveColor.withValues(alpha: 0.12)
+                      : effectiveColor.withValues(alpha: 0.05),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Icon(icon, size: 20, color: effectiveColor),

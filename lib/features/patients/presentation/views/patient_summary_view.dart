@@ -80,7 +80,7 @@ class PatientSummaryView extends StatelessWidget {
         color: Colors.white,
         borderRadius: BorderRadius.circular(32),
         boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 20),
+          BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 20),
         ],
       ),
       child: ClipRRect(
@@ -129,7 +129,7 @@ class PatientSummaryView extends StatelessWidget {
                       vertical: 4,
                     ),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.2),
+                      color: Colors.white.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Text(
@@ -325,7 +325,7 @@ class PatientSummaryView extends StatelessWidget {
         color: Colors.white,
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
-          BoxShadow(color: colors[1].withOpacity(0.1), blurRadius: 10),
+          BoxShadow(color: colors[1].withValues(alpha: 0.1), blurRadius: 10),
         ],
       ),
       child: Row(
@@ -426,9 +426,19 @@ class PatientSummaryView extends StatelessWidget {
                 );
               }
               if (state.status == PatientActivitiesStatus.failure) {
-                return Text(
-                  "Erro: ${state.errorMessage}",
-                  style: const TextStyle(color: Colors.red, fontSize: 12),
+                return Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 20),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(Icons.error_outline_rounded, color: Colors.red, size: 20),
+                      const SizedBox(width: 8),
+                      Text(
+                        state.errorMessage ?? 'Erro ao carregar atividades',
+                        style: const TextStyle(color: Colors.red, fontSize: 13),
+                      ),
+                    ],
+                  ),
                 );
               }
               if (state.activities.isEmpty) {

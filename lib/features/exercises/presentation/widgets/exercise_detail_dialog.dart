@@ -36,7 +36,7 @@ class ExerciseDetailDialog extends StatelessWidget {
                             errorBuilder: (context, error, stackTrace) =>
                                 Container(color: const Color(0xFFE2E8F0)),
                           ),
-                          Container(color: Colors.black.withOpacity(0.3)),
+                          Container(color: Colors.black.withValues(alpha: 0.3)),
                           const Center(
                             child: Icon(
                               Icons.play_circle_fill_rounded,
@@ -58,7 +58,7 @@ class ExerciseDetailDialog extends StatelessWidget {
                         color: Colors.white,
                       ),
                       style: IconButton.styleFrom(
-                        backgroundColor: Colors.black.withOpacity(0.4),
+                        backgroundColor: Colors.black.withValues(alpha: 0.4),
                       ),
                     ),
                   ),

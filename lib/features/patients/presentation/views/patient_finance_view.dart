@@ -10,6 +10,7 @@ import '../bloc/patient_financial_bloc.dart';
 import '../bloc/patient_financial_event.dart';
 import '../bloc/patient_financial_state.dart';
 import '../widgets/payment_action_dialog.dart';
+import 'package:physigest/core/widgets/app_error_view.dart';
 
 class PatientFinanceView extends StatefulWidget {
   final Patient patient;
@@ -44,23 +45,29 @@ class _PatientFinanceViewState extends State<PatientFinanceView> {
       listener: (context, state) {
         if (state.status == PatientFinancialStatus.paymentAdded) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text("Lançamento registrado com sucesso!"),
-              backgroundColor: Colors.green,
+            SnackBar(
+              content: const Text("Lançamento registrado com sucesso!"),
+              backgroundColor: Colors.green.shade800,
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
             ),
           );
         } else if (state.status == PatientFinancialStatus.statusUpdated) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text("Pagamento atualizado como PAGO!"),
-              backgroundColor: Colors.teal,
+            SnackBar(
+              content: const Text("Pagamento atualizado como PAGO!"),
+              backgroundColor: Colors.teal.shade800,
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
             ),
           );
-        } else if (state.status == PatientFinancialStatus.failure) {
+        } else if (state.status == PatientFinancialStatus.failure && state.errorMessage != null) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(state.errorMessage ?? "Erro ao processar financeiro"),
-              backgroundColor: Colors.red,
+              content: Text(state.errorMessage!),
+              backgroundColor: Colors.red.shade800,
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
             ),
           );
         }
@@ -70,6 +77,13 @@ class _PatientFinanceViewState extends State<PatientFinanceView> {
           if (state.status == PatientFinancialStatus.loading &&
               state.summary == null) {
             return const Center(child: CircularProgressIndicator());
+          }
+
+          if (state.status == PatientFinancialStatus.failure && state.summary == null) {
+            return AppErrorView(
+              message: state.errorMessage ?? "Erro ao carregar financeiro",
+              onRetry: () => context.read<PatientFinancialBloc>().add(LoadFinancialSummary(widget.patient.id)),
+            );
           }
 
           final summary = state.summary ?? const PatientFinancialSummary();
@@ -279,7 +293,7 @@ class _PatientFinanceViewState extends State<PatientFinanceView> {
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: const Color(0xFF2DD4BF).withOpacity(0.3),
+          color: const Color(0xFF2DD4BF).withValues(alpha: 0.3),
           width: 2,
         ),
       ),
@@ -509,7 +523,7 @@ class _PatientFinanceViewState extends State<PatientFinanceView> {
               color: Colors.teal,
               tooltip: 'Marcar como Pago',
               style: IconButton.styleFrom(
-                backgroundColor: Colors.teal.withOpacity(0.1),
+                backgroundColor: Colors.teal.withValues(alpha: 0.1),
                 padding: const EdgeInsets.all(8),
               ),
             ),

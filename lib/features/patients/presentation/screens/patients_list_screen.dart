@@ -8,6 +8,7 @@ import 'package:physigest/features/patients/presentation/bloc/patient_bloc.dart'
 import 'package:physigest/features/patients/presentation/bloc/patient_event.dart';
 import 'package:physigest/features/patients/presentation/bloc/patient_state.dart';
 import 'package:physigest/features/patients/presentation/widgets/edit_patient_dialog.dart';
+import 'package:physigest/core/widgets/app_error_view.dart';
 
 class PatientsListScreen extends StatelessWidget {
   const PatientsListScreen({super.key});
@@ -22,7 +23,9 @@ class PatientsListScreen extends StatelessWidget {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(state.errorMessage!),
-                backgroundColor: Colors.red,
+                backgroundColor: Colors.red.shade800,
+                behavior: SnackBarBehavior.floating,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
               ),
             );
           }
@@ -229,12 +232,40 @@ class _PatientsListViewState extends State<PatientsListView> {
             );
           }
 
+          if (state.status == PatientStatus.failure) {
+            return Padding(
+              padding: const EdgeInsets.all(40),
+              child: AppErrorView(
+                message: state.errorMessage ?? 'Erro ao carregar pacientes',
+                onRetry: () => context.read<PatientBloc>().add(LoadPatients()),
+              ),
+            );
+          }
+
           final filtered = state.patients
               .where(
                 (p) =>
                     p.name.toLowerCase().contains(_searchQuery.toLowerCase()),
               )
               .toList();
+
+          if (filtered.isEmpty) {
+            return const Padding(
+              padding: EdgeInsets.all(48),
+              child: Center(
+                child: Column(
+                  children: [
+                    Icon(Icons.search_off_rounded, size: 48, color: Colors.grey),
+                    SizedBox(height: 16),
+                    Text(
+                      'Nenhum paciente encontrado.',
+                      style: TextStyle(color: Colors.grey, fontSize: 16),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }
 
           return Column(
             children: [

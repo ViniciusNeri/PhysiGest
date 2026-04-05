@@ -13,6 +13,7 @@ import 'package:physigest/core/storage/local_storage.dart';
 import 'package:physigest/features/settings/presentation/bloc/settings/settings_bloc.dart';
 import 'package:physigest/features/settings/presentation/bloc/settings/settings_state.dart';
 import 'package:intl/intl.dart';
+import 'package:physigest/core/widgets/app_error_view.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -85,6 +86,18 @@ class HomeView extends StatelessWidget {
                     vertical: 32,
                   ),
                   child: _buildSkeletonLoader(width, isDesktop),
+                );
+              }
+
+              if (state is DashboardError) {
+                return Center(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(horizontal: horizontalPadding, vertical: 60),
+                    child: AppErrorView(
+                      message: state.message,
+                      onRetry: () => context.read<DashboardBloc>().add(const LoadDashboardData()),
+                    ),
+                  ),
                 );
               }
 

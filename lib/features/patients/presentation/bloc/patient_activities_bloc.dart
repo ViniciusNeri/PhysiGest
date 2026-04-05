@@ -71,7 +71,7 @@ class PatientActivitiesBloc extends Bloc<PatientActivitiesEvent, PatientActiviti
     } catch (e) {
       emit(state.copyWith(
         status: PatientActivitiesStatus.failure,
-        errorMessage: e.toString(),
+        errorMessage: e.toString().replaceAll('Exception: ', ''),
       ));
     }
   }

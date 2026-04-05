@@ -20,7 +20,7 @@ class AgendaBloc extends Bloc<AgendaEvent, AgendaState> {
     } catch (e) {
       emit(state.copyWith(
         status: AgendaStatus.failure,
-        errorMessage: 'Erro ao carregar agenda: ${e.toString()}',
+        errorMessage: e.toString().replaceAll('Exception: ', ''),
       ));
     }
   }

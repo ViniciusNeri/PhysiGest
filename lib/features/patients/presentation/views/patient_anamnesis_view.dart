@@ -6,6 +6,7 @@ import '../../domain/models/patient.dart';
 import '../bloc/anamnesis_bloc.dart';
 import '../bloc/anamnesis_event.dart';
 import '../bloc/anamnesis_state.dart';
+import 'package:physigest/core/widgets/app_error_view.dart';
 
 class PatientAnamnesisView extends StatefulWidget {
   final Patient patient;
@@ -144,17 +145,21 @@ class _PatientAnamnesisViewState extends State<PatientAnamnesisView> {
           }
           if (state.status == AnamnesisStatus.saveSuccess) {
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text("A Anamnese foi salva com sucesso!"),
-                backgroundColor: Colors.green,
+              SnackBar(
+                content: const Text("A Anamnese foi salva com sucesso!"),
+                backgroundColor: Colors.green.shade800,
+                behavior: SnackBarBehavior.floating,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
               ),
             );
           }
-          if (state.status == AnamnesisStatus.failure) {
+          if (state.status == AnamnesisStatus.failure && state.errorMessage != null) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text(state.errorMessage ?? "Erro na operação."),
-                backgroundColor: Colors.red,
+                content: Text(state.errorMessage!),
+                backgroundColor: Colors.red.shade800,
+                behavior: SnackBarBehavior.floating,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
               ),
             );
           }
@@ -162,6 +167,13 @@ class _PatientAnamnesisViewState extends State<PatientAnamnesisView> {
         builder: (context, state) {
           if (state.status == AnamnesisStatus.loading) {
             return const Center(child: CircularProgressIndicator(color: Color(0xFF0D9488)));
+          }
+
+          if (state.status == AnamnesisStatus.failure && state.anamnesis == null) {
+            return AppErrorView(
+              message: state.errorMessage ?? "Erro ao carregar anamnese",
+              onRetry: () => context.read<AnamnesisBloc>().add(LoadAnamnesis(widget.patient.id)),
+            );
           }
 
           return LayoutBuilder(

@@ -79,7 +79,7 @@ class _PatientProfileScreenState extends State<PatientProfileScreen>
     return PreferredSize(
       preferredSize: const Size.fromHeight(100),
       child: AppBar(
-        backgroundColor: Colors.white.withOpacity(0.8),
+        backgroundColor: Colors.white.withValues(alpha: 0.8),
         elevation: 0,
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,

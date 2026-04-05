@@ -39,7 +39,7 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
         ),
       );
     } catch (e) {
-      emit(DashboardError('Erro ao carregar dashboard: $e'));
+      emit(DashboardError(e.toString().replaceAll('Exception: ', '')));
     }
   }
 
@@ -66,7 +66,7 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
         // 3. Recarrega os dados do dashboard para atualizar métricas (faturamento, etc)
         add(const LoadDashboardData());
       } catch (e) {
-        emit(DashboardError('Erro ao atualizar agendamento no dashboard: $e'));
+        emit(DashboardError(e.toString().replaceAll('Exception: ', '')));
       }
     }
   }

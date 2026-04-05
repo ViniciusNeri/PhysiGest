@@ -11,6 +11,7 @@ import 'package:physigest/features/schedule/presentation/widgets/add_appointment
 import 'package:physigest/features/schedule/presentation/widgets/appointment_action_dialog.dart';
 import 'package:physigest/features/schedule/domain/models/appointment.dart';
 import 'package:table_calendar/table_calendar.dart';
+import 'package:physigest/core/widgets/app_error_view.dart';
 
 class ScheduleScreen extends StatelessWidget {
   const ScheduleScreen({super.key});
@@ -41,7 +42,7 @@ class ScheduleView extends StatelessWidget {
       context: context,
       barrierDismissible: true,
       barrierLabel: '',
-      barrierColor: Colors.black.withOpacity(0.4),
+      barrierColor: Colors.black.withValues(alpha: 0.4),
       transitionDuration: const Duration(milliseconds: 300),
       pageBuilder: (context, anim1, anim2) {
         return Align(
@@ -132,16 +133,24 @@ class ScheduleView extends StatelessWidget {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
                             content: Text(state.errorMessage!),
-                            backgroundColor: Colors.redAccent,
+                            backgroundColor: Colors.red.shade800,
                             behavior: SnackBarBehavior.floating,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                           ),
                         );
                       }
                     },
                     builder: (context, state) {
-                      if (state.status == ScheduleStatus.loading) {
+                      if (state.status == ScheduleStatus.loading && state.appointments.isEmpty) {
                         return const Center(
                           child: CircularProgressIndicator(strokeWidth: 2),
+                        );
+                      }
+
+                      if (state.status == ScheduleStatus.failure && state.appointments.isEmpty) {
+                        return AppErrorView(
+                          message: state.errorMessage ?? "Erro ao carregar agenda",
+                          onRetry: () => context.read<ScheduleBloc>().add(LoadSchedule()),
                         );
                       }
                       return _buildBodyContent(context, state);
@@ -506,7 +515,7 @@ class ScheduleView extends StatelessWidget {
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
               color: isToday
-                  ? AppTheme.primaryColor.withOpacity(0.1)
+                  ? AppTheme.primaryColor.withValues(alpha: 0.1)
                   : Colors.transparent,
               shape: BoxShape.circle,
             ),
@@ -543,7 +552,7 @@ class ScheduleView extends StatelessWidget {
 
     // Altera opacidade dependendo do status
     if (apt.status == 'no_show' || apt.status == 'cancelled') {
-      baseColor = baseColor.withOpacity(0.5);
+      baseColor = baseColor.withValues(alpha: 0.5);
     }
 
     return Container(
@@ -552,7 +561,7 @@ class ScheduleView extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: baseColor.withOpacity(0.4),
+            color: baseColor.withValues(alpha: 0.4),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -566,7 +575,7 @@ class ScheduleView extends StatelessWidget {
             top: -10,
             child: CircleAvatar(
               radius: 25,
-              backgroundColor: Colors.white.withOpacity(0.1),
+              backgroundColor: Colors.white.withValues(alpha: 0.1),
             ),
           ),
           Padding(
@@ -594,7 +603,7 @@ class ScheduleView extends StatelessWidget {
                     vertical: 1,
                   ),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
+                    color: Colors.white.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(6),
                   ),
                   child: Row(
@@ -625,7 +634,7 @@ class ScheduleView extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.2),
+                        color: Colors.white.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(4),
                       ),
                       child: Text(
@@ -655,7 +664,7 @@ class ScheduleView extends StatelessWidget {
                       child: Container(
                         padding: const EdgeInsets.all(3),
                         decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.25),
+                          color: Colors.white.withValues(alpha: 0.25),
                           shape: BoxShape.circle,
                         ),
                         child: Icon(

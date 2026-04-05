@@ -22,7 +22,7 @@ class VerifyBloc extends Bloc<VerifyEvent, VerifyState> {
 
       emit(state.copyWith(status: VerifyStatus.loading));
       try {
-        final user = await _confirmSignUpUseCase(event.email, state.code);
+        await _confirmSignUpUseCase(event.email, state.code);
         emit(state.copyWith(status: VerifyStatus.success));
       } catch (e) {
         emit(

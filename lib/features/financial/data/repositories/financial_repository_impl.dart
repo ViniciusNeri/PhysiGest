@@ -12,13 +12,21 @@ class FinancialRepositoryImpl implements IFinancialRepository {
   FinancialRepositoryImpl(this.remoteDataSource);
 
   @override
-  Future<List<Transaction>> getTransactions(String month, String year) async {
-    return await remoteDataSource.getTransactions(month, year);
-  }
-
-  @override
-  Future<FinancialSummary> getSummary(String month, String year) async {
-    return await remoteDataSource.getSummary(month, year);
+  Future<(FinancialSummary, List<Transaction>)> getConsolidatedData(
+    String userId,
+    int month,
+    int year,
+  ) async {
+    final data = await remoteDataSource.getConsolidatedData(userId, month, year);
+    
+    final summary = FinancialSummaryModel.fromJson(data);
+    
+    final cashFlow = data['cashFlow'] as List<dynamic>? ?? [];
+    final transactions = cashFlow
+        .map((json) => TransactionModel.fromJson(json))
+        .toList();
+        
+    return (summary, transactions);
   }
 
   @override
@@ -32,12 +40,20 @@ class FinancialRepositoryImpl implements IFinancialRepository {
       data: transaction.data,
       paymentMethod: transaction.paymentMethod,
       patientId: transaction.patientId,
+      patientName: transaction.patientName,
+      source: transaction.source,
+      type: transaction.type,
+      status: transaction.status,
+      category: transaction.category,
+      expenseType: transaction.expenseType,
+      description: transaction.description,
+      userId: transaction.userId,
     );
     return await remoteDataSource.createTransaction(model);
   }
 
   @override
-  Future<void> deleteTransaction(String id) async {
-    return await remoteDataSource.deleteTransaction(id);
+  Future<void> deleteTransaction(String id, String source) async {
+    return await remoteDataSource.deleteTransaction(id, source);
   }
 }

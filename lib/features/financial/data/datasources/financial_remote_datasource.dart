@@ -4,10 +4,9 @@ import '../../../../core/network/api_client.dart';
 import '../models/financial_models.dart';
 
 abstract class IFinancialRemoteDataSource {
-  Future<List<TransactionModel>> getTransactions(String month, String year);
-  Future<FinancialSummaryModel> getSummary(String month, String year);
+  Future<Map<String, dynamic>> getConsolidatedData(String userId, int month, int year);
   Future<TransactionModel> createTransaction(TransactionModel transaction);
-  Future<void> deleteTransaction(String id);
+  Future<void> deleteTransaction(String id, String source);
 }
 
 @LazySingleton(as: IFinancialRemoteDataSource)
@@ -17,40 +16,25 @@ class FinancialRemoteDataSource implements IFinancialRemoteDataSource {
   FinancialRemoteDataSource(this.apiClient);
 
   @override
-  Future<List<TransactionModel>> getTransactions(
-    String month,
-    String year,
+  Future<Map<String, dynamic>> getConsolidatedData(
+    String userId,
+    int month,
+    int year,
   ) async {
     try {
       final response = await apiClient.dio.get(
-        '/financial/transactions',
-        queryParameters: {'month': month, 'year': year},
+        '/financials/consolidated',
+        queryParameters: {
+          'userId': userId,
+          'month': month,
+          'year': year,
+        },
       );
-      final list = response.data as List<dynamic>;
-      return list.map((json) => TransactionModel.fromJson(json)).toList();
+      return response.data;
     } on DioException catch (e) {
-      final errorMsg =
-          e.response?.data?['message'] ?? 'Erro ao buscar transações.';
-      throw Exception(errorMsg);
+      throw Exception(e.message);
     } catch (e) {
-      throw Exception('Erro desconhecido ao buscar transações: $e');
-    }
-  }
-
-  @override
-  Future<FinancialSummaryModel> getSummary(String month, String year) async {
-    try {
-      final response = await apiClient.dio.get(
-        '/financial/summary',
-        queryParameters: {'month': month, 'year': year},
-      );
-      return FinancialSummaryModel.fromJson(response.data);
-    } on DioException catch (e) {
-      final errorMsg =
-          e.response?.data?['message'] ?? 'Erro ao buscar resumo financeiro.';
-      throw Exception(errorMsg);
-    } catch (e) {
-      throw Exception('Erro desconhecido ao buscar resumo financeiro: $e');
+      throw Exception('Erro inesperado: $e');
     }
   }
 
@@ -60,29 +44,29 @@ class FinancialRemoteDataSource implements IFinancialRemoteDataSource {
   ) async {
     try {
       final response = await apiClient.dio.post(
-        '/financial/transactions',
+        '/financials',
         data: transaction.toJson(),
       );
       return TransactionModel.fromJson(response.data);
     } on DioException catch (e) {
-      final errorMsg =
-          e.response?.data?['message'] ?? 'Erro ao criar transação.';
-      throw Exception(errorMsg);
+      throw Exception(e.message);
     } catch (e) {
-      throw Exception('Erro desconhecido ao criar transação: $e');
+      throw Exception('Erro inesperado: $e');
     }
   }
 
   @override
-  Future<void> deleteTransaction(String id) async {
+  Future<void> deleteTransaction(String id, String source) async {
     try {
-      await apiClient.dio.delete('/financial/transactions/$id');
+      final queryParams = source == 'patient' ? {'source': 'patient'} : null;
+      await apiClient.dio.delete(
+        '/financials/$id',
+        queryParameters: queryParams,
+      );
     } on DioException catch (e) {
-      final errorMsg =
-          e.response?.data?['message'] ?? 'Erro ao excluir transação.';
-      throw Exception(errorMsg);
+      throw Exception(e.message);
     } catch (e) {
-      throw Exception('Erro desconhecido ao excluir transação: $e');
+      throw Exception('Erro inesperado: $e');
     }
   }
 }

@@ -55,9 +55,9 @@ import '../../features/patients/domain/repositories/i_patient_repository.dart'
 import '../../features/patients/domain/usecases/patient_usecases.dart' as _i160;
 import '../../features/patients/presentation/bloc/agenda_bloc.dart' as _i776;
 import '../../features/patients/presentation/bloc/anamnesis_bloc.dart' as _i834;
-import '../../features/patients/presentation/bloc/patient_bloc.dart' as _i1035;
 import '../../features/patients/presentation/bloc/patient_activities_bloc.dart'
-    as _i888;
+    as _i460;
+import '../../features/patients/presentation/bloc/patient_bloc.dart' as _i1035;
 import '../../features/patients/presentation/bloc/patient_financial_bloc.dart'
     as _i220;
 import '../../features/schedule/data/datasources/schedule_remote_datasource.dart'
@@ -81,6 +81,7 @@ import '../../features/settings/presentation/bloc/settings/settings_bloc.dart'
     as _i228;
 import '../network/api_client.dart' as _i557;
 import '../network/interceptors/auth_interceptor.dart' as _i745;
+import '../network/interceptors/error_interceptor.dart' as _i511;
 import '../network/interceptors/logger_interceptor.dart' as _i238;
 import '../storage/local_storage.dart' as _i329;
 import '../storage/local_storage_impl.dart' as _i28;
@@ -98,8 +99,8 @@ extension GetItInjectableX on _i174.GetIt {
       () => storageModule.prefs,
       preResolve: true,
     );
+    gh.factory<_i511.ErrorInterceptor>(() => _i511.ErrorInterceptor());
     gh.factory<_i238.LoggerInterceptor>(() => _i238.LoggerInterceptor());
-    gh.factory<_i911.FinancialBloc>(() => _i911.FinancialBloc());
     gh.lazySingleton<_i29.ExerciseBloc>(() => _i29.ExerciseBloc());
     gh.factory<_i329.LocalStorage>(
       () => _i28.LocalStorageImpl(gh<_i460.SharedPreferences>()),
@@ -111,6 +112,7 @@ extension GetItInjectableX on _i174.GetIt {
       () => _i557.ApiClient(
         authInterceptor: gh<_i745.AuthInterceptor>(),
         loggerInterceptor: gh<_i238.LoggerInterceptor>(),
+        errorInterceptor: gh<_i511.ErrorInterceptor>(),
       ),
     );
     gh.lazySingleton<_i140.ISettingsRemoteDataSource>(
@@ -310,11 +312,10 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i188.ResetPasswordUseCase>(),
       ),
     );
-    gh.lazySingleton<_i63.GetTransactionsUseCase>(
-      () => _i63.GetTransactionsUseCase(gh<_i644.IFinancialRepository>()),
-    );
-    gh.lazySingleton<_i63.GetFinancialSummaryUseCase>(
-      () => _i63.GetFinancialSummaryUseCase(gh<_i644.IFinancialRepository>()),
+    gh.lazySingleton<_i63.GetConsolidatedFinancialDataUseCase>(
+      () => _i63.GetConsolidatedFinancialDataUseCase(
+        gh<_i644.IFinancialRepository>(),
+      ),
     );
     gh.lazySingleton<_i63.CreateTransactionUseCase>(
       () => _i63.CreateTransactionUseCase(gh<_i644.IFinancialRepository>()),
@@ -345,6 +346,10 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i160.UpdateAnamnesisUseCase>(),
       ),
     );
+    gh.factory<_i460.PatientActivitiesBloc>(
+      () =>
+          _i460.PatientActivitiesBloc(gh<_i160.GetPatientActivitiesUseCase>()),
+    );
     gh.factory<_i220.PatientFinancialBloc>(
       () => _i220.PatientFinancialBloc(
         gh<_i160.GetFinancialSummaryUseCase>(),
@@ -360,8 +365,13 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i160.DeletePatientUseCase>(),
       ),
     );
-    gh.factory<_i888.PatientActivitiesBloc>(
-      () => _i888.PatientActivitiesBloc(gh<_i160.GetPatientActivitiesUseCase>()),
+    gh.factory<_i911.FinancialBloc>(
+      () => _i911.FinancialBloc(
+        gh<_i63.GetConsolidatedFinancialDataUseCase>(),
+        gh<_i63.CreateTransactionUseCase>(),
+        gh<_i63.DeleteTransactionUseCase>(),
+        gh<_i329.LocalStorage>(),
+      ),
     );
     return this;
   }

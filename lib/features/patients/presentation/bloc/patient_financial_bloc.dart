@@ -31,7 +31,7 @@ class PatientFinancialBloc extends Bloc<PatientFinancialEvent, PatientFinancialS
     } catch (e) {
       emit(state.copyWith(
         status: PatientFinancialStatus.failure,
-        errorMessage: 'Erro ao carregar resumo financeiro: $e',
+        errorMessage: e.toString().replaceAll('Exception: ', ''),
       ));
     }
   }
@@ -54,7 +54,7 @@ class PatientFinancialBloc extends Bloc<PatientFinancialEvent, PatientFinancialS
     } catch (e) {
       emit(state.copyWith(
         status: PatientFinancialStatus.failure,
-        errorMessage: 'Erro ao registrar pagamento: $e',
+        errorMessage: e.toString().replaceAll('Exception: ', ''),
       ));
     }
   }
@@ -83,7 +83,7 @@ class PatientFinancialBloc extends Bloc<PatientFinancialEvent, PatientFinancialS
     } catch (e) {
       emit(state.copyWith(
         status: PatientFinancialStatus.failure,
-        errorMessage: 'Erro ao atualizar status: $e',
+        errorMessage: e.toString().replaceAll('Exception: ', ''),
       ));
     }
   }

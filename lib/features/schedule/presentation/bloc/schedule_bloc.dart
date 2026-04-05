@@ -54,7 +54,7 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
       emit(
         state.copyWith(
           status: ScheduleStatus.failure,
-          errorMessage: 'Erro ao carregar agenda: $e',
+          errorMessage: e.toString().replaceAll('Exception: ', ''),
         ),
       );
     }
@@ -81,7 +81,7 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
       emit(
         state.copyWith(
           status: ScheduleStatus.failure,
-          errorMessage: 'Erro ao criar agendamento: $e',
+          errorMessage: e.toString().replaceAll('Exception: ', ''),
         ),
       );
     }
@@ -103,7 +103,7 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
       emit(
         state.copyWith(
           status: ScheduleStatus.failure,
-          errorMessage: 'Erro ao atualizar agendamento: $e',
+          errorMessage: e.toString().replaceAll('Exception: ', ''),
         ),
       );
     }
@@ -122,7 +122,7 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
       emit(
         state.copyWith(
           status: ScheduleStatus.failure,
-          errorMessage: 'Erro ao excluir agendamento: $e',
+          errorMessage: e.toString().replaceAll('Exception: ', ''),
         ),
       );
     }

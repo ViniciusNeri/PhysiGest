@@ -41,7 +41,7 @@ class LoginView extends StatelessWidget {
             end: Alignment.bottomRight,
             colors: [
               const Color(0xFFF8FAFC),
-              primary.withOpacity(0.05),
+              primary.withValues(alpha: 0.05),
               const Color(0xFFF1F5F9),
             ],
           ),
@@ -80,7 +80,7 @@ class LoginView extends StatelessWidget {
                     borderRadius: BorderRadius.circular(24),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.04),
+                        color: Colors.black.withValues(alpha: 0.04),
                         blurRadius: 40,
                         offset: const Offset(0, 10),
                       ),
@@ -121,6 +121,7 @@ class LoginView extends StatelessWidget {
                             onChanged: (v) =>
                                 context.read<LoginBloc>().add(EmailChanged(v)),
                             keyboardType: TextInputType.emailAddress,
+                            textInputAction: TextInputAction.next,
                             decoration: _inputDecoration(
                               'exemplo@email.com',
                               Icons.mail_outline_rounded,
@@ -139,6 +140,14 @@ class LoginView extends StatelessWidget {
                               PasswordChanged(v),
                             ),
                             obscureText: true,
+                            textInputAction: TextInputAction.done,
+                            onSubmitted: (v) {
+                              if (state.isValid) {
+                                context.read<LoginBloc>().add(
+                                      const LoginButtonPressed(),
+                                    );
+                              }
+                            },
                             decoration: _inputDecoration(
                               '••••••••',
                               Icons.lock_outline_rounded,
@@ -202,7 +211,7 @@ class LoginView extends StatelessWidget {
                       Row(
                         children: [
                           Expanded(
-                            child: Divider(color: Colors.grey.withOpacity(0.2)),
+                            child: Divider(color: Colors.grey.withValues(alpha: 0.2)),
                           ),
                           const Padding(
                             padding: EdgeInsets.symmetric(horizontal: 16),
@@ -216,7 +225,7 @@ class LoginView extends StatelessWidget {
                             ),
                           ),
                           Expanded(
-                            child: Divider(color: Colors.grey.withOpacity(0.2)),
+                            child: Divider(color: Colors.grey.withValues(alpha: 0.2)),
                           ),
                         ],
                       ),
@@ -236,7 +245,7 @@ class LoginView extends StatelessWidget {
                         ),
                         style: OutlinedButton.styleFrom(
                           padding: const EdgeInsets.symmetric(vertical: 14),
-                          side: BorderSide(color: Colors.grey.withOpacity(0.2)),
+                          side: BorderSide(color: Colors.grey.withValues(alpha: 0.2)),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
@@ -298,7 +307,7 @@ class LoginView extends StatelessWidget {
       contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide(color: Colors.grey.withOpacity(0.1)),
+        borderSide: BorderSide(color: Colors.grey.withValues(alpha: 0.1)),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),

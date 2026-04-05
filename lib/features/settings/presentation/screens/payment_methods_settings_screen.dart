@@ -5,6 +5,7 @@ import 'package:physigest/features/settings/domain/entities/payment_method.dart'
 import 'package:physigest/features/settings/presentation/bloc/settings/settings_bloc.dart';
 import 'package:physigest/features/settings/presentation/bloc/settings/settings_event.dart';
 import 'package:physigest/features/settings/presentation/bloc/settings/settings_state.dart';
+import 'package:physigest/core/widgets/app_error_view.dart';
 
 class PaymentMethodsSettingsScreen extends StatelessWidget {
   const PaymentMethodsSettingsScreen({super.key});
@@ -28,6 +29,13 @@ class PaymentMethodsSettingsScreen extends StatelessWidget {
       ),
       body: BlocBuilder<SettingsBloc, SettingsState>(
         builder: (context, state) {
+          if (state is SettingsError) {
+            return AppErrorView(
+              message: state.message,
+              onRetry: () => context.read<SettingsBloc>().add(LoadSettings()),
+            );
+          }
+
           if (state is SettingsLoaded) {
             final methods = state.paymentMethods;
 
@@ -47,6 +55,7 @@ class PaymentMethodsSettingsScreen extends StatelessWidget {
               },
             );
           }
+
           return const Center(child: CircularProgressIndicator());
         },
       ),
@@ -81,7 +90,7 @@ class _PaymentTile extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 6,
             offset: const Offset(0, 2),
           ),

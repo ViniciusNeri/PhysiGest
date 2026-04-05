@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:injectable/injectable.dart';
 import 'package:physigest/core/network/interceptors/auth_interceptor.dart';
 import 'package:physigest/core/network/interceptors/logger_interceptor.dart';
+import 'package:physigest/core/network/interceptors/error_interceptor.dart';
 
 @lazySingleton
 class ApiClient {
@@ -10,10 +11,11 @@ class ApiClient {
   ApiClient({
     required AuthInterceptor authInterceptor,
     required LoggerInterceptor loggerInterceptor,
+    required ErrorInterceptor errorInterceptor,
   }) {
     dio = Dio(
       BaseOptions(
-        baseUrl: 'http://localhost:3000/v1', // Substitua pela URL da sua API
+        baseUrl: 'http://localhost:3000/v1',
         connectTimeout: const Duration(seconds: 15),
         receiveTimeout: const Duration(seconds: 15),
         sendTimeout: const Duration(seconds: 15),
@@ -24,7 +26,7 @@ class ApiClient {
       ),
     );
 
-    // Adiciona os interceptors
-    dio.interceptors.addAll([authInterceptor, loggerInterceptor]);
+    // Adiciona os interceptors (ordem importa: ErrorInterceptor por último para capturar falhas processadas)
+    dio.interceptors.addAll([authInterceptor, loggerInterceptor, errorInterceptor]);
   }
 }

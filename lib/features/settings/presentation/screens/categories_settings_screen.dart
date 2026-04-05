@@ -5,6 +5,7 @@ import 'package:physigest/features/settings/domain/entities/attendance_category.
 import 'package:physigest/features/settings/presentation/bloc/settings/settings_bloc.dart';
 import 'package:physigest/features/settings/presentation/bloc/settings/settings_event.dart';
 import 'package:physigest/features/settings/presentation/bloc/settings/settings_state.dart';
+import 'package:physigest/core/widgets/app_error_view.dart';
 
 class CategoriesSettingsScreen extends StatelessWidget {
   const CategoriesSettingsScreen({super.key});
@@ -28,6 +29,13 @@ class CategoriesSettingsScreen extends StatelessWidget {
       ),
       body: BlocBuilder<SettingsBloc, SettingsState>(
         builder: (context, state) {
+          if (state is SettingsError) {
+            return AppErrorView(
+              message: state.message,
+              onRetry: () => context.read<SettingsBloc>().add(LoadSettings()),
+            );
+          }
+
           if (state is SettingsLoaded) {
             final categories = state.categories;
 
@@ -45,6 +53,7 @@ class CategoriesSettingsScreen extends StatelessWidget {
               },
             );
           }
+
           return const Center(child: CircularProgressIndicator());
         },
       ),

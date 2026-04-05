@@ -35,7 +35,7 @@ class _NewPasswordScreenState extends State<NewPasswordScreen> {
               end: Alignment.bottomRight,
               colors: [
                 const Color(0xFFF8FAFC),
-                primary.withOpacity(0.05),
+                primary.withValues(alpha: 0.05),
                 const Color(0xFFF1F5F9),
               ],
             ),
@@ -74,7 +74,7 @@ class _NewPasswordScreenState extends State<NewPasswordScreen> {
                       borderRadius: BorderRadius.circular(24),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.04),
+                          color: Colors.black.withValues(alpha: 0.04),
                           blurRadius: 40,
                           offset: const Offset(0, 10),
                         ),
@@ -219,7 +219,7 @@ class _NewPasswordScreenState extends State<NewPasswordScreen> {
       contentPadding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide(color: Colors.grey.withOpacity(0.1)),
+        borderSide: BorderSide(color: Colors.grey.withValues(alpha: 0.1)),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),

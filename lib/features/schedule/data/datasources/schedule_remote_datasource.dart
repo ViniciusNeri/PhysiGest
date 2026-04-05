@@ -24,15 +24,17 @@ class ScheduleRemoteDataSource implements IScheduleRemoteDataSource {
   @override
   Future<List<AppointmentModel>> getAppointments() async {
     try {
-      final response = await apiClient.dio.get('/agendas');
+      final user = await localStorage.getUser();
+      final userId = user?.id ?? '';
+      if (userId.isEmpty) return [];
+
+      final response = await apiClient.dio.get('/agendas/user/$userId');
       final list = response.data as List<dynamic>;
       return list.map((json) => AppointmentModel.fromJson(json)).toList();
     } on DioException catch (e) {
-      final errorMsg =
-          e.response?.data?['message'] ?? 'Erro ao buscar agendas.';
-      throw Exception(errorMsg);
+      throw Exception(e.message);
     } catch (e) {
-      throw Exception('Erro desconhecido ao buscar agendas: $e');
+      throw Exception('Erro inesperado: $e');
     }
   }
 
@@ -57,11 +59,9 @@ class ScheduleRemoteDataSource implements IScheduleRemoteDataSource {
       final response = await apiClient.dio.post('/agendas', data: body);
       return AppointmentModel.fromJson(response.data);
     } on DioException catch (e) {
-      final errorMsg =
-          e.response?.data?['message'] ?? 'Erro ao criar agendamento.';
-      throw Exception(errorMsg);
+      throw Exception(e.message);
     } catch (e) {
-      throw Exception('Erro desconhecido ao criar agendamento: $e');
+      throw Exception('Erro inesperado: $e');
     }
   }
 
@@ -89,11 +89,9 @@ class ScheduleRemoteDataSource implements IScheduleRemoteDataSource {
       );
       return AppointmentModel.fromJson(response.data);
     } on DioException catch (e) {
-      final errorMsg =
-          e.response?.data?['message'] ?? 'Erro ao atualizar agendamento.';
-      throw Exception(errorMsg);
+      throw Exception(e.message);
     } catch (e) {
-      throw Exception('Erro desconhecido ao atualizar agendamento: $e');
+      throw Exception('Erro inesperado: $e');
     }
   }
 
@@ -102,11 +100,9 @@ class ScheduleRemoteDataSource implements IScheduleRemoteDataSource {
     try {
       await apiClient.dio.delete('/agendas/$id');
     } on DioException catch (e) {
-      final errorMsg =
-          e.response?.data?['message'] ?? 'Erro ao excluir agendamento.';
-      throw Exception(errorMsg);
+      throw Exception(e.message);
     } catch (e) {
-      throw Exception('Erro desconhecido ao excluir agendamento: $e');
+      throw Exception('Erro inesperado: $e');
     }
   }
 
@@ -124,12 +120,9 @@ class ScheduleRemoteDataSource implements IScheduleRemoteDataSource {
         'name': e['name']?.toString() ?? '',
       }).toList();
     } on DioException catch (e) {
-      final errorMsg =
-          e.response?.data?['message'] ??
-          'Erro ao buscar pacientes disponíveis.';
-      throw Exception(errorMsg);
+      throw Exception(e.message);
     } catch (e) {
-      throw Exception('Erro desconhecido ao buscar pacientes: $e');
+      throw Exception('Erro inesperado: $e');
     }
   }
 
@@ -147,12 +140,9 @@ class ScheduleRemoteDataSource implements IScheduleRemoteDataSource {
         'name': e['description']?.toString() ?? '',
       }).toList();
     } on DioException catch (e) {
-      final errorMsg =
-          e.response?.data?['message'] ??
-          'Erro ao buscar categorias disponíveis.';
-      throw Exception(errorMsg);
+      throw Exception(e.message);
     } catch (e) {
-      throw Exception('Erro desconhecido ao buscar categorias: $e');
+      throw Exception('Erro inesperado: $e');
     }
   }
 }

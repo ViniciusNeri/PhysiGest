@@ -19,12 +19,9 @@ class DashboardRemoteDataSource implements IDashboardRemoteDataSource {
       final response = await apiClient.dio.get('/dashboard');
       return DashboardSummaryModel.fromJson(response.data);
     } on DioException catch (e) {
-      final errorMsg =
-          e.response?.data?['message'] ??
-          'Erro ao carregar dados do dashboard.';
-      throw Exception(errorMsg);
+      throw Exception(e.message);
     } catch (e) {
-      throw Exception('Erro desconhecido ao carregar dashboard: $e');
+      throw Exception('Erro inesperado: $e');
     }
   }
 }

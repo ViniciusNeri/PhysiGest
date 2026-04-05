@@ -6,6 +6,7 @@ import '../bloc/exercise_bloc.dart';
 import '../bloc/exercise_event.dart';
 import '../bloc/exercise_state.dart';
 import '../widgets/exercise_detail_dialog.dart';
+import 'package:physigest/core/widgets/app_error_view.dart';
 
 class ExercisesListScreen extends StatefulWidget {
   const ExercisesListScreen({super.key});
@@ -153,7 +154,7 @@ class _ExercisesListScreenState extends State<ExercisesListScreen> {
                 }
               },
               backgroundColor: Colors.white,
-              selectedColor: const Color(0xFF0D9488).withOpacity(0.1),
+              selectedColor: const Color(0xFF0D9488).withValues(alpha: 0.1),
               labelStyle: TextStyle(
                 color: isSelected
                     ? const Color(0xFF0D9488)
@@ -195,10 +196,11 @@ class _ExercisesListScreenState extends State<ExercisesListScreen> {
               int crossAxisCount = 1;
               if (constraints.maxWidth > 1200) {
                 crossAxisCount = 4;
-              } else if (constraints.maxWidth > 800)
+              } else if (constraints.maxWidth > 800) {
                 crossAxisCount = 3;
-              else if (constraints.maxWidth > 600)
+              } else if (constraints.maxWidth > 600) {
                 crossAxisCount = 2;
+              }
 
               return GridView.builder(
                 shrinkWrap: true,
@@ -215,6 +217,11 @@ class _ExercisesListScreenState extends State<ExercisesListScreen> {
                 },
               );
             },
+          );
+        } else if (state is ExerciseError) {
+          return AppErrorView(
+            message: state.message,
+            onRetry: () => context.read<ExerciseBloc>().add(LoadExercises()),
           );
         }
         return const SizedBox.shrink();
@@ -244,7 +251,7 @@ class _ExerciseCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.04),
+              color: Colors.black.withValues(alpha: 0.04),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),
@@ -280,7 +287,7 @@ class _ExerciseCard extends StatelessWidget {
                       borderRadius: const BorderRadius.vertical(
                         top: Radius.circular(20),
                       ),
-                      color: Colors.black.withOpacity(0.2),
+                      color: Colors.black.withValues(alpha: 0.2),
                     ),
                   ),
                   const Center(
@@ -299,7 +306,7 @@ class _ExerciseCard extends StatelessWidget {
                         vertical: 4,
                       ),
                       decoration: BoxDecoration(
-                        color: Colors.black.withOpacity(0.6),
+                        color: Colors.black.withValues(alpha: 0.6),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Text(

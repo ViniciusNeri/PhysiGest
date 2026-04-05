@@ -4,19 +4,11 @@ import '../entities/financial_summary.dart';
 import '../repositories/i_financial_repository.dart';
 
 @lazySingleton
-class GetTransactionsUseCase {
+class GetConsolidatedFinancialDataUseCase {
   final IFinancialRepository repository;
-  GetTransactionsUseCase(this.repository);
-  Future<List<Transaction>> call(String month, String year) =>
-      repository.getTransactions(month, year);
-}
-
-@lazySingleton
-class GetFinancialSummaryUseCase {
-  final IFinancialRepository repository;
-  GetFinancialSummaryUseCase(this.repository);
-  Future<FinancialSummary> call(String month, String year) =>
-      repository.getSummary(month, year);
+  GetConsolidatedFinancialDataUseCase(this.repository);
+  Future<(FinancialSummary, List<Transaction>)> call(String userId, int month, int year) =>
+      repository.getConsolidatedData(userId, month, year);
 }
 
 @lazySingleton
@@ -31,5 +23,5 @@ class CreateTransactionUseCase {
 class DeleteTransactionUseCase {
   final IFinancialRepository repository;
   DeleteTransactionUseCase(this.repository);
-  Future<void> call(String id) => repository.deleteTransaction(id);
+  Future<void> call(String id, String source) => repository.deleteTransaction(id, source);
 }

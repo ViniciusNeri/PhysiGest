@@ -34,7 +34,7 @@ class AnamnesisBloc extends Bloc<AnamnesisEvent, AnamnesisState> {
     } catch (e) {
       emit(state.copyWith(
         status: AnamnesisStatus.failure,
-        errorMessage: 'Erro ao carregar anamnese: $e',
+        errorMessage: e.toString().replaceAll('Exception: ', ''),
       ));
     }
   }
@@ -69,7 +69,7 @@ class AnamnesisBloc extends Bloc<AnamnesisEvent, AnamnesisState> {
     } catch (e) {
       emit(state.copyWith(
         status: AnamnesisStatus.failure,
-        errorMessage: 'Erro ao salvar anamnese: $e',
+        errorMessage: e.toString().replaceAll('Exception: ', ''),
       ));
     }
   }

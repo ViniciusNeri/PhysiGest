@@ -7,6 +7,7 @@ import '../../../../core/widgets/side_menu.dart';
 import '../bloc/settings/settings_bloc.dart';
 import '../bloc/settings/settings_event.dart';
 import '../bloc/settings/settings_state.dart';
+import 'package:physigest/core/widgets/app_error_view.dart';
 import 'change_password_dialog.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -49,11 +50,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
           }
 
           if (state is SettingsError) {
-            return Center(
-              child: Text(
-                state.message,
-                style: const TextStyle(color: Colors.red),
-              ),
+            return AppErrorView(
+              message: state.message,
+              onRetry: () => context.read<SettingsBloc>().add(LoadSettings()),
             );
           }
 
@@ -272,7 +271,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),

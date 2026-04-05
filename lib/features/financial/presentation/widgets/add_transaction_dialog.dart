@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:physigest/core/theme/app_theme.dart';
-import 'package:physigest/core/utils/currency_formatter.dart';
+import 'package:physigest/features/patients/presentation/bloc/patient_bloc.dart';
+import 'package:physigest/features/patients/presentation/bloc/patient_state.dart';
+import 'package:physigest/features/settings/presentation/bloc/settings/settings_bloc.dart';
+import 'package:physigest/features/settings/presentation/bloc/settings/settings_state.dart';
 
 class AddTransactionDialog extends StatefulWidget {
   const AddTransactionDialog({super.key});
@@ -18,10 +22,10 @@ class _AddTransactionDialogState extends State<AddTransactionDialog> {
   final TextEditingController _amountController = TextEditingController();
 
   // Controladores para Receita
-  String _paymentMethod = 'Pix';
-  String _revenueType = 'Quantidade de Sessões';
-  final TextEditingController _sessionCountController = TextEditingController(
-    text: '1',
+  String? _selectedPatientId;
+  String _paymentMethod = 'Pix'; // Valor padrão seguro
+  final TextEditingController _revenueTypeController = TextEditingController(
+    text: 'Consulta Avulsa',
   );
 
   // Controladores para Despesa
@@ -31,7 +35,7 @@ class _AddTransactionDialogState extends State<AddTransactionDialog> {
   void dispose() {
     _descriptionController.dispose();
     _amountController.dispose();
-    _sessionCountController.dispose();
+    _revenueTypeController.dispose();
     super.dispose();
   }
 
@@ -201,7 +205,7 @@ class _AddTransactionDialogState extends State<AddTransactionDialog> {
           boxShadow: isActive
               ? [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.04),
+                    color: Colors.black.withValues(alpha: 0.04),
                     blurRadius: 4,
                     offset: const Offset(0, 2),
                   ),
@@ -220,127 +224,191 @@ class _AddTransactionDialogState extends State<AddTransactionDialog> {
     );
   }
 
-  // ==========================================
-  // FORMULÁRIO DE RECEITA
-  // ==========================================
   Widget _buildRevenueForm() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        _buildInputField(
-          label: 'Paciente / Descrição',
-          hint: 'Ex: João Carlos (Pagamento sessão)',
-          controller: _descriptionController,
-          icon: Icons.person_outline_rounded,
-        ),
-        const SizedBox(height: 20),
-        Row(
-          children: [
-            Expanded(
-              flex: 2,
-              child: _buildInputField(
-                label: 'Valor (R\$)',
-                hint: '0,00',
-                controller: _amountController,
-                icon: Icons.attach_money_rounded,
-                keyboardType: const TextInputType.numberWithOptions(
-                  decimal: true,
-                ),
-              ),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              flex: 3,
-              child: _buildDropdown(
-                label: 'Forma de Pagamento',
-                value: _paymentMethod,
-                items: [
-                  'Dinheiro',
-                  'Débito',
-                  'Crédito',
-                  'Pix',
-                  'Transferência',
+    return BlocBuilder<PatientBloc, PatientState>(
+      builder: (context, patientState) {
+        return BlocBuilder<SettingsBloc, SettingsState>(
+          builder: (context, settingsState) {
+            final paymentMethods = _getAvailablePaymentMethods(settingsState, isRevenue: true);
+            
+            // Sincronizar _paymentMethod com a primeira opção se estiver vazio ou inválido
+            if (_paymentMethod.isEmpty || !paymentMethods.contains(_paymentMethod)) {
+               _paymentMethod = paymentMethods.first;
+            }
+
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                _buildPatientSelector(patientState),
+                const SizedBox(height: 20),
+                // Mostrar campo de descrição para receitas apenas se nenhum paciente estiver selecionado
+                if (_selectedPatientId == null) ...[
+                  _buildInputField(
+                    label: 'Descrição / Beneficiário',
+                    hint: 'Ex: Venda de Produto, Outros...',
+                    controller: _descriptionController,
+                    icon: Icons.info_outline_rounded,
+                  ),
+                  const SizedBox(height: 20),
                 ],
-                onChanged: (val) => setState(() => _paymentMethod = val!),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 20),
-        _buildDropdown(
-          label: 'Plano / Tipo de Cobrança',
-          value: _revenueType,
-          items: [
-            'Quantidade de Sessões',
-            'Mensalidade',
-            'Pacote Fechado',
-            'Consulta Avulsa',
-          ],
-          onChanged: (val) => setState(() => _revenueType = val!),
-        ),
-        if (_revenueType == 'Quantidade de Sessões') ...[
-          const SizedBox(height: 20),
-          _buildInputField(
-            label: 'Número de Sessões',
-            hint: 'Ex: 10',
-            controller: _sessionCountController,
-            icon: Icons.tag_rounded,
-            keyboardType: TextInputType.number,
+                Row(
+                  children: [
+                    Expanded(
+                      flex: 2,
+                      child: _buildInputField(
+                        label: 'Valor (R\$)',
+                        hint: '0,00',
+                        controller: _amountController,
+                        icon: Icons.attach_money_rounded,
+                        keyboardType: const TextInputType.numberWithOptions(
+                          decimal: true,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      flex: 3,
+                      child: _buildDropdown(
+                        label: 'Forma de Pagamento',
+                        value: _paymentMethod,
+                        items: paymentMethods,
+                        onChanged: (val) =>
+                            setState(() => _paymentMethod = val!),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20),
+                _buildInputField(
+                  label: 'Plano / Tipo de Cobrança',
+                  hint: 'Ex: Mensalidade, Consulta Avulsa...',
+                  controller: _revenueTypeController,
+                  icon: Icons.assignment_outlined,
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildPatientSelector(PatientState state) {
+    if (state.status == PatientStatus.loading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    final patients = state.patients;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildLabel('Paciente'),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          decoration: BoxDecoration(
+            color: const Color(0xFFF8FAFC),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: const Color(0xFFE2E8F0)),
           ),
-        ],
+          child: DropdownButtonHideUnderline(
+            child: DropdownButton<String>(
+              value: (patients.any((p) => p.id == _selectedPatientId))
+                  ? _selectedPatientId
+                  : null,
+              hint: const Text(
+                'Selecione um paciente',
+                style: TextStyle(color: Colors.black26, fontSize: 14),
+              ),
+              isExpanded: true,
+              icon: const Icon(
+                Icons.keyboard_arrow_down_rounded,
+                color: Color(0xFF94A3B8),
+              ),
+              style: const TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFF1E293B),
+              ),
+              items: [
+                const DropdownMenuItem<String>(
+                  value: null,
+                  child: Text(
+                    'Outros (Sem Paciente)',
+                    style: TextStyle(color: Colors.blueGrey, fontWeight: FontWeight.normal),
+                  ),
+                ),
+                ...patients.map((p) {
+                  return DropdownMenuItem<String>(
+                    value: p.id,
+                    child: Text(p.name),
+                  );
+                }),
+              ],
+              onChanged: (val) => setState(() => _selectedPatientId = val),
+            ),
+          ),
+        ),
       ],
     );
   }
 
-  // ==========================================
-  // FORMULÁRIO DE DESPESA
-  // ==========================================
   Widget _buildExpenseForm() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        _buildInputField(
-          label: 'Descrição da Despesa',
-          hint: 'Ex: Conta de Luz, Materiais...',
-          controller: _descriptionController,
-          icon: Icons.receipt_long_rounded,
-        ),
-        const SizedBox(height: 20),
-        Row(
+    return BlocBuilder<SettingsBloc, SettingsState>(
+      builder: (context, settingsState) {
+        final paymentMethods = _getAvailablePaymentMethods(settingsState, isRevenue: false);
+
+        // Sincronizar _paymentMethod com a primeira opção se estiver vazio ou inválido
+        if (_paymentMethod.isEmpty || !paymentMethods.contains(_paymentMethod)) {
+          _paymentMethod = paymentMethods.first;
+        }
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Expanded(
-              flex: 2,
-              child: _buildInputField(
-                label: 'Valor (R\$)',
-                hint: '0,00',
-                controller: _amountController,
-                icon: Icons.money_off_csred_rounded,
-                keyboardType: const TextInputType.numberWithOptions(
-                  decimal: true,
-                ),
-              ),
+            _buildInputField(
+              label: 'Descrição da Despesa',
+              hint: 'Ex: Conta de Luz, Materiais...',
+              controller: _descriptionController,
+              icon: Icons.receipt_long_rounded,
             ),
-            const SizedBox(width: 16),
-            Expanded(
-              flex: 3,
-              child: _buildDropdown(
-                label: 'Forma de Pagamento',
-                value:
-                    _paymentMethod, // Reutilizando a variável de método de pagamento
-                items: ['Dinheiro', 'Débito', 'Crédito', 'Pix', 'Boleto'],
-                onChanged: (val) => setState(() => _paymentMethod = val!),
-              ),
+            const SizedBox(height: 20),
+            Row(
+              children: [
+                Expanded(
+                  flex: 2,
+                  child: _buildInputField(
+                    label: 'Valor (R\$)',
+                    hint: '0,00',
+                    controller: _amountController,
+                    icon: Icons.money_off_csred_rounded,
+                    keyboardType: const TextInputType.numberWithOptions(
+                      decimal: true,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  flex: 3,
+                  child: _buildDropdown(
+                    label: 'Forma de Pagamento',
+                    value: _paymentMethod,
+                    items: paymentMethods,
+                    onChanged: (val) => setState(() => _paymentMethod = val!),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
+            _buildDropdown(
+              label: 'Tipo de Despesa',
+              value: _expenseType,
+              items: ['Fixa', 'Variável'],
+              onChanged: (val) => setState(() => _expenseType = val!),
             ),
           ],
-        ),
-        const SizedBox(height: 20),
-        _buildDropdown(
-          label: 'Tipo de Despesa',
-          value: _expenseType,
-          items: ['Fixa', 'Variável'],
-          onChanged: (val) => setState(() => _expenseType = val!),
-        ),
-      ],
+        );
+      },
     );
   }
 
@@ -445,34 +513,63 @@ class _AddTransactionDialogState extends State<AddTransactionDialog> {
   }
 
   void _saveTransaction() {
-    // Processamento estático para demonstração
-    final amount = _amountController.text;
+    final amountText = _amountController.text.replaceAll(r'R$', '').replaceAll('.', '').replaceAll(',', '.').trim();
+    final amount = double.tryParse(amountText) ?? 0.0;
     final description = _descriptionController.text;
 
-    if (amount.isEmpty || description.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Preencha os campos obrigatórios (Descrição e Valor)'),
-          backgroundColor: Color(0xFFEF4444),
-        ),
-      );
-      return;
+    if (_transactionType == 'revenue') {
+      if (_selectedPatientId == null && description.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Descreva a origem da receita ou selecione um paciente.'),
+            backgroundColor: Color(0xFFEF4444),
+          ),
+        );
+        return;
+      }
+    } else {
+      if (description.isEmpty || amount <= 0) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Preencha a descrição e um valor válido.'),
+            backgroundColor: Color(0xFFEF4444),
+          ),
+        );
+        return;
+      }
     }
 
-    // Retorna os dados mapeados para o FinancialScreen
+    // Retorna os dados mapeados para o FinancialBloc via FinancialScreen
     Navigator.of(context).pop({
       'type': _transactionType, // 'revenue' ou 'expense'
-      'description': description,
-      'amount': CurrencyFormatter.parse(amount) ?? 0.0,
+      'patientId': _selectedPatientId,
+      'description': _transactionType == 'revenue' 
+          ? (description.isEmpty ? 'Receita Avulsa' : description)
+          : description,
+      'amount': amount,
       'paymentMethod': _paymentMethod,
-      'billingType': _transactionType == 'revenue'
-          ? _revenueType
-          : _expenseType,
-      'sessions':
-          _transactionType == 'revenue' &&
-              _revenueType == 'Quantidade de Sessões'
-          ? _sessionCountController.text
+      'category': _transactionType == 'revenue' ? 'Outros' : description, 
+      'expenseType': _transactionType == 'expense' 
+          ? (_expenseType == 'Fixa' ? 'fixed' : 'variable')
           : null,
     });
+  }
+
+  List<String> _getAvailablePaymentMethods(SettingsState state,
+      {required bool isRevenue}) {
+    if (state is SettingsLoaded && state.paymentMethods.isNotEmpty) {
+      final names = state.paymentMethods
+          .map((e) => e.name.trim())
+          .where((name) => name.isNotEmpty)
+          .toSet()
+          .toList();
+
+      if (names.isNotEmpty) return names;
+    }
+
+    // Fallbacks consistentes
+    return isRevenue
+        ? ['Dinheiro', 'Débito', 'Crédito', 'Pix', 'Transferência']
+        : ['Dinheiro', 'Débito', 'Crédito', 'Pix', 'Boleto'];
   }
 }

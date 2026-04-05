@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:developer';
 import 'package:injectable/injectable.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:physigest/core/storage/local_storage.dart';
@@ -20,7 +21,7 @@ class LocalStorageImpl implements LocalStorage {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString(_tokenKey, token);
     } catch (e) {
-      print("Erro ao salvar no LocalStorage: $e");
+      log("Erro ao salvar no LocalStorage: $e", name: 'LocalStorage');
     }
   }
 
