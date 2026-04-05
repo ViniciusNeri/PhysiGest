@@ -15,7 +15,7 @@ class ApiClient {
   }) {
     dio = Dio(
       BaseOptions(
-        baseUrl: 'http://localhost:3000/v1',
+        baseUrl: 'https://physiogest-api.onrender.com/v1',
         connectTimeout: const Duration(seconds: 15),
         receiveTimeout: const Duration(seconds: 15),
         sendTimeout: const Duration(seconds: 15),
