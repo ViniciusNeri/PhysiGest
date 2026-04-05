@@ -44,32 +44,44 @@ class PaymentMethodModel extends PaymentMethod {
 
 class DashboardPreferencesModel extends DashboardPreferences {
   const DashboardPreferencesModel({
+    super.id = '',
     super.dashboardTheme = 'light',
     super.showWeeklyAppointments = true,
     super.showMonthlyIncome = true,
     super.showActivePayments = true,
     super.showNextAppointment = true,
+    super.showPastPending = true,
+    super.showBirthdays = true,
+    super.showOccupancyChart = true,
     super.categoryControlMode = 'none',
   });
 
   factory DashboardPreferencesModel.fromJson(Map<String, dynamic> json) {
     return DashboardPreferencesModel(
+      id: (json['id'] ?? json['_id'] ?? json['codigo'])?.toString() ?? '',
       dashboardTheme: json['dashboardTheme'] as String? ?? 'light',
       showWeeklyAppointments: json['showWeeklyAppointments'] as bool? ?? true,
       showMonthlyIncome: json['showMonthlyIncome'] as bool? ?? true,
       showActivePayments: json['showActivePayments'] as bool? ?? true,
       showNextAppointment: json['showNextAppointment'] as bool? ?? true,
+      showPastPending: json['showPastPending'] as bool? ?? true,
+      showBirthdays: json['showBirthdays'] as bool? ?? true,
+      showOccupancyChart: json['showOccupancyChart'] as bool? ?? true,
       categoryControlMode: json['categoryControlMode'] as String? ?? 'none',
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
+      if (id.isNotEmpty) 'id': id,
       'dashboardTheme': dashboardTheme,
       'showWeeklyAppointments': showWeeklyAppointments,
       'showMonthlyIncome': showMonthlyIncome,
       'showActivePayments': showActivePayments,
       'showNextAppointment': showNextAppointment,
+      'showPastPending': showPastPending,
+      'showBirthdays': showBirthdays,
+      'showOccupancyChart': showOccupancyChart,
       'categoryControlMode': categoryControlMode,
     };
   }

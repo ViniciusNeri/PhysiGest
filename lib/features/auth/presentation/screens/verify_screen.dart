@@ -6,6 +6,7 @@ import 'package:physigest/core/theme/app_theme.dart';
 import 'package:physigest/features/auth/presentation/bloc/verify/verify_bloc.dart';
 import 'package:physigest/features/auth/presentation/bloc/verify/verify_event.dart'; // Import necessário
 import 'package:physigest/features/auth/presentation/bloc/verify/verify_state.dart'; // Import necessário
+import 'package:physigest/core/utils/app_alerts.dart';
 
 class VerificationScreen extends StatelessWidget {
   final String email;
@@ -48,13 +49,7 @@ class VerificationView extends StatelessWidget {
             if (state.status == VerifyStatus.success) {
               context.go('/'); // Navega para a Home ou Login após sucesso
             } else if (state.status == VerifyStatus.failure) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(state.errorMessage),
-                  backgroundColor: Colors.redAccent,
-                  behavior: SnackBarBehavior.floating,
-                ),
-              );
+              AppAlerts.error(context, state.errorMessage);
             }
           },
           child: Center(

@@ -9,6 +9,7 @@ import 'package:physigest/core/utils/currency_formatter.dart';
 import '../bloc/patient_financial_bloc.dart';
 import '../bloc/patient_financial_event.dart';
 import '../bloc/patient_financial_state.dart';
+import 'package:physigest/core/utils/app_alerts.dart';
 import '../widgets/payment_action_dialog.dart';
 import 'package:physigest/core/widgets/app_error_view.dart';
 
@@ -44,32 +45,11 @@ class _PatientFinanceViewState extends State<PatientFinanceView> {
     return BlocListener<PatientFinancialBloc, PatientFinancialState>(
       listener: (context, state) {
         if (state.status == PatientFinancialStatus.paymentAdded) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: const Text("Lançamento registrado com sucesso!"),
-              backgroundColor: Colors.green.shade800,
-              behavior: SnackBarBehavior.floating,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-            ),
-          );
+          AppAlerts.success(context, state.successMessage ?? "Lançamento registrado com sucesso!");
         } else if (state.status == PatientFinancialStatus.statusUpdated) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: const Text("Pagamento atualizado como PAGO!"),
-              backgroundColor: Colors.teal.shade800,
-              behavior: SnackBarBehavior.floating,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-            ),
-          );
+          AppAlerts.success(context, state.successMessage ?? "Pagamento atualizado com sucesso!");
         } else if (state.status == PatientFinancialStatus.failure && state.errorMessage != null) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(state.errorMessage!),
-              backgroundColor: Colors.red.shade800,
-              behavior: SnackBarBehavior.floating,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-            ),
-          );
+          AppAlerts.error(context, state.errorMessage!);
         }
       },
       child: BlocBuilder<PatientFinancialBloc, PatientFinancialState>(

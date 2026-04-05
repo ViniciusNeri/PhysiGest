@@ -91,6 +91,6 @@ class GetDashboardPreferencesUseCase {
 class UpdateDashboardPreferencesUseCase {
   final ISettingsRepository repository;
   UpdateDashboardPreferencesUseCase(this.repository);
-  Future<void> call(DashboardPreferences preferences) =>
+  Future<DashboardPreferences> call(DashboardPreferences preferences) =>
       repository.updateDashboardPreferences(preferences);
 }

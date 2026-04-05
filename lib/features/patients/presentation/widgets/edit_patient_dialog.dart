@@ -6,6 +6,7 @@ import 'package:physigest/features/patients/domain/models/patient.dart';
 import 'package:physigest/features/patients/presentation/bloc/patient_bloc.dart';
 import 'package:physigest/features/patients/presentation/bloc/patient_event.dart';
 import 'package:physigest/features/patients/presentation/bloc/patient_state.dart';
+import 'package:physigest/core/utils/app_alerts.dart';
 
 class EditPatientDialog extends StatefulWidget {
   final Patient? patient;
@@ -104,12 +105,7 @@ class _EditPatientDialogState extends State<EditPatientDialog> {
         if (state.status == PatientStatus.success) {
           context.pop();
         } else if (state.status == PatientStatus.failure && state.errorMessage != null) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(state.errorMessage!),
-              backgroundColor: Colors.red,
-            ),
-          );
+          AppAlerts.error(context, state.errorMessage!);
         }
       },
       child: Dialog(
@@ -420,7 +416,7 @@ class _EditPatientDialogState extends State<EditPatientDialog> {
         border: Border.all(color: const Color(0xFFE2E8F0)),
       ),
       child: DropdownButtonFormField<String>(
-        value: value,
+        initialValue: value,
         onChanged: onChanged,
         decoration: InputDecoration(
           labelText: label,

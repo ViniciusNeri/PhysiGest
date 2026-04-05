@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:physigest/core/theme/app_theme.dart';
+import 'package:physigest/core/utils/app_alerts.dart';
 import 'package:physigest/features/patients/presentation/bloc/patient_bloc.dart';
 import 'package:physigest/features/patients/presentation/bloc/patient_state.dart';
 import 'package:physigest/features/settings/presentation/bloc/settings/settings_bloc.dart';
@@ -519,22 +520,12 @@ class _AddTransactionDialogState extends State<AddTransactionDialog> {
 
     if (_transactionType == 'revenue') {
       if (_selectedPatientId == null && description.isEmpty) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Descreva a origem da receita ou selecione um paciente.'),
-            backgroundColor: Color(0xFFEF4444),
-          ),
-        );
+        AppAlerts.error(context, 'Descreva a origem da receita ou selecione um paciente.');
         return;
       }
     } else {
       if (description.isEmpty || amount <= 0) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Preencha a descrição e um valor válido.'),
-            backgroundColor: Color(0xFFEF4444),
-          ),
-        );
+        AppAlerts.error(context, 'Preencha a descrição e um valor válido.');
         return;
       }
     }

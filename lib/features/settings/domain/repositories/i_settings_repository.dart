@@ -16,5 +16,5 @@ abstract class ISettingsRepository {
   Future<void> changePassword(String currentPassword, String newPassword);
 
   Future<DashboardPreferences> getDashboardPreferences();
-  Future<void> updateDashboardPreferences(DashboardPreferences preferences);
+  Future<DashboardPreferences> updateDashboardPreferences(DashboardPreferences preferences);
 }

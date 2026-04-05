@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../domain/models/exercise.dart';
+import 'package:physigest/core/utils/app_alerts.dart';
 
 class ExerciseDetailDialog extends StatelessWidget {
   final Exercise exercise;
@@ -178,26 +179,9 @@ class ExerciseDetailDialog extends StatelessWidget {
                         ElevatedButton.icon(
                           onPressed: () {
                             Navigator.of(context).pop();
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Row(
-                                  children: [
-                                    const Icon(
-                                      Icons.check_circle_rounded,
-                                      color: Colors.white,
-                                    ),
-                                    const SizedBox(width: 12),
-                                    Text(
-                                      "Exercício '${exercise.title}' enviado para o paciente com sucesso!",
-                                    ),
-                                  ],
-                                ),
-                                backgroundColor: const Color(0xFF0D9488),
-                                behavior: SnackBarBehavior.floating,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                              ),
+                            AppAlerts.success(
+                              context,
+                              "Exercício '${exercise.title}' enviado para o paciente com sucesso!",
                             );
                           },
                           icon: const Icon(

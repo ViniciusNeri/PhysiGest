@@ -21,7 +21,7 @@ abstract class ISettingsRemoteDataSource {
   Future<void> changePassword(String currentPassword, String newPassword);
 
   Future<DashboardPreferencesModel> getDashboardPreferences();
-  Future<void> updateDashboardPreferences(DashboardPreferences preferences);
+  Future<DashboardPreferencesModel> updateDashboardPreferences(DashboardPreferences preferences);
 }
 
 @LazySingleton(as: ISettingsRemoteDataSource)
@@ -190,7 +190,9 @@ class SettingsRemoteDataSource implements ISettingsRemoteDataSource {
   @override
   Future<DashboardPreferencesModel> getDashboardPreferences() async {
     try {
-      final response = await apiClient.dio.get('/settings');
+      final user = await localStorage.getUser();
+      final userId = user?.id ?? '';
+      final response = await apiClient.dio.get('/settings/user/$userId');
       final data = response.data;
       if (data is List) {
         if (data.isEmpty) return const DashboardPreferencesModel();
@@ -205,11 +207,12 @@ class SettingsRemoteDataSource implements ISettingsRemoteDataSource {
   }
 
   @override
-  Future<void> updateDashboardPreferences(
+  Future<DashboardPreferencesModel> updateDashboardPreferences(
     DashboardPreferences preferences,
   ) async {
     try {
       final body = DashboardPreferencesModel(
+        id: preferences.id,
         dashboardTheme: preferences.dashboardTheme,
         showWeeklyAppointments: preferences.showWeeklyAppointments,
         showMonthlyIncome: preferences.showMonthlyIncome,
@@ -217,11 +220,17 @@ class SettingsRemoteDataSource implements ISettingsRemoteDataSource {
         showNextAppointment: preferences.showNextAppointment,
         categoryControlMode: preferences.categoryControlMode,
       ).toJson();
-      await apiClient.dio.put('/settings', data: body);
+
+      final response = await apiClient.dio.put(
+        preferences.id.isEmpty ? '/settings' : '/settings/${preferences.id}',
+        data: body,
+      );
+      
+      return DashboardPreferencesModel.fromJson(response.data);
     } on DioException catch (e) {
-      throw Exception(e.message);
+      throw e.message ?? 'Erro ao atualizar configurações.';
     } catch (e) {
-      throw Exception('Erro inesperado: $e');
+      throw 'Erro inesperado ao atualizar configurações.';
     }
   }
 }

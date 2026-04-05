@@ -6,6 +6,7 @@ import 'package:physigest/core/theme/app_theme.dart';
 import 'package:physigest/features/auth/presentation/bloc/signup/signup_bloc.dart';
 import 'package:physigest/features/auth/presentation/bloc/signup/signup_event.dart';
 import 'package:physigest/features/auth/presentation/bloc/signup/signup_state.dart';
+import 'package:physigest/core/utils/app_alerts.dart';
 
 class SignUpScreen extends StatelessWidget {
   const SignUpScreen({super.key});
@@ -47,13 +48,7 @@ class SignUpView extends StatelessWidget {
             if (state.status == SignUpStatus.success) {
               context.go('/verify', extra: state.email);
             } else if (state.status == SignUpStatus.failure) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(state.errorMessage),
-                  behavior: SnackBarBehavior.floating,
-                  backgroundColor: Colors.redAccent,
-                ),
-              );
+              AppAlerts.error(context, state.errorMessage);
             }
           },
           child: Center(
@@ -229,6 +224,7 @@ class SignUpView extends StatelessWidget {
                       const SizedBox(height: 24),
 
                       // RODAPÉ
+                      // RODAPÉ
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
@@ -248,6 +244,7 @@ class SignUpView extends StatelessWidget {
                           ),
                         ],
                       ),
+                      _buildFooter(),
                     ],
                   ),
                 ),
@@ -255,6 +252,32 @@ class SignUpView extends StatelessWidget {
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildFooter() {
+    return const Padding(
+      padding: EdgeInsets.symmetric(vertical: 32.0),
+      child: Column(
+        children: [
+          Text(
+            'PhysiGest v1.0.0',
+            style: TextStyle(
+              color: Colors.black26,
+              fontSize: 12,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          SizedBox(height: 4),
+          Text(
+            '© 2026 PhysiGest. Todos os direitos reservados.',
+            style: TextStyle(
+              color: Colors.black12,
+              fontSize: 10,
+            ),
+          ),
+        ],
       ),
     );
   }

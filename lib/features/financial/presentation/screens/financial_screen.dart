@@ -12,6 +12,9 @@ import 'package:physigest/features/patients/presentation/bloc/patient_bloc.dart'
 import 'package:physigest/features/patients/presentation/bloc/patient_event.dart';
 import 'package:physigest/features/settings/presentation/bloc/settings/settings_bloc.dart';
 import 'package:physigest/core/widgets/app_error_view.dart';
+import 'package:physigest/core/utils/app_alerts.dart';
+import 'package:physigest/core/widgets/loading_overlay.dart';
+import 'package:fl_chart/fl_chart.dart';
 
 class FinancialScreen extends StatelessWidget {
   const FinancialScreen({super.key});
@@ -108,62 +111,71 @@ class _FinancialViewState extends State<FinancialView> {
         child: const Icon(Icons.add, color: Colors.white),
       ),
       body: SafeArea(
-        child: BlocListener<FinancialBloc, FinancialState>(
+        child: BlocConsumer<FinancialBloc, FinancialState>(
           listener: (context, state) {
-            if (state is FinancialError) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(state.message),
-                  backgroundColor: Colors.red.shade800,
-                  behavior: SnackBarBehavior.floating,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                ),
-              );
+            if (state.status == FinancialStatus.failure && state.errorMessage != null) {
+              AppAlerts.error(context, state.errorMessage!);
+            } else if (state.status == FinancialStatus.success && state.successMessage != null) {
+              AppAlerts.success(context, state.successMessage!);
             }
           },
-          child: BlocBuilder<FinancialBloc, FinancialState>(
-            builder: (context, state) {
-              if (state is FinancialLoading) {
-                return const Center(child: CircularProgressIndicator());
-              } else if (state is FinancialLoaded) {
-                return SingleChildScrollView(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Center(
-                    child: ConstrainedBox(
-                      constraints: const BoxConstraints(maxWidth: 800),
+          builder: (context, state) {
+            if (state.status == FinancialStatus.loading && state.transacoes.isEmpty) {
+              return const Center(child: CircularProgressIndicator());
+            }
+
+            if (state.status == FinancialStatus.failure && state.transacoes.isEmpty) {
+              return AppErrorView(
+                message: state.errorMessage ?? "Erro ao carregar dados financeiros",
+                onRetry: () => context.read<FinancialBloc>().add(const LoadFinancialData()),
+              );
+            }
+
+            return LoadingOverlay(
+              isLoading: state.status == FinancialStatus.loading && state.transacoes.isNotEmpty,
+              message: "Processando...",
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(16.0),
+                child: Center(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 800),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    const Text(
-                                      'Gestão de Caixa',
-                                      style: TextStyle(
-                                        fontSize: 28,
-                                        fontWeight: FontWeight.bold,
-                                        color: Color(0xFF1E293B),
+                          LayoutBuilder(
+                            builder: (context, constraints) {
+                              final isMobile = constraints.maxWidth < 600;
+                              return Flex(
+                                direction: isMobile ? Axis.vertical : Axis.horizontal,
+                                crossAxisAlignment: isMobile ? CrossAxisAlignment.stretch : CrossAxisAlignment.start,
+                                children: [
+                                  Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      const Text(
+                                        'Gestão de Caixa',
+                                        style: TextStyle(
+                                          fontSize: 28,
+                                          fontWeight: FontWeight.bold,
+                                          color: Color(0xFF1E293B),
+                                        ),
                                       ),
-                                    ),
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      'Faturamento, despesas e fluxo de caixa',
-                                      style: TextStyle(
-                                        fontSize: 14,
-                                        color: Colors.grey.shade600,
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        'Faturamento, despesas e fluxo de caixa',
+                                        style: TextStyle(
+                                          fontSize: 14,
+                                          color: Colors.grey.shade600,
+                                        ),
                                       ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              _buildMonthYearSelector(context, state),
-                            ],
+                                    ],
+                                  ),
+                                  if (isMobile) const SizedBox(height: 16),
+                                  if (!isMobile) const Spacer(),
+                                  _buildMonthYearSelector(context, state),
+                                ],
+                              );
+                            },
                           ),
                           const SizedBox(height: 32),
 
@@ -223,66 +235,80 @@ class _FinancialViewState extends State<FinancialView> {
                           const SizedBox(height: 32),
 
                           // DETALHAMENTO POR FORMA DE PAGAMENTO
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    const Text(
-                                      'RECEBIMENTOS POR FORMA',
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.grey,
-                                        letterSpacing: 1.2,
-                                      ),
+                          LayoutBuilder(
+                            builder: (context, constraints) {
+                              final isStacked = constraints.maxWidth < 700;
+                              return Flex(
+                                direction: isStacked ? Axis.vertical : Axis.horizontal,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Expanded(
+                                    flex: isStacked ? 0 : 1,
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                                      children: [
+                                        const Text(
+                                          'RECEBIMENTOS POR FORMA',
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.grey,
+                                            letterSpacing: 1.2,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 16),
+                                        _FinancialBreakdownCard(
+                                          backgroundColor: const Color(0xFFF0FDF4),
+                                          items: state.incomeByMethod.entries.map((e) {
+                                            return _BreakdownItem(
+                                              _formatMethodLabel(e.key),
+                                              e.value,
+                                              _getMethodColor(e.key),
+                                            );
+                                          }).toList(),
+                                        ),
+                                      ],
                                     ),
-                                    const SizedBox(height: 16),
-                                    _FinancialBreakdownCard(
-                                      backgroundColor: const Color(0xFFF0FDF4),
-                                      items: state.incomeByMethod.entries.map((e) {
-                                        return _BreakdownItem(
-                                          _formatMethodLabel(e.key),
-                                          e.value,
-                                          _getMethodColor(e.key),
-                                        );
-                                      }).toList(),
+                                  ),
+                                  if (isStacked) const SizedBox(height: 32),
+                                  if (!isStacked) const SizedBox(width: 24),
+                                  Expanded(
+                                    flex: isStacked ? 0 : 1,
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                                      children: [
+                                        const Text(
+                                          'DESPESAS POR FORMA',
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.grey,
+                                            letterSpacing: 1.2,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 16),
+                                        _FinancialBreakdownCard(
+                                          backgroundColor: const Color(0xFFFEF2F2),
+                                          items: state.expenseByMethod.entries.map((e) {
+                                            return _BreakdownItem(
+                                              _formatMethodLabel(e.key),
+                                              e.value,
+                                              _getMethodColor(e.key),
+                                            );
+                                          }).toList(),
+                                        ),
+                                      ],
                                     ),
-                                  ],
-                                ),
-                              ),
-                              const SizedBox(width: 24),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    const Text(
-                                      'DESPESAS POR FORMA',
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.grey,
-                                        letterSpacing: 1.2,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 16),
-                                    _FinancialBreakdownCard(
-                                      backgroundColor: const Color(0xFFFEF2F2),
-                                      items: state.expenseByMethod.entries.map((e) {
-                                        return _BreakdownItem(
-                                          _formatMethodLabel(e.key),
-                                          e.value,
-                                          _getMethodColor(e.key),
-                                        );
-                                      }).toList(),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
+                                  ),
+                                ],
+                              );
+                            },
                           ),
+
+                          const SizedBox(height: 32),
+
+                          // GRÁFICO ANUAL
+                          _YearlyPerformanceCard(state: state),
 
                           const SizedBox(height: 32),
 
@@ -292,22 +318,15 @@ class _FinancialViewState extends State<FinancialView> {
                       ),
                     ),
                   ),
-                );
-              } else if (state is FinancialError) {
-                return AppErrorView(
-                  message: state.message,
-                  onRetry: () => context.read<FinancialBloc>().add(LoadFinancialData()),
-                );
-              }
-              return const SizedBox.shrink();
-            },
-          ),
+                ),
+            );
+          },
         ),
       ),
     );
   }
 
-  Widget _buildMonthYearSelector(BuildContext context, FinancialLoaded state) {
+  Widget _buildMonthYearSelector(BuildContext context, FinancialState state) {
     final months = [
       'Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun',
       'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'
@@ -556,13 +575,108 @@ class _BreakdownItem {
   const _BreakdownItem(this.label, this.value, this.color);
 }
 
+class _YearlyPerformanceCard extends StatelessWidget {
+  final FinancialState state;
+
+  const _YearlyPerformanceCard({required this.state});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.grey.shade100, width: 1.5),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Desempenho Anual (Receitas x Despesas)',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 32),
+          SizedBox(
+            height: 250,
+            child: LineChart(
+              LineChartData(
+                gridData: const FlGridData(show: true, drawVerticalLine: false),
+                titlesData: FlTitlesData(
+                  rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                  topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                  bottomTitles: AxisTitles(
+                    sideTitles: SideTitles(
+                      showTitles: true,
+                      reservedSize: 30,
+                      interval: 1,
+                      getTitlesWidget: (value, meta) {
+                        const months = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+                        if (value >= 1 && value <= 12) {
+                          return Padding(
+                            padding: const EdgeInsets.only(top: 8.0),
+                            child: Text(
+                              months[value.toInt() - 1],
+                              style: const TextStyle(color: Colors.grey, fontSize: 10, fontWeight: FontWeight.bold),
+                            ),
+                          );
+                        }
+                        return const SizedBox.shrink();
+                      },
+                    ),
+                  ),
+                ),
+                borderData: FlBorderData(show: false),
+                lineBarsData: [
+                  LineChartBarData(
+                    spots: state.yearlyRevenue.entries
+                        .map((e) => FlSpot(e.key.toDouble(), e.value))
+                        .toList()
+                      ..sort((a, b) => a.x.compareTo(b.x)),
+                    isCurved: true,
+                    color: const Color(0xFF10B981), // Verde
+                    barWidth: 3,
+                    isStrokeCapRound: true,
+                    dotData: const FlDotData(show: false),
+                    belowBarData: BarAreaData(
+                      show: true,
+                      color: const Color(0xFF10B981).withValues(alpha: 0.1),
+                    ),
+                  ),
+                  LineChartBarData(
+                    spots: state.yearlyExpenses.entries
+                        .map((e) => FlSpot(e.key.toDouble(), e.value))
+                        .toList()
+                      ..sort((a, b) => a.x.compareTo(b.x)),
+                    isCurved: true,
+                    color: const Color(0xFFEF4444), // Vermelho
+                    barWidth: 3,
+                    isStrokeCapRound: true,
+                    dotData: const FlDotData(show: false),
+                    belowBarData: BarAreaData(
+                      show: true,
+                      color: const Color(0xFFEF4444).withValues(alpha: 0.1),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _RecentTransactionsCard extends StatelessWidget {
-  final FinancialLoaded state;
+  final FinancialState state;
 
   const _RecentTransactionsCard({required this.state});
 
   @override
   Widget build(BuildContext context) {
+    final transacoes = state.transacoes.take(10).toList();
+
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -572,58 +686,70 @@ class _RecentTransactionsCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const Padding(
-            padding: EdgeInsets.all(24.0),
-            child: Text(
-              'Fluxo de Caixa Recente',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          Padding(
+            padding: const EdgeInsets.all(24.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  'Fluxo de Caixa Recente',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+                if (state.transacoes.length > 10)
+                  Text(
+                    'Exibindo 10 de ${state.transacoes.length}',
+                    style: const TextStyle(fontSize: 12, color: Colors.grey),
+                  ),
+              ],
             ),
           ),
           Divider(height: 1, color: Colors.grey.shade100),
-          ListView.separated(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: state.transacoes.length,
-            separatorBuilder: (context, index) =>
-                Divider(height: 1, color: Colors.grey.shade50),
-            itemBuilder: (context, index) {
-              final transacao = state.transacoes[index];
-              final isExpense = transacao.isExpense;
-              return ListTile(
-                leading: CircleAvatar(
-                  backgroundColor: isExpense
-                      ? Colors.red.shade50
-                      : FinancialView.azulPetroleo.withAlpha(25),
-                  child: Icon(
-                    isExpense ? Icons.arrow_downward : Icons.arrow_upward,
-                    color: isExpense ? Colors.red : FinancialView.azulPetroleo,
-                    size: 18,
+          ConstrainedBox(
+            constraints: const BoxConstraints(maxHeight: 500),
+            child: ListView.separated(
+              shrinkWrap: true,
+              itemCount: transacoes.length,
+              separatorBuilder: (context, index) =>
+                  Divider(height: 1, color: Colors.grey.shade50),
+              itemBuilder: (context, index) {
+                final transacao = transacoes[index];
+                final isExpense = transacao.isExpense;
+                return ListTile(
+                  leading: CircleAvatar(
+                    backgroundColor: isExpense
+                        ? Colors.red.shade50
+                        : FinancialView.azulPetroleo.withAlpha(25),
+                    child: Icon(
+                      isExpense ? Icons.arrow_downward : Icons.arrow_upward,
+                      color: isExpense ? Colors.red : FinancialView.azulPetroleo,
+                      size: 18,
+                    ),
                   ),
-                ),
-                title: Text(transacao.titulo),
-                subtitle: Text(
-                  '${_formatDate(transacao.data)} • ${transacao.subtitulo}${transacao.isExpense && transacao.expenseType != null ? " • ${_translateExpenseType(transacao.expenseType!)}" : ""}',
-                  style: TextStyle(color: Colors.grey.shade500, fontSize: 12),
-                ),
-                trailing: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      isExpense ? '- ${CurrencyFormatter.format(transacao.valor)}' : '+ ${CurrencyFormatter.format(transacao.valor)}',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: isExpense ? Colors.red : FinancialView.azulPetroleo,
+                  title: Text(transacao.titulo),
+                  subtitle: Text(
+                    '${_formatDate(transacao.data)} • ${transacao.subtitulo}${transacao.isExpense && transacao.expenseType != null ? " • ${_translateExpenseType(transacao.expenseType!)}" : ""}',
+                    style: TextStyle(color: Colors.grey.shade500, fontSize: 12),
+                  ),
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        isExpense ? '- ${CurrencyFormatter.format(transacao.valor)}' : '+ ${CurrencyFormatter.format(transacao.valor)}',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: isExpense ? Colors.red : FinancialView.azulPetroleo,
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 8),
-                    IconButton(
-                      icon: const Icon(Icons.delete_outline_rounded, color: Colors.grey, size: 20),
-                      onPressed: () => _confirmDelete(context, transacao.id, transacao.source),
-                    ),
-                  ],
-                ),
-              );
-            },
+                      const SizedBox(width: 8),
+                      IconButton(
+                        icon: const Icon(Icons.delete_outline_rounded, color: Colors.grey, size: 20),
+                        onPressed: () => _confirmDelete(context, transacao.id, transacao.source),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
           ),
           const SizedBox(height: 16),
         ],

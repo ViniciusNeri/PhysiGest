@@ -12,6 +12,8 @@ import 'package:physigest/features/schedule/presentation/widgets/appointment_act
 import 'package:physigest/features/schedule/domain/models/appointment.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:physigest/core/widgets/app_error_view.dart';
+import 'package:physigest/core/utils/app_alerts.dart';
+import 'package:physigest/core/widgets/loading_overlay.dart';
 
 class ScheduleScreen extends StatelessWidget {
   const ScheduleScreen({super.key});
@@ -130,14 +132,9 @@ class ScheduleView extends StatelessWidget {
                   child: BlocConsumer<ScheduleBloc, ScheduleState>(
                     listener: (context, state) {
                       if (state.status == ScheduleStatus.failure && state.errorMessage != null) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(state.errorMessage!),
-                            backgroundColor: Colors.red.shade800,
-                            behavior: SnackBarBehavior.floating,
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                          ),
-                        );
+                        AppAlerts.error(context, state.errorMessage!);
+                      } else if (state.status == ScheduleStatus.success && state.successMessage != null) {
+                        AppAlerts.success(context, state.successMessage!);
                       }
                     },
                     builder: (context, state) {
@@ -153,7 +150,12 @@ class ScheduleView extends StatelessWidget {
                           onRetry: () => context.read<ScheduleBloc>().add(LoadSchedule()),
                         );
                       }
-                      return _buildBodyContent(context, state);
+
+                      return LoadingOverlay(
+                        isLoading: state.status == ScheduleStatus.loading && state.appointments.isNotEmpty,
+                        message: "Sincronizando...",
+                        child: _buildBodyContent(context, state),
+                      );
                     },
                   ),
                 ),
@@ -197,6 +199,11 @@ class ScheduleView extends StatelessWidget {
             "d 'de' MMMM, yyyy",
             'pt_BR',
           ).format(startDate);
+        } else if (state.viewMode == ScheduleViewMode.threeDays) {
+          startDate = state.selectedDate;
+          endDate = state.selectedDate.add(const Duration(days: 2));
+          rangeLabel =
+              "Dia ${DateFormat('d').format(startDate)} - ${DateFormat('d').format(endDate)} de ${DateFormat('MMMM, yyyy', 'pt_BR').format(endDate)}";
         } else if (state.viewMode == ScheduleViewMode.week) {
           startDate = state.selectedDate.subtract(
             Duration(days: state.selectedDate.weekday % 7),
@@ -260,6 +267,10 @@ class ScheduleView extends StatelessWidget {
                   newDate = state.selectedDate.subtract(
                     const Duration(days: 1),
                   );
+                } else if (state.viewMode == ScheduleViewMode.threeDays) {
+                  newDate = state.selectedDate.subtract(
+                    const Duration(days: 3),
+                  );
                 } else if (state.viewMode == ScheduleViewMode.week) {
                   newDate = state.selectedDate.subtract(
                     const Duration(days: 7),
@@ -278,6 +289,8 @@ class ScheduleView extends StatelessWidget {
                 DateTime newDate;
                 if (state.viewMode == ScheduleViewMode.day) {
                   newDate = state.selectedDate.add(const Duration(days: 1));
+                } else if (state.viewMode == ScheduleViewMode.threeDays) {
+                  newDate = state.selectedDate.add(const Duration(days: 3));
                 } else if (state.viewMode == ScheduleViewMode.week) {
                   newDate = state.selectedDate.add(const Duration(days: 7));
                 } else {
@@ -327,6 +340,9 @@ class ScheduleView extends StatelessWidget {
 
     if (state.viewMode == ScheduleViewMode.day) {
       weekDays = [state.selectedDate];
+    } else if (state.viewMode == ScheduleViewMode.threeDays) {
+      weekDays =
+          List.generate(3, (i) => state.selectedDate.add(Duration(days: i)));
     } else {
       // Semana começa no Domingo
       final startOfWeek = state.selectedDate.subtract(
@@ -870,6 +886,10 @@ class ScheduleView extends StatelessWidget {
         itemBuilder: (context) => [
           const PopupMenuItem(value: ScheduleViewMode.day, child: Text("Dia")),
           const PopupMenuItem(
+            value: ScheduleViewMode.threeDays,
+            child: Text("3 Dias"),
+          ),
+          const PopupMenuItem(
             value: ScheduleViewMode.week,
             child: Text("Semana"),
           ),
@@ -894,6 +914,13 @@ class ScheduleView extends StatelessWidget {
             state.viewMode == ScheduleViewMode.day,
             () => context.read<ScheduleBloc>().add(
               ChangeViewMode(ScheduleViewMode.day),
+            ),
+          ),
+          _buildToggleItem(
+            "3 Dias",
+            state.viewMode == ScheduleViewMode.threeDays,
+            () => context.read<ScheduleBloc>().add(
+              ChangeViewMode(ScheduleViewMode.threeDays),
             ),
           ),
           _buildToggleItem(

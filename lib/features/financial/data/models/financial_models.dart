@@ -96,12 +96,19 @@ class FinancialSummaryModel extends FinancialSummary {
     required super.lucroLiquido,
     super.incomeByMethod = const {},
     super.expenseByMethod = const {},
+    super.yearlyRevenue = const {},
+    super.yearlyExpenses = const {},
   });
 
   factory FinancialSummaryModel.fromJson(Map<String, dynamic> json) {
     Map<String, double> parseMethodMap(Map<String, dynamic>? data) {
       if (data == null) return {};
       return data.map((key, value) => MapEntry(key, (value as num).toDouble()));
+    }
+
+    Map<int, double> parseYearlyMap(Map<String, dynamic>? data) {
+      if (data == null) return {};
+      return data.map((key, value) => MapEntry(int.parse(key), (value as num).toDouble()));
     }
 
     return FinancialSummaryModel(
@@ -111,6 +118,8 @@ class FinancialSummaryModel extends FinancialSummary {
       lucroLiquido: (json['netProfit'] as num?)?.toDouble() ?? 0.0,
       incomeByMethod: parseMethodMap(json['incomeByMethod']),
       expenseByMethod: parseMethodMap(json['expenseByMethod']),
+      yearlyRevenue: parseYearlyMap(json['yearlyRevenue']),
+      yearlyExpenses: parseYearlyMap(json['yearlyExpenses']),
     );
   }
 }

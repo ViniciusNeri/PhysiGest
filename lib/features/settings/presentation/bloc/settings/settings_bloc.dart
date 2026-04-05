@@ -88,8 +88,11 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
     if (state is SettingsLoaded) {
       final currentState = state as SettingsLoaded;
       try {
-        await _updateDashboardPreferencesUseCase(event.preferences);
-        emit(currentState.copyWith(dashboardPreferences: event.preferences));
+        final updatedPreferences = await _updateDashboardPreferencesUseCase(event.preferences);
+        emit(currentState.copyWith(
+          dashboardPreferences: updatedPreferences,
+          successMessage: 'Preferências atualizadas!',
+        ));
       } catch (e) {
         emit(SettingsError(e.toString().replaceAll('Exception: ', '')));
       }
@@ -109,6 +112,7 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
         emit(
           currentState.copyWith(
             categories: [...currentState.categories, newCategory],
+            successMessage: 'Categoria adicionada!',
           ),
         );
       } catch (e) {
@@ -128,7 +132,10 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
         final updatedCategories = currentState.categories.map((c) {
           return c.id == event.category.id ? event.category : c;
         }).toList();
-        emit(currentState.copyWith(categories: updatedCategories));
+        emit(currentState.copyWith(
+          categories: updatedCategories,
+          successMessage: 'Categoria atualizada!',
+        ));
       } catch (e) {
         emit(SettingsError(e.toString().replaceAll('Exception: ', '')));
       }
@@ -146,7 +153,10 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
         final filteredCategories = currentState.categories
             .where((c) => c.id != event.id)
             .toList();
-        emit(currentState.copyWith(categories: filteredCategories));
+        emit(currentState.copyWith(
+          categories: filteredCategories,
+          successMessage: 'Categoria removida!',
+        ));
       } catch (e) {
         emit(SettingsError(e.toString().replaceAll('Exception: ', '')));
       }
@@ -165,6 +175,7 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
         emit(
           currentState.copyWith(
             paymentMethods: [...currentState.paymentMethods, newMethod],
+            successMessage: 'Metodo de pagamento adicionado!',
           ),
         );
       } catch (e) {
@@ -184,7 +195,10 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
         final updatedMethods = currentState.paymentMethods.map((m) {
           return m.id == event.method.id ? event.method : m;
         }).toList();
-        emit(currentState.copyWith(paymentMethods: updatedMethods));
+        emit(currentState.copyWith(
+          paymentMethods: updatedMethods,
+          successMessage: 'Metodo atualizado!',
+        ));
       } catch (e) {
         emit(SettingsError(e.toString().replaceAll('Exception: ', '')));
       }
@@ -202,7 +216,10 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
         final filteredMethods = currentState.paymentMethods
             .where((m) => m.id != event.id)
             .toList();
-        emit(currentState.copyWith(paymentMethods: filteredMethods));
+        emit(currentState.copyWith(
+          paymentMethods: filteredMethods,
+          successMessage: 'Metodo removido!',
+        ));
       } catch (e) {
         emit(SettingsError(e.toString().replaceAll('Exception: ', '')));
       }

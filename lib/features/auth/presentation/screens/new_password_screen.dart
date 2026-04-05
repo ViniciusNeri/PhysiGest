@@ -6,6 +6,7 @@ import 'package:physigest/core/theme/app_theme.dart';
 import 'package:physigest/features/auth/presentation/bloc/forgot_password/forgot_password_bloc.dart';
 import 'package:physigest/features/auth/presentation/bloc/forgot_password/forgot_password_event.dart';
 import 'package:physigest/features/auth/presentation/bloc/forgot_password/forgot_password_state.dart';
+import 'package:physigest/core/utils/app_alerts.dart';
 
 class NewPasswordScreen extends StatefulWidget {
   final String token;
@@ -43,20 +44,10 @@ class _NewPasswordScreenState extends State<NewPasswordScreen> {
           child: BlocListener<ForgotPasswordBloc, ForgotPasswordState>(
             listener: (context, state) {
               if (state.status == ForgotPasswordStatus.resetSuccess) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Senha alterada com sucesso!'),
-                    backgroundColor: Colors.green,
-                  ),
-                );
+                AppAlerts.success(context, 'Senha alterada com sucesso!');
                 context.go('/login');
               } else if (state.status == ForgotPasswordStatus.failure) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(state.errorMessage),
-                    backgroundColor: Colors.redAccent,
-                  ),
-                );
+                AppAlerts.error(context, state.errorMessage);
               }
             },
             child: Center(

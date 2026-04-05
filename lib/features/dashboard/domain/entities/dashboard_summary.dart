@@ -8,11 +8,18 @@ class DashboardSummary extends Equatable {
   final List<Appointment> todaysAppointments;
   final Appointment? nextAppointment;
 
+  final List<Appointment> pastPendingAppointments;
+  final List<Map<String, dynamic>> monthlyBirthdays;
+  final Map<int, int> occupancyStats;
+
   const DashboardSummary({
     required this.weeklyAppointments,
     required this.monthlyIncome,
     required this.activePayments,
     required this.todaysAppointments,
+    this.pastPendingAppointments = const [],
+    this.monthlyBirthdays = const [],
+    this.occupancyStats = const {},
     this.nextAppointment,
   });
 
@@ -22,6 +29,9 @@ class DashboardSummary extends Equatable {
         monthlyIncome,
         activePayments,
         todaysAppointments,
+        pastPendingAppointments,
+        monthlyBirthdays,
+        occupancyStats,
         nextAppointment,
       ];
 }

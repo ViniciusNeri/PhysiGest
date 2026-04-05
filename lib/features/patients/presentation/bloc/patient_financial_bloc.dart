@@ -50,6 +50,7 @@ class PatientFinancialBloc extends Bloc<PatientFinancialEvent, PatientFinancialS
       emit(state.copyWith(
         status: PatientFinancialStatus.paymentAdded,
         summary: summary,
+        successMessage: 'Pagamento adicionado com sucesso!',
       ));
     } catch (e) {
       emit(state.copyWith(
@@ -79,6 +80,7 @@ class PatientFinancialBloc extends Bloc<PatientFinancialEvent, PatientFinancialS
       emit(state.copyWith(
         status: PatientFinancialStatus.statusUpdated,
         summary: summary,
+        successMessage: 'Status de pagamento atualizado com sucesso!',
       ));
     } catch (e) {
       emit(state.copyWith(

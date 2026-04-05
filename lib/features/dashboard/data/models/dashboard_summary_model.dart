@@ -7,6 +7,9 @@ class DashboardSummaryModel extends DashboardSummary {
     required super.monthlyIncome,
     required super.activePayments,
     required super.todaysAppointments,
+    super.pastPendingAppointments = const [],
+    super.monthlyBirthdays = const [],
+    super.occupancyStats = const {},
     super.nextAppointment,
   });
 
@@ -19,6 +22,17 @@ class DashboardSummaryModel extends DashboardSummary {
               ?.map((a) => _mapAppointment(a))
               .toList() ??
           [],
+      pastPendingAppointments: (json['pastPendingAppointments'] as List<dynamic>?)
+              ?.map((a) => _mapAppointment(a))
+              .toList() ??
+          [],
+      monthlyBirthdays: (json['monthlyBirthdays'] as List<dynamic>?)
+              ?.map((b) => b as Map<String, dynamic>)
+              .toList() ??
+          [],
+      occupancyStats: (json['occupancyStats'] as Map<String, dynamic>?)
+              ?.map((k, v) => MapEntry(int.parse(k), v as int)) ??
+          {},
       nextAppointment: json['nextAppointment'] != null
           ? _mapAppointment(json['nextAppointment'])
           : null,
@@ -53,8 +67,8 @@ class DashboardSummaryModel extends DashboardSummary {
       description: json['description'] ?? '',
       categoryId: json['categoryId']?.toString(),
       categoryName: json['categoryName']?.toString(),
-      startDate: DateTime.tryParse(json['date'] ?? '')?.toLocal() ?? DateTime.now(),
-      endDate: DateTime.tryParse(json['date'] ?? '')?.toLocal()?.add(const Duration(hours: 1)) ?? DateTime.now().add(const Duration(hours: 1)),
+      startDate: (DateTime.tryParse(json['date'] ?? '') ?? DateTime.now()).toLocal(),
+      endDate: (DateTime.tryParse(json['date'] ?? '') ?? DateTime.now()).toLocal().add(const Duration(hours: 1)),
       status: normalizedStatus,
       notes: json['notes'],
     );

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:physigest/core/utils/currency_formatter.dart';
 import 'package:physigest/features/patients/domain/models/patient.dart';
+import 'package:physigest/core/utils/app_alerts.dart';
 
 class PaymentActionDialog extends StatefulWidget {
   final Function(PatientPayment) onSave;
@@ -50,19 +51,13 @@ class _PaymentActionDialogState extends State<PaymentActionDialog> {
   void _submit() {
     if (_titleController.text.trim().isEmpty ||
         _valueController.text.trim().isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Por favor, preencha o título e o valor.'),
-        ),
-      );
+      AppAlerts.error(context, 'Por favor, preencha o título e o valor.');
       return;
     }
 
     final double? parsedValue = CurrencyFormatter.parse(_valueController.text);
     if (parsedValue == null) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Valor inválido.')));
+      AppAlerts.error(context, 'Valor inválido.');
       return;
     }
 
