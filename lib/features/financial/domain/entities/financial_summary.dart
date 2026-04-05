@@ -8,6 +8,9 @@ class FinancialSummary extends Equatable {
   final Map<String, double> incomeByMethod;
   final Map<String, double> expenseByMethod;
 
+  final Map<int, double> yearlyRevenue;
+  final Map<int, double> yearlyExpenses;
+
   const FinancialSummary({
     required this.faturamentoTotal,
     required this.contasReceber,
@@ -15,6 +18,8 @@ class FinancialSummary extends Equatable {
     required this.lucroLiquido,
     this.incomeByMethod = const {},
     this.expenseByMethod = const {},
+    this.yearlyRevenue = const {},
+    this.yearlyExpenses = const {},
   });
 
   @override
@@ -25,5 +30,7 @@ class FinancialSummary extends Equatable {
     lucroLiquido,
     incomeByMethod,
     expenseByMethod,
+    yearlyRevenue,
+    yearlyExpenses,
   ];
 }

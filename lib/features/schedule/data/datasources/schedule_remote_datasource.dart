@@ -137,7 +137,7 @@ class ScheduleRemoteDataSource implements IScheduleRemoteDataSource {
       final list = response.data as List<dynamic>;
       return list.map((e) => {
         'id': e['_id']?.toString() ?? e['id']?.toString() ?? '',
-        'name': e['description']?.toString() ?? '',
+        'name': e['name']?.toString() ?? e['description']?.toString() ?? '',
       }).toList();
     } on DioException catch (e) {
       throw Exception(e.message);

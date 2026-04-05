@@ -7,6 +7,7 @@ import '../bloc/exercise_event.dart';
 import '../bloc/exercise_state.dart';
 import '../widgets/exercise_detail_dialog.dart';
 import 'package:physigest/core/widgets/app_error_view.dart';
+import 'package:physigest/core/utils/app_alerts.dart';
 
 class ExercisesListScreen extends StatefulWidget {
   const ExercisesListScreen({super.key});
@@ -48,17 +49,26 @@ class _ExercisesListScreenState extends State<ExercisesListScreen> {
       value: getIt<ExerciseBloc>(),
       child: Scaffold(
         backgroundColor: const Color(0xFFF1F5F9),
-        body: SingleChildScrollView(
-          padding: const EdgeInsets.all(32.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildHeader(),
-              const SizedBox(height: 32),
-              _buildFilters(context),
-              const SizedBox(height: 32),
-              _buildGrid(context),
-            ],
+        body: BlocListener<ExerciseBloc, ExerciseState>(
+          listener: (context, state) {
+            if (state is ExerciseError) {
+              AppAlerts.error(context, state.message);
+            } else if (state.successMessage != null) {
+              AppAlerts.success(context, state.successMessage!);
+            }
+          },
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(32.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildHeader(),
+                const SizedBox(height: 32),
+                _buildFilters(context),
+                const SizedBox(height: 32),
+                _buildGrid(context),
+              ],
+            ),
           ),
         ),
       ),

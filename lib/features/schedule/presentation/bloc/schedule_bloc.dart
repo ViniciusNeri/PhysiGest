@@ -48,6 +48,7 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
           appointments: appointments,
           availablePatients: patients,
           activeCategories: categories,
+          successMessage: null,
         ),
       );
     } catch (e) {
@@ -76,7 +77,11 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
     try {
       final created = await _createAppointmentUseCase(event.appointment);
       final updatedList = List<Appointment>.from(state.appointments)..add(created);
-      emit(state.copyWith(status: ScheduleStatus.success, appointments: updatedList));
+      emit(state.copyWith(
+        status: ScheduleStatus.success,
+        appointments: updatedList,
+        successMessage: 'Agendamento adicionado com sucesso!',
+      ));
     } catch (e) {
       emit(
         state.copyWith(
@@ -98,7 +103,11 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
         if (apt.id == updated.id) return updated;
         return apt;
       }).toList();
-      emit(state.copyWith(status: ScheduleStatus.success, appointments: updatedList));
+      emit(state.copyWith(
+        status: ScheduleStatus.success,
+        appointments: updatedList,
+        successMessage: 'Agendamento atualizado com sucesso!',
+      ));
     } catch (e) {
       emit(
         state.copyWith(
@@ -117,7 +126,11 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
     try {
       await _deleteAppointmentUseCase(event.id);
       final updatedList = state.appointments.where((apt) => apt.id != event.id).toList();
-      emit(state.copyWith(status: ScheduleStatus.success, appointments: updatedList));
+      emit(state.copyWith(
+        status: ScheduleStatus.success,
+        appointments: updatedList,
+        successMessage: 'Agendamento removido com sucesso!',
+      ));
     } catch (e) {
       emit(
         state.copyWith(

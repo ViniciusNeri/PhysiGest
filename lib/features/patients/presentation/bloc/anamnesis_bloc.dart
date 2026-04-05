@@ -53,6 +53,7 @@ class AnamnesisBloc extends Bloc<AnamnesisEvent, AnamnesisState> {
         emit(state.copyWith(
           status: AnamnesisStatus.saveSuccess,
           anamnesis: newAnamnesis,
+          successMessage: 'Anamnese criada com sucesso!',
         ));
       } else {
         // Se já existe, atualizamos (PUT usando o ID existente)
@@ -64,6 +65,7 @@ class AnamnesisBloc extends Bloc<AnamnesisEvent, AnamnesisState> {
         emit(state.copyWith(
           status: AnamnesisStatus.saveSuccess,
           anamnesis: updatedAnamnesis,
+          successMessage: 'Anamnese atualizada com sucesso!',
         ));
       }
     } catch (e) {

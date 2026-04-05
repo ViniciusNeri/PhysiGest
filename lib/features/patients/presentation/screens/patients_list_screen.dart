@@ -9,6 +9,8 @@ import 'package:physigest/features/patients/presentation/bloc/patient_event.dart
 import 'package:physigest/features/patients/presentation/bloc/patient_state.dart';
 import 'package:physigest/features/patients/presentation/widgets/edit_patient_dialog.dart';
 import 'package:physigest/core/widgets/app_error_view.dart';
+import 'package:physigest/core/utils/app_alerts.dart';
+import 'package:physigest/core/widgets/loading_overlay.dart';
 
 class PatientsListScreen extends StatelessWidget {
   const PatientsListScreen({super.key});
@@ -20,14 +22,9 @@ class PatientsListScreen extends StatelessWidget {
       child: BlocListener<PatientBloc, PatientState>(
         listener: (context, state) {
           if (state.status == PatientStatus.failure && state.errorMessage != null) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(state.errorMessage!),
-                backgroundColor: Colors.red.shade800,
-                behavior: SnackBarBehavior.floating,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-              ),
-            );
+            AppAlerts.error(context, state.errorMessage!);
+          } else if (state.status == PatientStatus.success && state.successMessage != null) {
+            AppAlerts.success(context, state.successMessage!);
           }
         },
         child: const PatientsListView(),
@@ -217,75 +214,82 @@ class _PatientsListViewState extends State<PatientsListView> {
   }
 
   Widget _buildPatientsTable(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
-      ),
-      child: BlocBuilder<PatientBloc, PatientState>(
-        builder: (context, state) {
-          if (state.status == PatientStatus.loading) {
-            return const Padding(
-              padding: EdgeInsets.all(40),
-              child: Center(child: CircularProgressIndicator()),
-            );
-          }
-
-          if (state.status == PatientStatus.failure) {
-            return Padding(
-              padding: const EdgeInsets.all(40),
-              child: AppErrorView(
-                message: state.errorMessage ?? 'Erro ao carregar pacientes',
-                onRetry: () => context.read<PatientBloc>().add(LoadPatients()),
-              ),
-            );
-          }
-
-          final filtered = state.patients
-              .where(
-                (p) =>
-                    p.name.toLowerCase().contains(_searchQuery.toLowerCase()),
-              )
-              .toList();
-
-          if (filtered.isEmpty) {
-            return const Padding(
-              padding: EdgeInsets.all(48),
-              child: Center(
-                child: Column(
-                  children: [
-                    Icon(Icons.search_off_rounded, size: 48, color: Colors.grey),
-                    SizedBox(height: 16),
-                    Text(
-                      'Nenhum paciente encontrado.',
-                      style: TextStyle(color: Colors.grey, fontSize: 16),
-                    ),
-                  ],
-                ),
-              ),
-            );
-          }
-
-          return Column(
-            children: [
-              // Cabeçalho da "Tabela"
-              _buildTableHeader(context),
-              const Divider(height: 1, color: Color(0xFFF1F5F9)),
-              // Lista de itens
-              ListView.separated(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: filtered.length,
-                separatorBuilder: (context, index) =>
-                    const Divider(height: 1, color: Color(0xFFF1F5F9)),
-                itemBuilder: (context, index) =>
-                    _PatientRow(patient: filtered[index]),
-              ),
-            ],
+    return BlocBuilder<PatientBloc, PatientState>(
+      builder: (context, state) {
+        if (state.status == PatientStatus.loading && state.patients.isEmpty) {
+          return Container(
+            padding: const EdgeInsets.all(80),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: const Center(child: CircularProgressIndicator()),
           );
-        },
-      ),
+        }
+
+        if (state.status == PatientStatus.failure && state.patients.isEmpty) {
+          return Container(
+            padding: const EdgeInsets.all(80),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: AppErrorView(
+              message: state.errorMessage ?? 'Erro ao carregar pacientes',
+              onRetry: () => context.read<PatientBloc>().add(LoadPatients()),
+            ),
+          );
+        }
+
+        final filtered = state.patients
+            .where(
+              (p) => p.name.toLowerCase().contains(_searchQuery.toLowerCase()),
+            )
+            .toList();
+
+        return LoadingOverlay(
+          isLoading: state.status == PatientStatus.loading && state.patients.isNotEmpty,
+          message: "Processando...",
+          child: Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: const Color(0xFFE2E8F0)),
+            ),
+            child: filtered.isEmpty
+                ? const Padding(
+                    padding: EdgeInsets.all(80),
+                    child: Center(
+                      child: Column(
+                        children: [
+                          Icon(Icons.search_off_rounded, size: 48, color: Colors.grey),
+                          SizedBox(height: 16),
+                          Text(
+                            'Nenhum paciente encontrado.',
+                            style: TextStyle(color: Colors.grey, fontSize: 16),
+                          ),
+                        ],
+                      ),
+                    ),
+                  )
+                : Column(
+                    children: [
+                      _buildTableHeader(context),
+                      const Divider(height: 1, color: Color(0xFFF1F5F9)),
+                      ListView.separated(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemCount: filtered.length,
+                        separatorBuilder: (context, index) =>
+                            const Divider(height: 1, color: Color(0xFFF1F5F9)),
+                        itemBuilder: (context, index) =>
+                            _PatientRow(patient: filtered[index]),
+                      ),
+                    ],
+                  ),
+          ),
+        );
+      },
     );
   }
 

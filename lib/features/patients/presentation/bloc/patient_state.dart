@@ -7,25 +7,29 @@ class PatientState extends Equatable {
   final PatientStatus status;
   final List<Patient> patients;
   final String? errorMessage;
+  final String? successMessage;
 
   const PatientState({
     this.status = PatientStatus.initial,
     this.patients = const [],
     this.errorMessage,
+    this.successMessage,
   });
 
   PatientState copyWith({
     PatientStatus? status,
     List<Patient>? patients,
     String? errorMessage,
+    String? successMessage,
   }) {
     return PatientState(
       status: status ?? this.status,
       patients: patients ?? this.patients,
       errorMessage: errorMessage ?? this.errorMessage,
+      successMessage: successMessage ?? this.successMessage,
     );
   }
 
   @override
-  List<Object?> get props => [status, patients, errorMessage];
+  List<Object?> get props => [status, patients, errorMessage, successMessage];
 }

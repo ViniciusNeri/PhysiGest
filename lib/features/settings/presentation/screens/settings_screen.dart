@@ -9,6 +9,8 @@ import '../bloc/settings/settings_event.dart';
 import '../bloc/settings/settings_state.dart';
 import 'package:physigest/core/widgets/app_error_view.dart';
 import 'change_password_dialog.dart';
+import 'package:physigest/core/utils/app_alerts.dart';
+import 'package:physigest/core/widgets/loading_overlay.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -43,24 +45,35 @@ class _SettingsScreenState extends State<SettingsScreen> {
         centerTitle: false,
         iconTheme: const IconThemeData(color: Color(0xFF0F172A)),
       ),
-      body: BlocBuilder<SettingsBloc, SettingsState>(
+      body: BlocConsumer<SettingsBloc, SettingsState>(
+        listener: (context, state) {
+          if (state is SettingsError) {
+            AppAlerts.error(context, state.message);
+          } else if (state.successMessage != null) {
+            AppAlerts.success(context, state.successMessage!);
+          }
+        },
         builder: (context, state) {
-          if (state is SettingsLoading || state is SettingsInitial) {
+          if (state is SettingsLoading && (state is! SettingsLoaded)) {
             return const Center(child: CircularProgressIndicator());
           }
 
-          if (state is SettingsError) {
+          if (state is SettingsError && (state is! SettingsLoaded)) {
             return AppErrorView(
               message: state.message,
               onRetry: () => context.read<SettingsBloc>().add(LoadSettings()),
             );
           }
 
-          if (state is SettingsLoaded) {
-            return _buildContent(context, state);
-          }
+          final isLoading = state is SettingsLoading;
 
-          return const SizedBox.shrink();
+          return LoadingOverlay(
+            isLoading: isLoading,
+            message: "Salvando...",
+            child: (state is SettingsLoaded)
+                ? _buildContent(context, state)
+                : const SizedBox.shrink(),
+          );
         },
       ),
     );
@@ -344,6 +357,63 @@ class _SettingsScreenState extends State<SettingsScreen> {
             value: prefs.showNextAppointment,
             onChanged: (val) {
               final newPrefs = prefs.copyWith(showNextAppointment: val);
+              context.read<SettingsBloc>().add(
+                UpdateDashboardPreferences(newPrefs),
+              );
+            },
+          ),
+          const Divider(
+            height: 1,
+            indent: 20,
+            endIndent: 20,
+            color: Color(0xFFF1F5F9),
+          ),
+          _buildToggle(
+            title: 'Agendamentos Pendentes',
+            subtitle: 'Exibir sessões passadas que ainda não foram marcadas como concluídas.',
+            icon: Icons.history_rounded,
+            color: Colors.amber,
+            value: prefs.showPastPending,
+            onChanged: (val) {
+              final newPrefs = prefs.copyWith(showPastPending: val);
+              context.read<SettingsBloc>().add(
+                UpdateDashboardPreferences(newPrefs),
+              );
+            },
+          ),
+          const Divider(
+            height: 1,
+            indent: 20,
+            endIndent: 20,
+            color: Color(0xFFF1F5F9),
+          ),
+          _buildToggle(
+            title: 'Aniversariantes',
+            subtitle: 'Exibir lista de pacientes que fazem aniversário no mês atual.',
+            icon: Icons.cake_rounded,
+            color: Colors.pink,
+            value: prefs.showBirthdays,
+            onChanged: (val) {
+              final newPrefs = prefs.copyWith(showBirthdays: val);
+              context.read<SettingsBloc>().add(
+                UpdateDashboardPreferences(newPrefs),
+              );
+            },
+          ),
+          const Divider(
+            height: 1,
+            indent: 20,
+            endIndent: 20,
+            color: Color(0xFFF1F5F9),
+          ),
+          _buildToggle(
+            title: 'Gráfico de Ocupação',
+            subtitle: 'Visualizar horários de maior movimento na clínica.',
+            icon: Icons.bar_chart_rounded,
+            color: Colors.teal,
+            value: prefs.showOccupancyChart,
+            onChanged: (val) {
+              final newPrefs = prefs.copyWith(showOccupancyChart: val);
               context.read<SettingsBloc>().add(
                 UpdateDashboardPreferences(newPrefs),
               );

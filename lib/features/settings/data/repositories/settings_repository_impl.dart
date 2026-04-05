@@ -65,7 +65,7 @@ class SettingsRepositoryImpl implements ISettingsRepository {
   }
 
   @override
-  Future<void> updateDashboardPreferences(
+  Future<DashboardPreferences> updateDashboardPreferences(
     DashboardPreferences preferences,
   ) async {
     return await remoteDataSource.updateDashboardPreferences(preferences);

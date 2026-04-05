@@ -6,6 +6,7 @@ import 'package:physigest/core/theme/app_theme.dart';
 import 'package:physigest/features/auth/presentation/bloc/forgot_password/forgot_password_bloc.dart';
 import 'package:physigest/features/auth/presentation/bloc/forgot_password/forgot_password_event.dart';
 import 'package:physigest/features/auth/presentation/bloc/forgot_password/forgot_password_state.dart';
+import 'package:physigest/core/utils/app_alerts.dart';
 
 class ForgotPasswordScreen extends StatelessWidget {
   const ForgotPasswordScreen({super.key});
@@ -45,22 +46,10 @@ class ForgotPasswordView extends StatelessWidget {
         child: BlocListener<ForgotPasswordBloc, ForgotPasswordState>(
           listener: (context, state) {
             if (state.status == ForgotPasswordStatus.success) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Link de recuperação enviado com sucesso!'),
-                  behavior: SnackBarBehavior.floating,
-                  backgroundColor: Color(0xFF10B981), // Success Green
-                ),
-              );
+              AppAlerts.success(context, 'Link de recuperação enviado com sucesso!');
               context.pop();
             } else if (state.status == ForgotPasswordStatus.failure) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(state.errorMessage),
-                  behavior: SnackBarBehavior.floating,
-                  backgroundColor: Colors.redAccent,
-                ),
-              );
+              AppAlerts.error(context, state.errorMessage);
             }
           },
           child: Center(
@@ -187,6 +176,7 @@ class ForgotPasswordView extends StatelessWidget {
                       const SizedBox(height: 24),
 
                       // VOLTAR PARA LOGIN
+                      // VOLTAR PARA LOGIN
                       TextButton(
                         onPressed: () => context.pop(),
                         child: Text(
@@ -198,6 +188,7 @@ class ForgotPasswordView extends StatelessWidget {
                           ),
                         ),
                       ),
+                      _buildFooter(),
                     ],
                   ),
                 ),
@@ -205,6 +196,32 @@ class ForgotPasswordView extends StatelessWidget {
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildFooter() {
+    return const Padding(
+      padding: EdgeInsets.symmetric(vertical: 32.0),
+      child: Column(
+        children: [
+          Text(
+            'PhysiGest v1.0.0',
+            style: TextStyle(
+              color: Colors.black26,
+              fontSize: 12,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          SizedBox(height: 4),
+          Text(
+            '© 2026 PhysiGest. Todos os direitos reservados.',
+            style: TextStyle(
+              color: Colors.black12,
+              fontSize: 10,
+            ),
+          ),
+        ],
       ),
     );
   }

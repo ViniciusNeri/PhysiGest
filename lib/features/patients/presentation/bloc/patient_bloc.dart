@@ -33,7 +33,11 @@ class PatientBloc extends Bloc<PatientEvent, PatientState> {
     try {
       final patients = await _getPatientsUseCase();
       emit(
-        state.copyWith(status: PatientStatus.success, patients: patients),
+        state.copyWith(
+          status: PatientStatus.success, 
+          patients: patients,
+          successMessage: null,
+        ),
       );
     } catch (e) {
       emit(
@@ -52,6 +56,7 @@ class PatientBloc extends Bloc<PatientEvent, PatientState> {
       emit(state.copyWith(
         status: PatientStatus.success,
         patients: List.of(state.patients)..add(newPatient),
+        successMessage: 'Paciente adicionado com sucesso!',
       ));
     } catch (e) {
       emit(state.copyWith(

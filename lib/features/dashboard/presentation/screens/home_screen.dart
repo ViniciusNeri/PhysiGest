@@ -12,8 +12,11 @@ import 'package:physigest/features/schedule/presentation/widgets/appointment_act
 import 'package:physigest/core/storage/local_storage.dart';
 import 'package:physigest/features/settings/presentation/bloc/settings/settings_bloc.dart';
 import 'package:physigest/features/settings/presentation/bloc/settings/settings_state.dart';
+import 'package:physigest/core/utils/app_alerts.dart';
+import 'package:physigest/core/widgets/loading_overlay.dart';
 import 'package:intl/intl.dart';
 import 'package:physigest/core/widgets/app_error_view.dart';
+import 'package:fl_chart/fl_chart.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -27,16 +30,16 @@ class HomeScreen extends StatelessWidget {
   }
 }
 
+// Paleta Premium
+const Color primary = Color(0xFF4F46E5);
+const Color success = Color(0xFF10B981);
+const Color warning = Color(0xFFF59E0B);
+const Color info = Color(0xFF0EA5E9);
+const Color danger = Color(0xFFEF4444);
+const Color bg = Color(0xFFF8FAFC);
+
 class HomeView extends StatelessWidget {
   const HomeView({super.key});
-
-  // Paleta Premium
-  static const Color primary = Color(0xFF4F46E5);
-  static const Color success = Color(0xFF10B981);
-  static const Color warning = Color(0xFFF59E0B);
-  static const Color info = Color(0xFF0EA5E9);
-  static const Color danger = Color(0xFFEF4444);
-  static const Color bg = Color(0xFFF8FAFC);
 
   @override
   Widget build(BuildContext context) {
@@ -56,30 +59,40 @@ class HomeView extends StatelessWidget {
           "Painel de Gestão",
           style: TextStyle(
             color: Color(0xFF1E293B),
-            fontWeight: FontWeight.w800,
-            fontSize: 18,
           ),
         ),
-      ),
-      body: BlocBuilder<SettingsBloc, SettingsState>(
-        builder: (context, settingsState) {
-          bool showWeekly = true;
-          bool showIncome = true;
-          bool showPayments = true;
-          bool showNext = true;
-
-          if (settingsState is SettingsLoaded) {
-            final prefs = settingsState.dashboardPreferences;
-            showWeekly = prefs.showWeeklyAppointments;
-            showIncome = prefs.showMonthlyIncome;
-            showPayments = prefs.showActivePayments;
-            showNext = prefs.showNextAppointment;
+      ),      body: BlocConsumer<DashboardBloc, DashboardState>(
+        listener: (context, state) {
+          if (state.status == DashboardStatus.failure && state.errorMessage != null) {
+            AppAlerts.error(context, state.errorMessage!);
+          } else if (state.successMessage != null) {
+            AppAlerts.success(context, state.successMessage!);
           }
+        },
+        builder: (context, state) {
+          return BlocBuilder<SettingsBloc, SettingsState>(
+            builder: (context, settingsState) {
+              bool showWeekly = true;
+              bool showIncome = true;
+              bool showPayments = true;
+              bool showNext = true;
+              bool showPastPending = true;
+              bool showBirthdays = true;
+              bool showOccupancyChart = true;
 
-          return BlocBuilder<DashboardBloc, DashboardState>(
-            builder: (context, state) {
-              // --- ESTADO DE CARREGAMENTO (SKELETON) ---
-              if (state is DashboardLoading) {
+              if (settingsState is SettingsLoaded) {
+                final prefs = settingsState.dashboardPreferences;
+                showWeekly = prefs.showWeeklyAppointments;
+                showIncome = prefs.showMonthlyIncome;
+                showPayments = prefs.showActivePayments;
+                showNext = prefs.showNextAppointment;
+                showPastPending = prefs.showPastPending;
+                showBirthdays = prefs.showBirthdays;
+                showOccupancyChart = prefs.showOccupancyChart;
+              }
+
+              // --- ESTADO DE CARREGAMENTO INICIAL (SKELETON) ---
+              if (state.status == DashboardStatus.loading && state.todaysAppointments.isEmpty) {
                 return SingleChildScrollView(
                   padding: EdgeInsets.symmetric(
                     horizontal: horizontalPadding,
@@ -89,12 +102,12 @@ class HomeView extends StatelessWidget {
                 );
               }
 
-              if (state is DashboardError) {
+              if (state.status == DashboardStatus.failure && state.todaysAppointments.isEmpty) {
                 return Center(
                   child: Padding(
                     padding: EdgeInsets.symmetric(horizontal: horizontalPadding, vertical: 60),
                     child: AppErrorView(
-                      message: state.message,
+                      message: state.errorMessage ?? "Erro ao carregar dashboard",
                       onRetry: () => context.read<DashboardBloc>().add(const LoadDashboardData()),
                     ),
                   ),
@@ -102,8 +115,10 @@ class HomeView extends StatelessWidget {
               }
 
               // --- ESTADO CARREGADO ---
-              if (state is DashboardLoaded) {
-                return SingleChildScrollView(
+              return LoadingOverlay(
+                isLoading: state.status == DashboardStatus.loading && state.todaysAppointments.isNotEmpty,
+                message: "Atualizando dados...",
+                child: SingleChildScrollView(
                   padding: EdgeInsets.symmetric(
                     horizontal: horizontalPadding,
                     vertical: 32,
@@ -150,6 +165,7 @@ class HomeView extends StatelessWidget {
                                 state.activePayments.toString(),
                                 Icons.payment_rounded,
                                 danger,
+                                onTap: () => _showPendingPaymentsPopup(context),
                               ),
                           ],
                         ),
@@ -157,29 +173,47 @@ class HomeView extends StatelessWidget {
                       if (showWeekly || showIncome || showPayments)
                         const SizedBox(height: 32),
 
+
                       // Seção Principal: Agenda e Coluna Lateral
                       if (isDesktop)
                         Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            if (showWeekly)
-                              Expanded(
-                                flex: 2,
-                                child: _buildAgendaSection(
-                                  context,
-                                  state.todaysAppointments,
-                                ),
+                            Expanded(
+                              flex: 2,
+                              child: Column(
+                                children: [
+                                  if (showWeekly)
+                                    _buildAgendaSection(
+                                      context,
+                                      state.todaysAppointments,
+                                    ),
+                                  if (showOccupancyChart) ...[
+                                    const SizedBox(height: 24),
+                                    _buildOccupancyChartCard(state.occupancyStats),
+                                  ],
+                                ],
                               ),
-                            if (showWeekly) const SizedBox(width: 24),
+                            ),
+                            const SizedBox(width: 24),
                             Expanded(
                               flex: 1,
                               child: Column(
                                 children: [
-                                    _buildQuickActions(),
+                                  if (showNext) ...[
                                     const SizedBox(height: 24),
                                     _buildNextAppointmentCard(
                                       state.nextAppointment,
                                     ),
+                                  ],
+                                  if (showBirthdays) ...[
+                                    const SizedBox(height: 24),
+                                    _buildBirthdaysCard(state.monthlyBirthdays),
+                                  ],
+                                  if (state.pastPendingAppointments.isNotEmpty) ...[
+                                    const SizedBox(height: 24),
+                                    _buildPastPendingAppointmentsCard(context, state.pastPendingAppointments),
+                                  ],
                                 ],
                               ),
                             ),
@@ -196,18 +230,28 @@ class HomeView extends StatelessWidget {
                               ),
                               const SizedBox(height: 24),
                             ],
-                            _buildQuickActions(),
                             if (showNext) ...[
                               const SizedBox(height: 24),
                               _buildNextAppointmentCard(state.nextAppointment),
+                            ],
+                            if (showOccupancyChart) ...[
+                              const SizedBox(height: 24),
+                              _buildOccupancyChartCard(state.occupancyStats),
+                            ],
+                            if (showBirthdays) ...[
+                              const SizedBox(height: 24),
+                              _buildBirthdaysCard(state.monthlyBirthdays),
+                            ],
+                            if (state.pastPendingAppointments.isNotEmpty) ...[
+                              const SizedBox(height: 24),
+                              _buildPastPendingAppointmentsCard(context, state.pastPendingAppointments),
                             ],
                           ],
                         ),
                     ],
                   ),
-                );
-              }
-              return const SizedBox.shrink();
+                ),
+              );
             },
           );
         },
@@ -245,59 +289,512 @@ class HomeView extends StatelessWidget {
     String title,
     String value,
     IconData icon,
-    Color color,
-  ) {
+    Color color, {
+    VoidCallback? onTap,
+  }) {
     double cardWidth = (screenWidth > 1200)
         ? (screenWidth * 0.84 - 80) / 4
         : (screenWidth > 700 ? (screenWidth - 60) / 2 : screenWidth - 40);
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(20),
+      child: Container(
+        width: cardWidth,
+        height: 120,
+        decoration: BoxDecoration(
+          color: color,
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: color.withValues(alpha: 0.2),
+              blurRadius: 15,
+              offset: const Offset(0, 8),
+            ),
+          ],
+        ),
+        child: Stack(
+          children: [
+            Positioned(
+              right: -10,
+              bottom: -10,
+              child:
+                  Icon(icon, size: 70, color: Colors.white.withValues(alpha: 0.1)),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    value,
+                    style: const TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      color: Colors.white70,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+
+  Widget _buildOccupancyChartCard(Map<int, int> stats) {
     return Container(
-      width: cardWidth,
-      height: 120,
+      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: color,
-        borderRadius: BorderRadius.circular(20),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
         boxShadow: [
-          BoxShadow(
-            color: color.withValues(alpha: 0.2),
-            blurRadius: 15,
-            offset: const Offset(0, 8),
-          ),
+          BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 20),
         ],
       ),
-      child: Stack(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Positioned(
-            right: -10,
-            bottom: -10,
-            child: Icon(icon, size: 70, color: Colors.white.withValues(alpha: 0.1)),
+          const Text(
+            "Ocupação por Horário",
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
-          Padding(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  value,
-                  style: const TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
+          const SizedBox(height: 32),
+          SizedBox(
+            height: 200,
+            child: BarChart(
+              BarChartData(
+                alignment: BarChartAlignment.spaceAround,
+                maxY: 10,
+                barTouchData: BarTouchData(enabled: true),
+                titlesData: FlTitlesData(
+                  show: true,
+                  bottomTitles: AxisTitles(
+                    sideTitles: SideTitles(
+                      showTitles: true,
+                      getTitlesWidget: (value, meta) {
+                        return Padding(
+                          padding: const EdgeInsets.only(top: 8.0),
+                          child: Text(
+                            "${value.toInt()}h",
+                            style: const TextStyle(color: Colors.grey, fontSize: 10),
+                          ),
+                        );
+                      },
+                      reservedSize: 30,
+                    ),
                   ),
+                  leftTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                  topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                  rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
                 ),
-                Text(
-                  title,
-                  style: const TextStyle(
-                    color: Colors.white70,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ],
+                gridData: const FlGridData(show: false),
+                borderData: FlBorderData(show: false),
+                barGroups: stats.entries.map((e) {
+                  return BarChartGroupData(
+                    x: e.key,
+                    barRods: [
+                      BarChartRodData(
+                        toY: e.value.toDouble(),
+                        color: info,
+                        width: 16,
+                        borderRadius: const BorderRadius.vertical(top: Radius.circular(4)),
+                      ),
+                    ],
+                  );
+                }).toList(),
+              ),
             ),
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildBirthdaysCard(List<Map<String, dynamic>> birthdays) {
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFF8B5CF6), Color(0xFF6D28D9)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF6D28D9).withValues(alpha: 0.2),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "Aniversariantes",
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w900,
+                      color: Colors.white,
+                    ),
+                  ),
+                  Text(
+                    "Pacientes celebrando este mês",
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.white70,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+              Icon(Icons.cake_rounded, color: Colors.white.withValues(alpha: 0.3), size: 24),
+            ],
+          ),
+          const SizedBox(height: 24),
+          if (birthdays.isEmpty)
+            const Center(
+              child: Padding(
+                padding: EdgeInsets.symmetric(vertical: 20),
+                child: Text(
+                  "Nenhum aniversariante este mês",
+                  style: TextStyle(color: Colors.white60, fontSize: 13),
+                ),
+              ),
+            )
+          else
+            ...birthdays.map((b) => Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: Row(
+                    children: [
+                      CircleAvatar(
+                        radius: 20,
+                        backgroundColor: Colors.white.withValues(alpha: 0.2),
+                        backgroundImage: NetworkImage(b['photo'] ?? ''),
+                        onBackgroundImageError: (e, s) {},
+                        child: const Icon(Icons.person_outline, size: 20, color: Colors.white70),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              b['name'],
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 14,
+                                color: Colors.white,
+                              ),
+                            ),
+                            Text(
+                              "Dia ${b['day']}",
+                              style: const TextStyle(
+                                fontSize: 12,
+                                color: Colors.white70,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const Icon(
+                        Icons.celebration_rounded,
+                        color: Colors.white,
+                        size: 16,
+                      ),
+                    ],
+                  ),
+                )),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPastPendingAppointmentsCard(BuildContext context, List<Appointment> appointments) {
+    final list = appointments.take(5).toList(); // Limite visual
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: danger.withValues(alpha: 0.2), width: 1.5),
+        boxShadow: [
+          BoxShadow(
+            color: danger.withValues(alpha: 0.05),
+            blurRadius: 20,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: danger.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(Icons.warning_amber_rounded, color: danger, size: 20),
+              ),
+              const SizedBox(width: 12),
+              const Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      "Baixa Pendente",
+                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: danger),
+                    ),
+                    Text(
+                      "Agendados em dias passados",
+                      style: TextStyle(fontSize: 12, color: Colors.black54),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 24),
+          ...list.map((apt) => _buildAppointmentItem(context, apt)),
+          if (appointments.length > 5)
+            Padding(
+              padding: const EdgeInsets.only(top: 8),
+              child: Center(
+                child: Text(
+                  "E mais ${appointments.length - 5} pendentes...",
+                  style: const TextStyle(color: Colors.black45, fontSize: 13, fontStyle: FontStyle.italic),
+                ),
+              ),
+            )
+        ],
+      ),
+    );
+  }
+
+  void _showPendingPaymentsPopup(BuildContext context) {
+    showGeneralDialog(
+      context: context,
+      barrierDismissible: true,
+      barrierLabel: "PendingPayments",
+      barrierColor: Colors.black.withValues(alpha: 0.15),
+      transitionDuration: const Duration(milliseconds: 300),
+      pageBuilder: (context, anim1, anim2) {
+        return Center(
+          child: Material(
+            color: Colors.transparent,
+            child: Container(
+              width: 550,
+              height: 600,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(32),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.1),
+                    blurRadius: 40,
+                    offset: const Offset(0, 20),
+                  ),
+                ],
+              ),
+              child: Column(
+                children: [
+                  // HEADER
+                  Container(
+                    padding: const EdgeInsets.fromLTRB(32, 32, 24, 24),
+                    child: Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: danger.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: const Icon(Icons.payment_rounded, color: danger),
+                        ),
+                        const SizedBox(width: 20),
+                        const Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                "Pagamentos Pendentes",
+                                style: TextStyle(
+                                  fontSize: 22,
+                                  fontWeight: FontWeight.w900,
+                                  color: Color(0xFF0F172A),
+                                  letterSpacing: -0.5,
+                                ),
+                              ),
+                              Text(
+                                "Total de 5 faturas em atraso",
+                                style: TextStyle(
+                                  color: Colors.black45,
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        IconButton(
+                          onPressed: () => Navigator.pop(context),
+                          icon: const Icon(Icons.close_rounded, color: Colors.black26),
+                          splashRadius: 24,
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  // SEARCH BAR
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 32),
+                    child: TextField(
+                      decoration: InputDecoration(
+                        hintText: "Buscar paciente ou fatura...",
+                        prefixIcon: const Icon(Icons.search_rounded, size: 20, color: Colors.black26),
+                        filled: true,
+                        fillColor: const Color(0xFFF8FAFC),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(16),
+                          borderSide: BorderSide.none,
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(vertical: 0, horizontal: 16),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+
+                  // PAYMENTS LIST
+                  Expanded(
+                    child: ListView.separated(
+                      padding: const EdgeInsets.symmetric(horizontal: 32),
+                      physics: const BouncingScrollPhysics(),
+                      itemCount: 5,
+                      separatorBuilder: (_, __) => const SizedBox(height: 12),
+                      itemBuilder: (context, index) {
+                        final names = ["Julia Fernandes", "Ricardo Gomes", "Beatriz Lima", "Sonia Amaral", "Luiz Carlos"];
+                        final values = [150.0, 320.0, 90.0, 450.0, 120.0];
+                        final dates = ["12 Mar", "15 Mar", "20 Mar", "22 Mar", "25 Mar"];
+                        
+                        return Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFF8FAFC),
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(color: Colors.black.withValues(alpha: 0.05)),
+                          ),
+                          child: Row(
+                            children: [
+                              CircleAvatar(
+                                radius: 22,
+                                backgroundColor: Colors.white,
+                                child: Text(
+                                  names[index][0],
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.w900,
+                                    color: danger,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 16),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      names[index],
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.w800,
+                                        fontSize: 15,
+                                        color: Color(0xFF1E293B),
+                                      ),
+                                    ),
+                                    Text(
+                                      "Vencimento: ${dates[index]}",
+                                      style: const TextStyle(
+                                        fontSize: 12,
+                                        color: Colors.black38,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.end,
+                                children: [
+                                  Text(
+                                    CurrencyFormatter.format(values[index]),
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.w900,
+                                      fontSize: 16,
+                                      color: danger,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                    decoration: BoxDecoration(
+                                      color: danger.withValues(alpha: 0.1),
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: const Text(
+                                      "Cobrar",
+                                      style: TextStyle(
+                                        color: danger,
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.w800,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+      transitionBuilder: (context, anim1, anim2, child) {
+        return FadeTransition(
+          opacity: anim1,
+          child: ScaleTransition(
+            scale: Tween<double>(begin: 0.9, end: 1.0).animate(CurvedAnimation(
+              parent: anim1,
+              curve: Curves.easeOutBack,
+            )),
+            child: child,
+          ),
+        );
+      },
     );
   }
 
@@ -339,97 +836,6 @@ class HomeView extends StatelessWidget {
     );
   }
 
-  Widget _buildQuickActions() {
-    return Container(
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(24),
-        boxShadow: [
-          BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 20),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            "Ações Rápidas",
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 20),
-          GridView.count(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            crossAxisCount: 2,
-            mainAxisSpacing: 12,
-            crossAxisSpacing: 12,
-            childAspectRatio: 1.4,
-            children: [
-              _buildAnimatedActionCard(
-                Icons.person_add_rounded,
-                "Paciente",
-                primary,
-              ),
-              _buildAnimatedActionCard(
-                Icons.receipt_long_rounded,
-                "Receita",
-                success,
-              ),
-              _buildAnimatedActionCard(
-                Icons.event_available_rounded,
-                "Agenda",
-                info,
-              ),
-              _buildAnimatedActionCard(
-                Icons.bar_chart_rounded,
-                "Relatório",
-                warning,
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildAnimatedActionCard(IconData icon, String label, Color color) {
-    return StatefulBuilder(
-      builder: (context, setState) {
-        bool isPressed = false;
-        return GestureDetector(
-          onTapDown: (_) => setState(() => isPressed = true),
-          onTapUp: (_) => setState(() => isPressed = false),
-          onTapCancel: () => setState(() => isPressed = false),
-          child: AnimatedScale(
-            scale: isPressed ? 0.92 : 1.0,
-            duration: const Duration(milliseconds: 100),
-            child: Container(
-              decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.08),
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: color.withValues(alpha: 0.1)),
-              ),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(icon, color: color, size: 24),
-                  const SizedBox(height: 6),
-                  Text(
-                    label,
-                    style: TextStyle(
-                      color: color,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 12,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        );
-      },
-    );
-  }
 
   Widget _buildNextAppointmentCard(Appointment? next) {
     if (next == null) {

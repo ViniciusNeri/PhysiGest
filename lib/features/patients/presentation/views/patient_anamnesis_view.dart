@@ -7,6 +7,7 @@ import '../bloc/anamnesis_bloc.dart';
 import '../bloc/anamnesis_event.dart';
 import '../bloc/anamnesis_state.dart';
 import 'package:physigest/core/widgets/app_error_view.dart';
+import 'package:physigest/core/utils/app_alerts.dart';
 
 class PatientAnamnesisView extends StatefulWidget {
   final Patient patient;
@@ -144,24 +145,10 @@ class _PatientAnamnesisViewState extends State<PatientAnamnesisView> {
             _updateControllers(state.anamnesis!);
           }
           if (state.status == AnamnesisStatus.saveSuccess) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: const Text("A Anamnese foi salva com sucesso!"),
-                backgroundColor: Colors.green.shade800,
-                behavior: SnackBarBehavior.floating,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-              ),
-            );
+            AppAlerts.success(context, state.successMessage ?? "A Anamnese foi salva com sucesso!");
           }
           if (state.status == AnamnesisStatus.failure && state.errorMessage != null) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(state.errorMessage!),
-                backgroundColor: Colors.red.shade800,
-                behavior: SnackBarBehavior.floating,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-              ),
-            );
+            AppAlerts.error(context, state.errorMessage!);
           }
         },
         builder: (context, state) {

@@ -93,6 +93,7 @@ class ExerciseBloc extends Bloc<ExerciseEvent, ExerciseState> {
           ),
           searchQuery: currentState.searchQuery,
           selectedCategory: currentState.selectedCategory,
+          successMessage: 'Exercício adicionado com sucesso!',
         ),
       );
     }
@@ -112,6 +113,7 @@ class ExerciseBloc extends Bloc<ExerciseEvent, ExerciseState> {
             ),
             searchQuery: currentState.searchQuery,
             selectedCategory: currentState.selectedCategory,
+            successMessage: 'Exercício atualizado com sucesso!',
           ),
         );
       }
@@ -130,6 +132,7 @@ class ExerciseBloc extends Bloc<ExerciseEvent, ExerciseState> {
           ),
           searchQuery: currentState.searchQuery,
           selectedCategory: currentState.selectedCategory,
+          successMessage: 'Exercício removido com sucesso!',
         ),
       );
     }

@@ -2,10 +2,11 @@ import 'package:equatable/equatable.dart';
 import '../../domain/models/exercise.dart';
 
 abstract class ExerciseState extends Equatable {
-  const ExerciseState();
+  final String? successMessage;
+  const ExerciseState({this.successMessage});
 
   @override
-  List<Object?> get props => [];
+  List<Object?> get props => [successMessage];
 }
 
 class ExerciseInitial extends ExerciseState {}
@@ -21,17 +22,20 @@ class ExerciseLoaded extends ExerciseState {
     required this.exercises,
     this.searchQuery,
     this.selectedCategory,
+    super.successMessage,
   });
 
   ExerciseLoaded copyWith({
     List<Exercise>? exercises,
     String? searchQuery,
     String? selectedCategory,
+    String? successMessage,
   }) {
     return ExerciseLoaded(
       exercises: exercises ?? this.exercises,
       searchQuery: searchQuery ?? this.searchQuery,
       selectedCategory: selectedCategory ?? this.selectedCategory,
+      successMessage: successMessage ?? this.successMessage,
     );
   }
 

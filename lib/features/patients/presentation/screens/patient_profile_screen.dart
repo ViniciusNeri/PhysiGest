@@ -16,6 +16,8 @@ import '../views/patient_gallery_view.dart';
 import '../bloc/patient_financial_bloc.dart';
 import '../bloc/patient_financial_event.dart';
 import '../widgets/edit_patient_dialog.dart';
+import 'package:physigest/core/widgets/loading_overlay.dart';
+import 'package:physigest/core/utils/app_alerts.dart';
 
 class PatientProfileScreen extends StatefulWidget {
   final Patient patient;
@@ -39,7 +41,14 @@ class _PatientProfileScreenState extends State<PatientProfileScreen>
   Widget build(BuildContext context) {
     return BlocProvider.value(
       value: getIt<PatientBloc>(),
-      child: BlocBuilder<PatientBloc, PatientState>(
+      child: BlocConsumer<PatientBloc, PatientState>(
+        listener: (context, state) {
+          if (state.status == PatientStatus.failure && state.errorMessage != null) {
+            AppAlerts.error(context, state.errorMessage!);
+          } else if (state.status == PatientStatus.success && state.successMessage != null) {
+            AppAlerts.success(context, state.successMessage!);
+          }
+        },
         builder: (context, state) {
           final p = state.patients.firstWhere(
             (p) => p.id == widget.patient.id,
@@ -47,27 +56,31 @@ class _PatientProfileScreenState extends State<PatientProfileScreen>
           );
           final isDesktop = MediaQuery.of(context).size.width >= 600;
 
-          return Scaffold(
-            backgroundColor: const Color(0xFFF1F5F9),
-            appBar: _buildAppBar(p, isDesktop),
-            body: TabBarView(
-              controller: _tabController,
-              children: [
-                BlocProvider(
-                  create: (context) => getIt<PatientActivitiesBloc>()
-                    ..add(LoadPatientActivities(p.id)),
-                  child: PatientSummaryView(patient: p),
-                ),
-                PatientAgendaView(patient: p),
-                PatientAnamnesisView(patient: p),
-                BlocProvider(
-                  create: (context) => getIt<PatientFinancialBloc>()
-                    ..add(LoadFinancialSummary(p.id)),
-                  child: PatientFinanceView(patient: p),
-                ),
-                const Center(child: Text("Anexos em breve")),
-                PatientGalleryView(patient: p),
-              ],
+          return LoadingOverlay(
+            isLoading: state.status == PatientStatus.loading,
+            message: "Salvando...",
+            child: Scaffold(
+              backgroundColor: const Color(0xFFF1F5F9),
+              appBar: _buildAppBar(p, isDesktop),
+              body: TabBarView(
+                controller: _tabController,
+                children: [
+                  BlocProvider(
+                    create: (context) => getIt<PatientActivitiesBloc>()
+                      ..add(LoadPatientActivities(p.id)),
+                    child: PatientSummaryView(patient: p),
+                  ),
+                  PatientAgendaView(patient: p),
+                  PatientAnamnesisView(patient: p),
+                  BlocProvider(
+                    create: (context) => getIt<PatientFinancialBloc>()
+                      ..add(LoadFinancialSummary(p.id)),
+                    child: PatientFinanceView(patient: p),
+                  ),
+                  const Center(child: Text("Anexos em breve")),
+                  PatientGalleryView(patient: p),
+                ],
+              ),
             ),
           );
         },

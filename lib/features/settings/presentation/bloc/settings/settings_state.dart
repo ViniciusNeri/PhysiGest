@@ -4,10 +4,11 @@ import 'package:physigest/features/settings/domain/entities/payment_method.dart'
 import 'package:physigest/features/settings/domain/entities/dashboard_preferences.dart';
 
 abstract class SettingsState extends Equatable {
-  const SettingsState();
+  final String? successMessage;
+  const SettingsState({this.successMessage});
 
   @override
-  List<Object?> get props => [];
+  List<Object?> get props => [successMessage];
 }
 
 class SettingsInitial extends SettingsState {}
@@ -25,6 +26,7 @@ class SettingsLoaded extends SettingsState {
     required this.categories,
     required this.paymentMethods,
     required this.dashboardPreferences,
+    super.successMessage,
   });
 
   SettingsLoaded copyWith({
@@ -32,12 +34,14 @@ class SettingsLoaded extends SettingsState {
     List<AttendanceCategory>? categories,
     List<PaymentMethod>? paymentMethods,
     DashboardPreferences? dashboardPreferences,
+    String? successMessage,
   }) {
     return SettingsLoaded(
       userEmail: userEmail ?? this.userEmail,
       categories: categories ?? this.categories,
       paymentMethods: paymentMethods ?? this.paymentMethods,
       dashboardPreferences: dashboardPreferences ?? this.dashboardPreferences,
+      successMessage: successMessage ?? this.successMessage,
     );
   }
 

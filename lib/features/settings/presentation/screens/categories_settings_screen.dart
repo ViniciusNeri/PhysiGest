@@ -6,6 +6,7 @@ import 'package:physigest/features/settings/presentation/bloc/settings/settings_
 import 'package:physigest/features/settings/presentation/bloc/settings/settings_event.dart';
 import 'package:physigest/features/settings/presentation/bloc/settings/settings_state.dart';
 import 'package:physigest/core/widgets/app_error_view.dart';
+import 'package:physigest/core/utils/app_alerts.dart';
 
 class CategoriesSettingsScreen extends StatelessWidget {
   const CategoriesSettingsScreen({super.key});
@@ -27,35 +28,44 @@ class CategoriesSettingsScreen extends StatelessWidget {
         centerTitle: false,
         iconTheme: const IconThemeData(color: Color(0xFF0F172A)),
       ),
-      body: BlocBuilder<SettingsBloc, SettingsState>(
-        builder: (context, state) {
+      body: BlocListener<SettingsBloc, SettingsState>(
+        listener: (context, state) {
           if (state is SettingsError) {
-            return AppErrorView(
-              message: state.message,
-              onRetry: () => context.read<SettingsBloc>().add(LoadSettings()),
-            );
+            AppAlerts.error(context, state.message);
+          } else if (state.successMessage != null) {
+            AppAlerts.success(context, state.successMessage!);
           }
-
-          if (state is SettingsLoaded) {
-            final categories = state.categories;
-
-            if (categories.isEmpty) {
-              return const Center(child: Text('Nenhuma categoria cadastrada.'));
+        },
+        child: BlocBuilder<SettingsBloc, SettingsState>(
+          builder: (context, state) {
+            if (state is SettingsError) {
+              return AppErrorView(
+                message: state.message,
+                onRetry: () => context.read<SettingsBloc>().add(LoadSettings()),
+              );
             }
 
-            return ListView.separated(
-              padding: const EdgeInsets.all(16),
-              itemCount: categories.length,
-              separatorBuilder: (_, _) => const SizedBox(height: 12),
-              itemBuilder: (context, index) {
-                final category = categories[index];
-                return _CategoryTile(category: category);
-              },
-            );
-          }
+            if (state is SettingsLoaded) {
+              final categories = state.categories;
 
-          return const Center(child: CircularProgressIndicator());
-        },
+              if (categories.isEmpty) {
+                return const Center(child: Text('Nenhuma categoria cadastrada.'));
+              }
+
+              return ListView.separated(
+                padding: const EdgeInsets.all(16),
+                itemCount: categories.length,
+                separatorBuilder: (_, _) => const SizedBox(height: 12),
+                itemBuilder: (context, index) {
+                  final category = categories[index];
+                  return _CategoryTile(category: category);
+                },
+              );
+            }
+
+            return const Center(child: CircularProgressIndicator());
+          },
+        ),
       ),
       floatingActionButton: FloatingActionButton(
         backgroundColor: AppTheme.primaryColor,
