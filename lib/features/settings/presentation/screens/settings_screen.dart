@@ -7,6 +7,7 @@ import '../../../../core/widgets/side_menu.dart';
 import '../bloc/settings/settings_bloc.dart';
 import '../bloc/settings/settings_event.dart';
 import '../bloc/settings/settings_state.dart';
+import 'package:physigest/core/widgets/app_error_view.dart';
 import 'change_password_dialog.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -49,11 +50,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
           }
 
           if (state is SettingsError) {
-            return Center(
-              child: Text(
-                state.message,
-                style: const TextStyle(color: Colors.red),
-              ),
+            return AppErrorView(
+              message: state.message,
+              onRetry: () => context.read<SettingsBloc>().add(LoadSettings()),
             );
           }
 
@@ -113,7 +112,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -122,7 +121,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
       child: Column(
         children: [
           ListTile(
-            contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 20,
+              vertical: 8,
+            ),
             leading: _buildIconFrame(Icons.email_rounded, Colors.blue),
             title: const Text(
               'Estou logado como',
@@ -137,21 +139,38 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
             ),
           ),
-          const Divider(height: 1, indent: 20, endIndent: 20, color: Color(0xFFF1F5F9)),
+          const Divider(
+            height: 1,
+            indent: 20,
+            endIndent: 20,
+            color: Color(0xFFF1F5F9),
+          ),
           ListTile(
-            contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 20,
+              vertical: 8,
+            ),
             leading: _buildIconFrame(Icons.password_rounded, Colors.purple),
             title: const Text(
               'Senha de acesso',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Color(0xFF0F172A)),
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFF0F172A),
+              ),
             ),
             trailing: ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppTheme.primaryColor.withOpacity(0.1),
+                backgroundColor: AppTheme.primaryColor.withValues(alpha: 0.1),
                 foregroundColor: AppTheme.primaryColor,
                 elevation: 0,
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 10,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
               ),
               onPressed: () {
                 showDialog(
@@ -159,7 +178,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   builder: (_) => const ChangePasswordDialog(),
                 );
               },
-              child: const Text('Trocar Senha', style: TextStyle(fontWeight: FontWeight.w600)),
+              child: const Text(
+                'Trocar Senha',
+                style: TextStyle(fontWeight: FontWeight.w600),
+              ),
             ),
           ),
         ],
@@ -174,7 +196,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -183,26 +205,51 @@ class _SettingsScreenState extends State<SettingsScreen> {
       child: Column(
         children: [
           ListTile(
-            contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 20,
+              vertical: 8,
+            ),
             leading: _buildIconFrame(Icons.category_rounded, Colors.teal),
             title: const Text(
               'Categorias e Serviços Locais',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Color(0xFF0F172A)),
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFF0F172A),
+              ),
             ),
-            trailing: const Icon(Icons.chevron_right_rounded, color: Colors.grey),
+            trailing: const Icon(
+              Icons.chevron_right_rounded,
+              color: Colors.grey,
+            ),
             onTap: () {
               context.go('/settings/categories');
             },
           ),
-          const Divider(height: 1, indent: 20, endIndent: 20, color: Color(0xFFF1F5F9)),
+          const Divider(
+            height: 1,
+            indent: 20,
+            endIndent: 20,
+            color: Color(0xFFF1F5F9),
+          ),
           ListTile(
-            contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 20,
+              vertical: 8,
+            ),
             leading: _buildIconFrame(Icons.payments_rounded, Colors.orange),
             title: const Text(
               'Formas de Pagamento',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Color(0xFF0F172A)),
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFF0F172A),
+              ),
             ),
-            trailing: const Icon(Icons.chevron_right_rounded, color: Colors.grey),
+            trailing: const Icon(
+              Icons.chevron_right_rounded,
+              color: Colors.grey,
+            ),
             onTap: () {
               context.go('/settings/payments');
             },
@@ -212,7 +259,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  Widget _buildDashboardPreferencesCard(BuildContext context, SettingsLoaded state) {
+  Widget _buildDashboardPreferencesCard(
+    BuildContext context,
+    SettingsLoaded state,
+  ) {
     final prefs = state.dashboardPreferences;
 
     return Container(
@@ -221,7 +271,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -230,38 +280,73 @@ class _SettingsScreenState extends State<SettingsScreen> {
       child: Column(
         children: [
           _buildToggle(
-            title: 'Resumo Diário',
-            subtitle: 'Exibir quantidade de atendimentos de hoje e pendências.',
-            icon: Icons.today_rounded,
-            color: Colors.indigo,
-            value: prefs.showDailyAppointments,
-            onChanged: (val) {
-              final newPrefs = prefs.copyWith(showDailyAppointments: val);
-              context.read<SettingsBloc>().add(UpdateDashboardPreferences(newPrefs));
-            },
-          ),
-          const Divider(height: 1, indent: 20, endIndent: 20, color: Color(0xFFF1F5F9)),
-          _buildToggle(
-            title: 'Mensalidades e Pagamentos',
-            subtitle: 'Exibir alertas sobre mensalidades a vencer.',
-            icon: Icons.receipt_long_rounded,
-            color: Colors.red,
-            value: prefs.showPendingPayments,
-            onChanged: (val) {
-              final newPrefs = prefs.copyWith(showPendingPayments: val);
-              context.read<SettingsBloc>().add(UpdateDashboardPreferences(newPrefs));
-            },
-          ),
-          const Divider(height: 1, indent: 20, endIndent: 20, color: Color(0xFFF1F5F9)),
-          _buildToggle(
             title: 'Agenda da Semana',
-            subtitle: 'Exibir a lista dos próximos pacientes da semana.',
+            subtitle: 'Exibir a lista dos próximos pacientes e atendimentos.',
             icon: Icons.calendar_view_week_rounded,
-            color: Colors.blue,
+            color: Colors.indigo,
             value: prefs.showWeeklyAppointments,
             onChanged: (val) {
               final newPrefs = prefs.copyWith(showWeeklyAppointments: val);
-              context.read<SettingsBloc>().add(UpdateDashboardPreferences(newPrefs));
+              context.read<SettingsBloc>().add(
+                UpdateDashboardPreferences(newPrefs),
+              );
+            },
+          ),
+          const Divider(
+            height: 1,
+            indent: 20,
+            endIndent: 20,
+            color: Color(0xFFF1F5F9),
+          ),
+          _buildToggle(
+            title: 'Faturamento Mensal',
+            subtitle: 'Exibir faturamento bruto do mês atual.',
+            icon: Icons.account_balance_wallet_rounded,
+            color: Colors.green,
+            value: prefs.showMonthlyIncome,
+            onChanged: (val) {
+              final newPrefs = prefs.copyWith(showMonthlyIncome: val);
+              context.read<SettingsBloc>().add(
+                UpdateDashboardPreferences(newPrefs),
+              );
+            },
+          ),
+          const Divider(
+            height: 1,
+            indent: 20,
+            endIndent: 20,
+            color: Color(0xFFF1F5F9),
+          ),
+          _buildToggle(
+            title: 'Pagamentos Pendentes',
+            subtitle: 'Exibir quantidade de mensalidades e cobranças pendentes.',
+            icon: Icons.receipt_long_rounded,
+            color: Colors.red,
+            value: prefs.showActivePayments,
+            onChanged: (val) {
+              final newPrefs = prefs.copyWith(showActivePayments: val);
+              context.read<SettingsBloc>().add(
+                UpdateDashboardPreferences(newPrefs),
+              );
+            },
+          ),
+          const Divider(
+            height: 1,
+            indent: 20,
+            endIndent: 20,
+            color: Color(0xFFF1F5F9),
+          ),
+          _buildToggle(
+            title: 'Próxima Consulta',
+            subtitle: 'Destacar o próximo atendimento agendado.',
+            icon: Icons.next_plan_rounded,
+            color: Colors.blue,
+            value: prefs.showNextAppointment,
+            onChanged: (val) {
+              final newPrefs = prefs.copyWith(showNextAppointment: val);
+              context.read<SettingsBloc>().add(
+                UpdateDashboardPreferences(newPrefs),
+              );
             },
           ),
         ],
@@ -282,7 +367,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
       leading: _buildIconFrame(icon, color),
       title: Text(
         title,
-        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Color(0xFF0F172A)),
+        style: const TextStyle(
+          fontSize: 16,
+          fontWeight: FontWeight.w600,
+          color: Color(0xFF0F172A),
+        ),
       ),
       subtitle: Padding(
         padding: const EdgeInsets.only(top: 4.0),
@@ -294,7 +383,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       trailing: Switch(
         value: value,
         onChanged: onChanged,
-        activeColor: AppTheme.primaryColor,
+        activeThumbColor: AppTheme.primaryColor,
       ),
     );
   }
@@ -303,7 +392,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     return Container(
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(10),
       ),
       child: Icon(icon, color: color, size: 22),

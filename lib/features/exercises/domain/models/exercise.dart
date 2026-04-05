@@ -33,7 +33,8 @@ class Exercise {
       videoUrl: videoUrl ?? this.videoUrl,
       thumbnailUrl: thumbnailUrl ?? this.thumbnailUrl,
       category: category ?? this.category,
-      recommendedRepetitions: recommendedRepetitions ?? this.recommendedRepetitions,
+      recommendedRepetitions:
+          recommendedRepetitions ?? this.recommendedRepetitions,
     );
   }
 }

@@ -18,13 +18,17 @@ class PatientGalleryView extends StatelessWidget {
     return LayoutBuilder(
       builder: (context, constraints) {
         final isDesktop = constraints.maxWidth >= 800;
-        final crossAxisCount = isDesktop ? 4 : (constraints.maxWidth >= 400 ? 3 : 2);
+        final crossAxisCount = isDesktop
+            ? 4
+            : (constraints.maxWidth >= 400 ? 3 : 2);
 
         return Column(
           children: [
             Expanded(
               child: patient.photoPaths.isEmpty
-                  ? const Center(child: Text("Nenhuma foto de evolução cadastrada"))
+                  ? const Center(
+                      child: Text("Nenhuma foto de evolução cadastrada"),
+                    )
                   : GridView.builder(
                       padding: EdgeInsets.all(isDesktop ? 24 : 16),
                       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
@@ -35,7 +39,10 @@ class PatientGalleryView extends StatelessWidget {
                       itemCount: patient.photoPaths.length,
                       itemBuilder: (context, index) => ClipRRect(
                         borderRadius: BorderRadius.circular(12),
-                        child: Image.file(File(patient.photoPaths[index]), fit: BoxFit.cover),
+                        child: Image.file(
+                          File(patient.photoPaths[index]),
+                          fit: BoxFit.cover,
+                        ),
                       ),
                     ),
             ),
@@ -43,9 +50,13 @@ class PatientGalleryView extends StatelessWidget {
               padding: EdgeInsets.all(isDesktop ? 24 : 16),
               child: ElevatedButton.icon(
                 onPressed: () async {
-                  final XFile? image = await _picker.pickImage(source: ImageSource.camera);
+                  final XFile? image = await _picker.pickImage(
+                    source: ImageSource.camera,
+                  );
                   if (image != null && context.mounted) {
-                    context.read<PatientBloc>().add(AddPhotoToPatient(patient.id, image.path));
+                    context.read<PatientBloc>().add(
+                      AddPhotoToPatient(patient.id, image.path),
+                    );
                   }
                 },
                 icon: const Icon(Icons.camera_alt),

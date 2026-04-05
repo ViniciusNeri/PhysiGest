@@ -15,7 +15,7 @@ class AuthInterceptor extends Interceptor {
   ) async {
     // Busca o token do armazenamento local
     final token = await _localStorage.getToken();
-    
+
     // Se existir um token, injeta no header
     if (token != null && token.isNotEmpty) {
       options.headers['Authorization'] = 'Bearer $token';

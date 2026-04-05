@@ -5,6 +5,7 @@ import 'package:physigest/features/settings/domain/entities/attendance_category.
 import 'package:physigest/features/settings/presentation/bloc/settings/settings_bloc.dart';
 import 'package:physigest/features/settings/presentation/bloc/settings/settings_event.dart';
 import 'package:physigest/features/settings/presentation/bloc/settings/settings_state.dart';
+import 'package:physigest/core/widgets/app_error_view.dart';
 
 class CategoriesSettingsScreen extends StatelessWidget {
   const CategoriesSettingsScreen({super.key});
@@ -16,7 +17,10 @@ class CategoriesSettingsScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Text(
           'Categorias',
-          style: TextStyle(fontWeight: FontWeight.w800, color: Color(0xFF0F172A)),
+          style: TextStyle(
+            fontWeight: FontWeight.w800,
+            color: Color(0xFF0F172A),
+          ),
         ),
         backgroundColor: Colors.white,
         elevation: 0,
@@ -25,6 +29,13 @@ class CategoriesSettingsScreen extends StatelessWidget {
       ),
       body: BlocBuilder<SettingsBloc, SettingsState>(
         builder: (context, state) {
+          if (state is SettingsError) {
+            return AppErrorView(
+              message: state.message,
+              onRetry: () => context.read<SettingsBloc>().add(LoadSettings()),
+            );
+          }
+
           if (state is SettingsLoaded) {
             final categories = state.categories;
 
@@ -35,13 +46,14 @@ class CategoriesSettingsScreen extends StatelessWidget {
             return ListView.separated(
               padding: const EdgeInsets.all(16),
               itemCount: categories.length,
-              separatorBuilder: (_, __) => const SizedBox(height: 12),
+              separatorBuilder: (_, _) => const SizedBox(height: 12),
               itemBuilder: (context, index) {
                 final category = categories[index];
                 return _CategoryTile(category: category);
               },
             );
           }
+
           return const Center(child: CircularProgressIndicator());
         },
       ),
@@ -55,13 +67,14 @@ class CategoriesSettingsScreen extends StatelessWidget {
     );
   }
 
-  void _showCategoryDialog(BuildContext context, [AttendanceCategory? category]) {
+  void _showCategoryDialog(
+    BuildContext context, [
+    AttendanceCategory? category,
+  ]) {
     showDialog(
       context: context,
-      builder: (ctx) => _CategoryDialog(
-        category: category,
-        blocContext: context,
-      ),
+      builder: (ctx) =>
+          _CategoryDialog(category: category, blocContext: context),
     );
   }
 }
@@ -79,7 +92,7 @@ class _CategoryTile extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 6,
             offset: const Offset(0, 2),
           ),
@@ -106,7 +119,7 @@ class _CategoryTile extends StatelessWidget {
         ),
         trailing: Switch(
           value: category.isActive,
-          activeColor: AppTheme.primaryColor,
+          activeThumbColor: AppTheme.primaryColor,
           onChanged: (val) {
             final updated = category.copyWith(isActive: val);
             context.read<SettingsBloc>().add(UpdateAttendanceCategory(updated));
@@ -115,10 +128,8 @@ class _CategoryTile extends StatelessWidget {
         onTap: () {
           showDialog(
             context: context,
-            builder: (ctx) => _CategoryDialog(
-              category: category,
-              blocContext: context,
-            ),
+            builder: (ctx) =>
+                _CategoryDialog(category: category, blocContext: context),
           );
         },
       ),
@@ -185,7 +196,9 @@ class _CategoryDialogState extends State<_CategoryDialog> {
                   labelText: 'Nome da Categoria',
                   filled: true,
                   fillColor: Colors.grey.shade50,
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                     borderSide: const BorderSide(color: AppTheme.primaryColor),
@@ -204,27 +217,37 @@ class _CategoryDialogState extends State<_CategoryDialog> {
                 children: [
                   TextButton(
                     onPressed: () => Navigator.of(context).pop(),
-                    child: const Text('Cancelar', style: TextStyle(color: Colors.grey)),
+                    child: const Text(
+                      'Cancelar',
+                      style: TextStyle(color: Colors.grey),
+                    ),
                   ),
                   const SizedBox(width: 8),
                   ElevatedButton(
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppTheme.primaryColor,
                       foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 24,
+                        vertical: 12,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
                     ),
                     onPressed: () {
                       if (_formKey.currentState!.validate()) {
                         final name = _controller.text.trim();
                         if (isEditing) {
                           widget.blocContext.read<SettingsBloc>().add(
-                                UpdateAttendanceCategory(
-                                  widget.category!.copyWith(name: name),
-                                ),
-                              );
+                            UpdateAttendanceCategory(
+                              widget.category!.copyWith(name: name),
+                            ),
+                          );
                         } else {
-                          widget.blocContext.read<SettingsBloc>().add(AddAttendanceCategory(name));
+                          widget.blocContext.read<SettingsBloc>().add(
+                            AddAttendanceCategory(name),
+                          );
                         }
                         Navigator.of(context).pop();
                       }

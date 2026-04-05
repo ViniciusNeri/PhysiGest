@@ -6,6 +6,9 @@ import 'package:physigest/core/theme/app_theme.dart';
 import 'package:physigest/features/auth/presentation/bloc/login/login_bloc.dart';
 import 'package:physigest/features/auth/presentation/bloc/login/login_event.dart';
 import 'package:physigest/features/auth/presentation/bloc/login/login_state.dart';
+import 'package:physigest/core/storage/local_storage.dart';
+import 'package:physigest/features/settings/presentation/bloc/settings/settings_bloc.dart';
+import 'package:physigest/features/settings/presentation/bloc/settings/settings_event.dart';
 
 class LoginScreen extends StatelessWidget {
   const LoginScreen({super.key});
@@ -29,7 +32,6 @@ class LoginView extends StatelessWidget {
     final bool isMobile = width < 600;
 
     return Scaffold(
-      // Fundo com um degradê sutil para profundidade
       body: Container(
         width: double.infinity,
         height: double.infinity,
@@ -39,15 +41,20 @@ class LoginView extends StatelessWidget {
             end: Alignment.bottomRight,
             colors: [
               const Color(0xFFF8FAFC),
-              primary.withOpacity(0.05),
+              primary.withValues(alpha: 0.05),
               const Color(0xFFF1F5F9),
             ],
           ),
         ),
         child: BlocListener<LoginBloc, LoginState>(
-          listener: (context, state) {
-            if (state.status == LoginStatus.success) {
-              context.go('/');
+          listener: (context, state) async {
+            if (state.status == LoginStatus.authenticated &&
+                state.token != null) {
+              await getIt<LocalStorage>().saveToken(state.token!);
+              if (context.mounted) {
+                context.read<SettingsBloc>().add(LoadSettings());
+                context.go('/');
+              }
             } else if (state.status == LoginStatus.failure) {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
@@ -73,7 +80,7 @@ class LoginView extends StatelessWidget {
                     borderRadius: BorderRadius.circular(24),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.04),
+                        color: Colors.black.withValues(alpha: 0.04),
                         blurRadius: 40,
                         offset: const Offset(0, 10),
                       ),
@@ -83,7 +90,6 @@ class LoginView extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      // LOGO E TÍTULO
                       const Icon(
                         Icons.monitor_heart_rounded,
                         size: 64,
@@ -107,29 +113,45 @@ class LoginView extends StatelessWidget {
                       ),
                       const SizedBox(height: 40),
 
-                      // CAMPO E-MAIL
                       _buildLabel('E-mail'),
                       BlocBuilder<LoginBloc, LoginState>(
                         buildWhen: (p, c) => p.email != c.email,
                         builder: (context, state) {
                           return TextField(
-                            onChanged: (v) => context.read<LoginBloc>().add(EmailChanged(v)),
+                            onChanged: (v) =>
+                                context.read<LoginBloc>().add(EmailChanged(v)),
                             keyboardType: TextInputType.emailAddress,
-                            decoration: _inputDecoration('exemplo@email.com', Icons.mail_outline_rounded),
+                            textInputAction: TextInputAction.next,
+                            decoration: _inputDecoration(
+                              'exemplo@email.com',
+                              Icons.mail_outline_rounded,
+                            ),
                           );
                         },
                       ),
                       const SizedBox(height: 20),
 
-                      // CAMPO SENHA
                       _buildLabel('Senha'),
                       BlocBuilder<LoginBloc, LoginState>(
                         buildWhen: (p, c) => p.password != c.password,
                         builder: (context, state) {
                           return TextField(
-                            onChanged: (v) => context.read<LoginBloc>().add(PasswordChanged(v)),
+                            onChanged: (v) => context.read<LoginBloc>().add(
+                              PasswordChanged(v),
+                            ),
                             obscureText: true,
-                            decoration: _inputDecoration('••••••••', Icons.lock_outline_rounded),
+                            textInputAction: TextInputAction.done,
+                            onSubmitted: (v) {
+                              if (state.isValid) {
+                                context.read<LoginBloc>().add(
+                                      const LoginButtonPressed(),
+                                    );
+                              }
+                            },
+                            decoration: _inputDecoration(
+                              '••••••••',
+                              Icons.lock_outline_rounded,
+                            ),
                           );
                         },
                       ),
@@ -139,68 +161,115 @@ class LoginView extends StatelessWidget {
                         child: TextButton(
                           onPressed: () => context.push('/forgot-password'),
                           style: TextButton.styleFrom(foregroundColor: primary),
-                          child: const Text('Esqueceu a senha?', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
+                          child: const Text(
+                            'Esqueceu a senha?',
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
                         ),
                       ),
                       const SizedBox(height: 12),
 
-                      // BOTÃO ENTRAR
+                      // BOTÃO ENTRAR CORRIGIDO
                       BlocBuilder<LoginBloc, LoginState>(
                         builder: (context, state) {
-                          return state.status == LoginStatus.loading
-                              ? const Center(child: CircularProgressIndicator())
-                              : ElevatedButton(
-                                  onPressed: state.isValid
-                                      ? () => context.read<LoginBloc>().add(const LoginButtonPressed())
-                                      : null,
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: primary,
-                                    foregroundColor: Colors.white,
-                                    padding: const EdgeInsets.symmetric(vertical: 18),
-                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                                    elevation: 0,
-                                  ),
-                                  child: const Text('Entrar na conta', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                                );
+                          if (state.status == LoginStatus.loading ||
+                              state.status == LoginStatus.authenticated) {
+                            return const Center(
+                              child: CircularProgressIndicator(),
+                            );
+                          }
+                          return ElevatedButton(
+                            onPressed: state.isValid
+                                ? () => context.read<LoginBloc>().add(
+                                    const LoginButtonPressed(),
+                                  )
+                                : null,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: primary,
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(vertical: 18),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              elevation: 0,
+                            ),
+                            child: const Text(
+                              'Entrar na conta',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
+                            ),
+                          );
                         },
                       ),
                       const SizedBox(height: 32),
 
-                      // DIVISOR
                       Row(
                         children: [
-                          Expanded(child: Divider(color: Colors.grey.withOpacity(0.2))),
+                          Expanded(
+                            child: Divider(color: Colors.grey.withValues(alpha: 0.2)),
+                          ),
                           const Padding(
                             padding: EdgeInsets.symmetric(horizontal: 16),
-                            child: Text('OU', style: TextStyle(color: Colors.black26, fontSize: 12, fontWeight: FontWeight.bold)),
+                            child: Text(
+                              'OU',
+                              style: TextStyle(
+                                color: Colors.black26,
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                           ),
-                          Expanded(child: Divider(color: Colors.grey.withOpacity(0.2))),
+                          Expanded(
+                            child: Divider(color: Colors.grey.withValues(alpha: 0.2)),
+                          ),
                         ],
                       ),
                       const SizedBox(height: 32),
 
-                      // GOOGLE LOGIN
                       OutlinedButton.icon(
-                        onPressed: () => context.read<LoginBloc>().add(const GoogleLoginPressed()),
+                        onPressed: () => context.read<LoginBloc>().add(
+                          const GoogleLoginPressed(),
+                        ),
                         icon: const Icon(Icons.g_mobiledata, size: 28),
-                        label: const Text('Entrar com Google', style: TextStyle(fontWeight: FontWeight.w600, color: Color(0xFF475569))),
+                        label: const Text(
+                          'Entrar com Google',
+                          style: TextStyle(
+                            fontWeight: FontWeight.w600,
+                            color: Color(0xFF475569),
+                          ),
+                        ),
                         style: OutlinedButton.styleFrom(
                           padding: const EdgeInsets.symmetric(vertical: 14),
-                          side: BorderSide(color: Colors.grey.withOpacity(0.2)),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          side: BorderSide(color: Colors.grey.withValues(alpha: 0.2)),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
                         ),
                       ),
                       const SizedBox(height: 32),
 
-                      // RODAPÉ
                       Wrap(
                         alignment: WrapAlignment.center,
                         crossAxisAlignment: WrapCrossAlignment.center,
                         children: [
-                          const Text('Ainda não tem conta?', style: TextStyle(color: Colors.black54)),
+                          const Text(
+                            'Ainda não tem conta?',
+                            style: TextStyle(color: Colors.black54),
+                          ),
                           TextButton(
                             onPressed: () => context.push('/signup'),
-                            child: Text('Comece agora', style: TextStyle(color: primary, fontWeight: FontWeight.bold)),
+                            child: Text(
+                              'Comece agora',
+                              style: TextStyle(
+                                color: primary,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                           ),
                         ],
                       ),
@@ -215,13 +284,16 @@ class LoginView extends StatelessWidget {
     );
   }
 
-  // Helpers para manter o código limpo
   Widget _buildLabel(String text) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 8.0, left: 4),
       child: Text(
         text,
-        style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14, color: Color(0xFF334155)),
+        style: const TextStyle(
+          fontWeight: FontWeight.w700,
+          fontSize: 14,
+          color: Color(0xFF334155),
+        ),
       ),
     );
   }
@@ -235,7 +307,7 @@ class LoginView extends StatelessWidget {
       contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide(color: Colors.grey.withOpacity(0.1)),
+        borderSide: BorderSide(color: Colors.grey.withValues(alpha: 0.1)),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),

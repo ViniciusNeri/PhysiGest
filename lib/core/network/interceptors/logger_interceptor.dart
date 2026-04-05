@@ -9,8 +9,10 @@ class LoggerInterceptor extends Interceptor {
     log('==================== HTTP REQUEST ====================', name: 'DIO');
     log('${options.method.toUpperCase()} ${options.uri}', name: 'DIO');
     if (options.data != null) log('Data: ${options.data}', name: 'DIO');
-    if (options.queryParameters.isNotEmpty) log('QueryParams: ${options.queryParameters}', name: 'DIO');
-    
+    if (options.queryParameters.isNotEmpty) {
+      log('QueryParams: ${options.queryParameters}', name: 'DIO');
+    }
+
     return handler.next(options);
   }
 
@@ -19,17 +21,25 @@ class LoggerInterceptor extends Interceptor {
     log('==================== HTTP RESPONSE ====================', name: 'DIO');
     log('${response.statusCode} ${response.requestOptions.uri}', name: 'DIO');
     log('Data: ${response.data}', name: 'DIO');
-    
+
     return handler.next(response);
   }
 
   @override
   void onError(DioException err, ErrorInterceptorHandler handler) {
-    log('==================== HTTP ERROR ====================', name: 'DIO_ERROR');
-    log('${err.response?.statusCode} ${err.requestOptions.uri}', name: 'DIO_ERROR');
+    log(
+      '==================== HTTP ERROR ====================',
+      name: 'DIO_ERROR',
+    );
+    log(
+      '${err.response?.statusCode} ${err.requestOptions.uri}',
+      name: 'DIO_ERROR',
+    );
     log('Error: ${err.message}', name: 'DIO_ERROR');
-    if (err.response?.data != null) log('Response Data: ${err.response?.data}', name: 'DIO_ERROR');
-    
+    if (err.response?.data != null) {
+      log('Response Data: ${err.response?.data}', name: 'DIO_ERROR');
+    }
+
     return handler.next(err);
   }
 }

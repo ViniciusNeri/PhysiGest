@@ -1,5 +1,12 @@
 import 'package:flutter/material.dart';
-import '../../domain/models/patient.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:physigest/core/di/injection.dart';
+import 'package:physigest/features/patients/domain/models/appointment.dart';
+import 'package:physigest/features/patients/domain/models/patient.dart';
+import 'package:physigest/features/patients/presentation/bloc/agenda_bloc.dart';
+import 'package:physigest/features/patients/presentation/bloc/agenda_event.dart';
+import 'package:physigest/features/patients/presentation/bloc/agenda_state.dart';
+import 'package:physigest/core/widgets/app_error_view.dart';
 
 class PatientAgendaView extends StatelessWidget {
   final Patient patient;
@@ -14,91 +21,159 @@ class PatientAgendaView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final isDesktop = constraints.maxWidth >= 800;
-        return SingleChildScrollView(
-          padding: EdgeInsets.all(isDesktop ? 48 : 16),
-          child: Center(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 1000),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Cabeçalho da Agenda
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        "Agenda do Paciente",
-                        style: TextStyle(fontSize: isDesktop ? 26 : 22, fontWeight: FontWeight.w900, color: textMain),
-                      ),
-                      ElevatedButton.icon(
-                        onPressed: () {},
-                        icon: const Icon(Icons.add_rounded, color: Colors.white),
-                        label: isDesktop ? const Text("AGENDAR", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)) : const Text(""),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF7C3AED),
-                          padding: EdgeInsets.symmetric(horizontal: isDesktop ? 24 : 16, vertical: 16),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+    return BlocProvider(
+      create: (_) => getIt<AgendaBloc>()..add(LoadAgenda(patient.id)),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final isDesktop = constraints.maxWidth >= 800;
+          return SingleChildScrollView(
+            padding: EdgeInsets.all(isDesktop ? 48 : 16),
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 1000),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Cabeçalho da Agenda
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          "Agenda do Paciente",
+                          style: TextStyle(
+                            fontSize: isDesktop ? 26 : 22,
+                            fontWeight: FontWeight.w900,
+                            color: textMain,
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 48),
+                        ElevatedButton.icon(
+                          onPressed: () {},
+                          icon: const Icon(
+                            Icons.add_rounded,
+                            color: Colors.white,
+                          ),
+                          label: isDesktop
+                              ? const Text(
+                                  "AGENDAR",
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                  ),
+                                )
+                              : const Text(""),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF7C3AED),
+                            padding: EdgeInsets.symmetric(
+                              horizontal: isDesktop ? 24 : 16,
+                              vertical: 16,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 48),
 
-                  // Itens da Timeline (Baseado na sua imagem)
-                  _buildTimelineItem(
-                    date: "05 Mar",
-                    time: "14:00",
-                    title: "Reavaliação",
-                    status: "AGENDADO",
-                    color: Colors.orange,
-                    icon: Icons.event_note_rounded,
-                  ),
-                  _buildTimelineItem(
-                    date: "26 Fev",
-                    time: "10:30",
-                    title: "Sessão Fisioterapia",
-                    status: "CONCLUÍDO",
-                    color: primaryTeal,
-                    icon: Icons.check_circle_rounded,
-                  ),
-                  _buildTimelineItem(
-                    date: "19 Fev",
-                    time: "10:30",
-                    title: "Sessão Fisioterapia",
-                    status: "CONCLUÍDO",
-                    color: primaryTeal,
-                    icon: Icons.check_circle_rounded,
-                  ),
-                  _buildTimelineItem(
-                    date: "12 Fev",
-                    time: "09:00",
-                    title: "Avaliação Inicial",
-                    status: "CONCLUÍDO",
-                    color: Colors.purple,
-                    icon: Icons.assignment_turned_in_rounded,
-                    isLast: true,
-                  ),
-                ],
+                    // Lista da API
+                    BlocBuilder<AgendaBloc, AgendaState>(
+                      builder: (context, state) {
+                        if (state.status == AgendaStatus.loading) {
+                          return const Center(
+                            child: Padding(
+                              padding: EdgeInsets.all(40.0),
+                              child: CircularProgressIndicator(),
+                            ),
+                          );
+                        }
+                        if (state.status == AgendaStatus.failure) {
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 40),
+                            child: AppErrorView(
+                              message: state.errorMessage ?? 'Erro ao carregar agenda.',
+                              onRetry: () => context
+                                  .read<AgendaBloc>()
+                                  .add(LoadAgenda(patient.id)),
+                            ),
+                          );
+                        }
+                        if (state.appointments.isEmpty) {
+                          return Center(
+                            child: Padding(
+                              padding: const EdgeInsets.all(40.0),
+                              child: Column(
+                                children: [
+                                  Icon(Icons.calendar_today_outlined,
+                                      color: textSecondary, size: 64),
+                                  const SizedBox(height: 16),
+                                  const Text(
+                                    'Nenhum agendamento encontrado.',
+                                    style: TextStyle(
+                                      color: textSecondary,
+                                      fontSize: 16,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        }
+
+                        return Column(
+                          children: [
+                            for (int i = 0; i < state.appointments.length; i++)
+                              _buildTimelineItem(
+                                appointment: state.appointments[i],
+                                isLast: i == state.appointments.length - 1,
+                              ),
+                          ],
+                        );
+                      },
+                    ),
+                  ],
+                ),
               ),
             ),
-          ),
-        );
-      },
+          );
+        },
+      ),
     );
   }
 
+  Color _statusColor(Appointment a) {
+    switch (a.statusColorKey) {
+      case 'teal':
+        return const Color(0xFF10B981); // Green/Realizado
+      case 'yellow':
+        return const Color(0xFFF59E0B); // Amber/Yellow/Agendado
+      case 'red':
+        return const Color(0xFFEF4444); // Red/Falta/Cancelado
+      default:
+        return const Color(0xFF94A3B8);
+    }
+  }
+
+  IconData _statusIcon(Appointment a) {
+    switch (a.statusColorKey) {
+      case 'teal':
+        return Icons.check_circle_rounded;
+      case 'yellow':
+        return Icons.pending_rounded;
+      case 'red':
+        return Icons.cancel_rounded;
+      default:
+        return Icons.help_outline_rounded;
+    }
+  }
+
   Widget _buildTimelineItem({
-    required String date,
-    required String time,
-    required String title,
-    required String status,
-    required Color color,
-    required IconData icon,
+    required Appointment appointment,
     bool isLast = false,
   }) {
+    final color = _statusColor(appointment);
+    final icon = _statusIcon(appointment);
+
     return IntrinsicHeight(
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -113,7 +188,12 @@ class PatientAgendaView extends StatelessWidget {
                   color: color,
                   shape: BoxShape.circle,
                   border: Border.all(color: Colors.white, width: 3),
-                  boxShadow: [BoxShadow(color: color.withOpacity(0.3), blurRadius: 6)],
+                  boxShadow: [
+                    BoxShadow(
+                      color: color.withValues(alpha: 0.3),
+                      blurRadius: 6,
+                    ),
+                  ],
                 ),
               ),
               if (!isLast)
@@ -137,7 +217,12 @@ class PatientAgendaView extends StatelessWidget {
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(color: borderColor),
-                boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 10)],
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.02),
+                    blurRadius: 10,
+                  ),
+                ],
               ),
               child: Row(
                 children: [
@@ -145,7 +230,7 @@ class PatientAgendaView extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: color.withOpacity(0.1),
+                      color: color.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Icon(icon, color: color, size: 24),
@@ -158,15 +243,43 @@ class PatientAgendaView extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          title,
-                          style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16, color: textMain),
+                          appointment.categoryName ?? appointment.title,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w800,
+                            fontSize: 16,
+                            color: textMain,
+                          ),
                         ),
+                        if (appointment.notes != null &&
+                            appointment.notes!.isNotEmpty) ...[
+                          const SizedBox(height: 4),
+                          Text(
+                            appointment.notes!,
+                            style: const TextStyle(
+                              color: textSecondary,
+                              fontSize: 13,
+                              fontStyle: FontStyle.italic,
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
                         const SizedBox(height: 4),
                         Row(
                           children: [
-                            const Icon(Icons.access_time_rounded, size: 14, color: textSecondary),
+                            const Icon(
+                              Icons.access_time_rounded,
+                              size: 14,
+                              color: textSecondary,
+                            ),
                             const SizedBox(width: 4),
-                            Text("$date às $time", style: const TextStyle(color: textSecondary, fontSize: 13)),
+                            Text(
+                              "${appointment.displayDate} às ${appointment.displayTime}",
+                              style: const TextStyle(
+                                color: textSecondary,
+                                fontSize: 13,
+                              ),
+                            ),
                           ],
                         ),
                       ],
@@ -175,14 +288,22 @@ class PatientAgendaView extends StatelessWidget {
 
                   // Badge de Status
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
                     decoration: BoxDecoration(
-                      color: color.withOpacity(0.1),
+                      color: color.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Text(
-                      status,
-                      style: TextStyle(color: color, fontWeight: FontWeight.w900, fontSize: 11, letterSpacing: 0.5),
+                      appointment.displayStatus,
+                      style: TextStyle(
+                        color: color,
+                        fontWeight: FontWeight.w900,
+                        fontSize: 11,
+                        letterSpacing: 0.5,
+                      ),
                     ),
                   ),
                 ],

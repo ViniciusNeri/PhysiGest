@@ -18,3 +18,12 @@ class ForgotPasswordEmailChanged extends ForgotPasswordEvent {
 class ForgotPasswordSubmitted extends ForgotPasswordEvent {
   const ForgotPasswordSubmitted();
 }
+
+class NewPasswordSubmitted extends ForgotPasswordEvent {
+  final String token;
+  final String newPassword;
+  const NewPasswordSubmitted({required this.token, required this.newPassword});
+
+  @override
+  List<Object?> get props => [token, newPassword];
+}

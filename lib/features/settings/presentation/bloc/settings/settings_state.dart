@@ -43,11 +43,11 @@ class SettingsLoaded extends SettingsState {
 
   @override
   List<Object?> get props => [
-        userEmail,
-        categories,
-        paymentMethods,
-        dashboardPreferences,
-      ];
+    userEmail,
+    categories,
+    paymentMethods,
+    dashboardPreferences,
+  ];
 }
 
 class SettingsError extends SettingsState {

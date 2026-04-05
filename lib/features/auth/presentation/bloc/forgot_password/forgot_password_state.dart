@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
 
-enum ForgotPasswordStatus { initial, loading, success, failure }
+enum ForgotPasswordStatus { initial, loading, success, failure, resetSuccess }
 
 class ForgotPasswordState extends Equatable {
   final String email;
@@ -22,6 +22,18 @@ class ForgotPasswordState extends Equatable {
   }) {
     return ForgotPasswordState(
       email: email ?? this.email,
+      status: status ?? this.status,
+      errorMessage: errorMessage ?? this.errorMessage,
+    );
+  }
+
+  ForgotPasswordState copyWithNewPassword({
+    final String? newPassword,
+    final ForgotPasswordStatus? status,
+    final String? errorMessage,
+  }) {
+    return ForgotPasswordState(
+      email: email,
       status: status ?? this.status,
       errorMessage: errorMessage ?? this.errorMessage,
     );

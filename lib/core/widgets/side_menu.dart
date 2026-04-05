@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:physigest/core/storage/local_storage.dart';
+import 'package:physigest/core/di/injection.dart';
 import 'package:physigest/core/theme/app_theme.dart';
 
 class SideMenu extends StatelessWidget {
@@ -33,7 +35,7 @@ class SideMenu extends StatelessWidget {
                     _MenuTile(
                       icon: Icons.calendar_today_rounded,
                       title: 'Agenda',
-                      baseColor: Colors.blue, 
+                      baseColor: Colors.blue,
                       isSelected: location.startsWith('/schedule'),
                       onTap: () => context.go('/schedule'),
                     ),
@@ -86,20 +88,27 @@ class SideMenu extends StatelessWidget {
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
               gradient: LinearGradient(
-                colors: [AppTheme.primaryColor, AppTheme.primaryColor.withOpacity(0.7)],
+                colors: [
+                  AppTheme.primaryColor,
+                  AppTheme.primaryColor.withValues(alpha: 0.7),
+                ],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
               borderRadius: BorderRadius.circular(14),
               boxShadow: [
                 BoxShadow(
-                  color: AppTheme.primaryColor.withOpacity(0.3),
+                  color: AppTheme.primaryColor.withValues(alpha: 0.3),
                   blurRadius: 10,
                   offset: const Offset(0, 4),
-                )
+                ),
               ],
             ),
-            child: const Icon(Icons.monitor_heart_rounded, color: Colors.white, size: 24),
+            child: const Icon(
+              Icons.monitor_heart_rounded,
+              color: Colors.white,
+              size: 24,
+            ),
           ),
           const SizedBox(width: 16),
           const Text(
@@ -128,7 +137,13 @@ class SideMenu extends StatelessWidget {
         baseColor: Colors.red,
         isSelected: false,
         isDestructive: true,
-        onTap: () => context.go('/login'),
+        onTap: () async {
+          await getIt<LocalStorage>().deleteToken();
+          await getIt<LocalStorage>().deleteUser();
+          if (context.mounted) {
+            context.go('/login');
+          }
+        },
       ),
     );
   }
@@ -153,7 +168,9 @@ class _MenuTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final Color effectiveColor = isDestructive ? Colors.red.shade600 : baseColor;
+    final Color effectiveColor = isDestructive
+        ? Colors.red.shade600
+        : baseColor;
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
@@ -164,7 +181,9 @@ class _MenuTile extends StatelessWidget {
           duration: const Duration(milliseconds: 200),
           padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
           decoration: BoxDecoration(
-            color: isSelected ? effectiveColor.withOpacity(0.08) : Colors.transparent,
+            color: isSelected
+                ? effectiveColor.withValues(alpha: 0.08)
+                : Colors.transparent,
             borderRadius: BorderRadius.circular(12),
           ),
           child: Row(
@@ -173,16 +192,12 @@ class _MenuTile extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: isSelected 
-                      ? effectiveColor.withOpacity(0.12) 
-                      : effectiveColor.withOpacity(0.05),
+                  color: isSelected
+                      ? effectiveColor.withValues(alpha: 0.12)
+                      : effectiveColor.withValues(alpha: 0.05),
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: Icon(
-                  icon,
-                  size: 20,
-                  color: effectiveColor,
-                ),
+                child: Icon(icon, size: 20, color: effectiveColor),
               ),
               const SizedBox(width: 16),
               Text(
@@ -202,7 +217,7 @@ class _MenuTile extends StatelessWidget {
                     color: effectiveColor,
                     shape: BoxShape.circle,
                   ),
-                )
+                ),
             ],
           ),
         ),

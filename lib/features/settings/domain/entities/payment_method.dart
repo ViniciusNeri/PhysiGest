@@ -11,11 +11,7 @@ class PaymentMethod extends Equatable {
     this.isActive = true,
   });
 
-  PaymentMethod copyWith({
-    String? id,
-    String? name,
-    bool? isActive,
-  }) {
+  PaymentMethod copyWith({String? id, String? name, bool? isActive}) {
     return PaymentMethod(
       id: id ?? this.id,
       name: name ?? this.name,

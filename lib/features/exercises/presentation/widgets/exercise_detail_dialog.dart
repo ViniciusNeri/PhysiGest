@@ -22,7 +22,9 @@ class ExerciseDetailDialog extends StatelessWidget {
               Stack(
                 children: [
                   ClipRRect(
-                    borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+                    borderRadius: const BorderRadius.vertical(
+                      top: Radius.circular(24),
+                    ),
                     child: AspectRatio(
                       aspectRatio: 16 / 9,
                       child: Stack(
@@ -31,13 +33,16 @@ class ExerciseDetailDialog extends StatelessWidget {
                           Image.network(
                             exercise.thumbnailUrl,
                             fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) => Container(
-                              color: const Color(0xFFE2E8F0),
-                            ),
+                            errorBuilder: (context, error, stackTrace) =>
+                                Container(color: const Color(0xFFE2E8F0)),
                           ),
-                          Container(color: Colors.black.withOpacity(0.3)),
+                          Container(color: Colors.black.withValues(alpha: 0.3)),
                           const Center(
-                            child: Icon(Icons.play_circle_fill_rounded, color: Colors.white, size: 80),
+                            child: Icon(
+                              Icons.play_circle_fill_rounded,
+                              color: Colors.white,
+                              size: 80,
+                            ),
                           ),
                         ],
                       ),
@@ -48,13 +53,18 @@ class ExerciseDetailDialog extends StatelessWidget {
                     left: 16,
                     child: IconButton(
                       onPressed: () => Navigator.of(context).pop(),
-                      icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white),
-                      style: IconButton.styleFrom(backgroundColor: Colors.black.withOpacity(0.4)),
+                      icon: const Icon(
+                        Icons.arrow_back_ios_new_rounded,
+                        color: Colors.white,
+                      ),
+                      style: IconButton.styleFrom(
+                        backgroundColor: Colors.black.withValues(alpha: 0.4),
+                      ),
                     ),
-                  )
+                  ),
                 ],
               ),
-              
+
               Padding(
                 padding: const EdgeInsets.all(32.0),
                 child: Column(
@@ -70,29 +80,47 @@ class ExerciseDetailDialog extends StatelessWidget {
                             children: [
                               Text(
                                 exercise.category.toUpperCase(),
-                                style: const TextStyle(color: Color(0xFF7C3AED), fontWeight: FontWeight.bold, letterSpacing: 1),
+                                style: const TextStyle(
+                                  color: Color(0xFF7C3AED),
+                                  fontWeight: FontWeight.bold,
+                                  letterSpacing: 1,
+                                ),
                               ),
                               const SizedBox(height: 8),
                               Text(
                                 exercise.title,
-                                style: const TextStyle(fontSize: 28, fontWeight: FontWeight.w900, color: Color(0xFF1E293B)),
+                                style: const TextStyle(
+                                  fontSize: 28,
+                                  fontWeight: FontWeight.w900,
+                                  color: Color(0xFF1E293B),
+                                ),
                               ),
                             ],
                           ),
                         ),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 8,
+                          ),
                           decoration: BoxDecoration(
                             color: const Color(0xFFF1F5F9),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Row(
                             children: [
-                              const Icon(Icons.repeat_rounded, color: Color(0xFF64748B), size: 18),
+                              const Icon(
+                                Icons.repeat_rounded,
+                                color: Color(0xFF64748B),
+                                size: 18,
+                              ),
                               const SizedBox(width: 8),
                               Text(
                                 exercise.recommendedRepetitions,
-                                style: const TextStyle(color: Color(0xFF64748B), fontWeight: FontWeight.bold),
+                                style: const TextStyle(
+                                  color: Color(0xFF64748B),
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
                             ],
                           ),
@@ -102,15 +130,23 @@ class ExerciseDetailDialog extends StatelessWidget {
                     const SizedBox(height: 24),
                     const Text(
                       "Instruções",
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: Color(0xFF1E293B)),
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w800,
+                        color: Color(0xFF1E293B),
+                      ),
                     ),
                     const SizedBox(height: 8),
                     Text(
                       exercise.description,
-                      style: const TextStyle(fontSize: 16, color: Color(0xFF64748B), height: 1.5),
+                      style: const TextStyle(
+                        fontSize: 16,
+                        color: Color(0xFF64748B),
+                        height: 1.5,
+                      ),
                     ),
                     const SizedBox(height: 48),
-                    
+
                     // Ação de Prescrever
                     const Divider(color: Color(0xFFE2E8F0)),
                     const SizedBox(height: 24),
@@ -120,9 +156,22 @@ class ExerciseDetailDialog extends StatelessWidget {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text("Prescrever para Paciente", style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16, color: Color(0xFF1E293B))),
+                              Text(
+                                "Prescrever para Paciente",
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w800,
+                                  fontSize: 16,
+                                  color: Color(0xFF1E293B),
+                                ),
+                              ),
                               SizedBox(height: 4),
-                              Text("Vincular este exercício no aplicativo do paciente via WhatsApp/Push.", style: TextStyle(color: Color(0xFF94A3B8), fontSize: 13)),
+                              Text(
+                                "Vincular este exercício no aplicativo do paciente via WhatsApp/Push.",
+                                style: TextStyle(
+                                  color: Color(0xFF94A3B8),
+                                  fontSize: 13,
+                                ),
+                              ),
                             ],
                           ),
                         ),
@@ -133,23 +182,44 @@ class ExerciseDetailDialog extends StatelessWidget {
                               SnackBar(
                                 content: Row(
                                   children: [
-                                    const Icon(Icons.check_circle_rounded, color: Colors.white),
+                                    const Icon(
+                                      Icons.check_circle_rounded,
+                                      color: Colors.white,
+                                    ),
                                     const SizedBox(width: 12),
-                                    Text("Exercício '${exercise.title}' enviado para o paciente com sucesso!"),
+                                    Text(
+                                      "Exercício '${exercise.title}' enviado para o paciente com sucesso!",
+                                    ),
                                   ],
                                 ),
                                 backgroundColor: const Color(0xFF0D9488),
                                 behavior: SnackBarBehavior.floating,
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
                               ),
                             );
                           },
-                          icon: const Icon(Icons.send_rounded, color: Colors.white),
-                          label: const Text("SELECIONAR ALUNO", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
+                          icon: const Icon(
+                            Icons.send_rounded,
+                            color: Colors.white,
+                          ),
+                          label: const Text(
+                            "SELECIONAR ALUNO",
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(0xFF0D9488),
-                            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 24,
+                              vertical: 16,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
                           ),
                         ),
                       ],

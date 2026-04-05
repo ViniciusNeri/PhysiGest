@@ -13,7 +13,7 @@ class LoadSchedule extends ScheduleEvent {}
 
 class UpdateAppointment extends ScheduleEvent {
   final Appointment appointment;
-  UpdateAppointment(this.appointment);
+  const UpdateAppointment(this.appointment);
 }
 
 class SelectDate extends ScheduleEvent {
@@ -41,4 +41,12 @@ class AddAppointment extends ScheduleEvent {
 
   @override
   List<Object?> get props => [appointment];
+}
+class DeleteAppointment extends ScheduleEvent {
+  final String id;
+
+  const DeleteAppointment(this.id);
+
+  @override
+  List<Object?> get props => [id];
 }

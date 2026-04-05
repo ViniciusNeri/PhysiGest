@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:physigest/core/di/injection.dart';
-import 'package:physigest/core/theme/app_theme.dart'; // Certifique-se que o AppTheme está acessível
+import 'package:physigest/core/theme/app_theme.dart';
 import 'package:physigest/features/auth/presentation/bloc/signup/signup_bloc.dart';
 import 'package:physigest/features/auth/presentation/bloc/signup/signup_event.dart';
 import 'package:physigest/features/auth/presentation/bloc/signup/signup_state.dart';
@@ -37,7 +37,7 @@ class SignUpView extends StatelessWidget {
             end: Alignment.bottomRight,
             colors: [
               const Color(0xFFF8FAFC),
-              primary.withOpacity(0.05),
+              primary.withValues(alpha: 0.05),
               const Color(0xFFF1F5F9),
             ],
           ),
@@ -45,7 +45,7 @@ class SignUpView extends StatelessWidget {
         child: BlocListener<SignUpBloc, SignUpState>(
           listener: (context, state) {
             if (state.status == SignUpStatus.success) {
-              context.go('/');
+              context.go('/verify', extra: state.email);
             } else if (state.status == SignUpStatus.failure) {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
@@ -62,13 +62,16 @@ class SignUpView extends StatelessWidget {
               child: ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 480),
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 40),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 40,
+                    vertical: 40,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(24),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.04),
+                        color: Colors.black.withValues(alpha: 0.04),
                         blurRadius: 40,
                         offset: const Offset(0, 10),
                       ),
@@ -108,8 +111,13 @@ class SignUpView extends StatelessWidget {
                         buildWhen: (p, c) => p.name != c.name,
                         builder: (context, state) {
                           return TextField(
-                            onChanged: (v) => context.read<SignUpBloc>().add(SignUpNameChanged(v)),
-                            decoration: _inputDecoration('Como quer ser chamado?', Icons.person_outline_rounded),
+                            onChanged: (v) => context.read<SignUpBloc>().add(
+                              SignUpNameChanged(v),
+                            ),
+                            decoration: _inputDecoration(
+                              'Como quer ser chamado?',
+                              Icons.person_outline_rounded,
+                            ),
                           );
                         },
                       ),
@@ -121,9 +129,14 @@ class SignUpView extends StatelessWidget {
                         buildWhen: (p, c) => p.email != c.email,
                         builder: (context, state) {
                           return TextField(
-                            onChanged: (v) => context.read<SignUpBloc>().add(SignUpEmailChanged(v)),
+                            onChanged: (v) => context.read<SignUpBloc>().add(
+                              SignUpEmailChanged(v),
+                            ),
                             keyboardType: TextInputType.emailAddress,
-                            decoration: _inputDecoration('seu@email.com', Icons.mail_outline_rounded),
+                            decoration: _inputDecoration(
+                              'seu@email.com',
+                              Icons.mail_outline_rounded,
+                            ),
                           );
                         },
                       ),
@@ -132,16 +145,25 @@ class SignUpView extends StatelessWidget {
                       // SENHA
                       _buildLabel('Senha'),
                       BlocBuilder<SignUpBloc, SignUpState>(
-                        buildWhen: (p, c) => p.password != c.password || p.status != c.status,
+                        buildWhen: (p, c) =>
+                            p.password != c.password || p.status != c.status,
                         builder: (context, state) {
                           return TextField(
-                            onChanged: (v) => context.read<SignUpBloc>().add(SignUpPasswordChanged(v)),
-                            obscureText: true,
-                            decoration: _inputDecoration('Mínimo 8 caracteres', Icons.lock_outline_rounded).copyWith(
-                              errorText: state.password.isNotEmpty && !state.isPasswordValid
-                                  ? 'A senha deve ter no mínimo 8 caracteres'
-                                  : null,
+                            onChanged: (v) => context.read<SignUpBloc>().add(
+                              SignUpPasswordChanged(v),
                             ),
+                            obscureText: true,
+                            decoration:
+                                _inputDecoration(
+                                  'Mínimo 8 caracteres',
+                                  Icons.lock_outline_rounded,
+                                ).copyWith(
+                                  errorText:
+                                      state.password.isNotEmpty &&
+                                          !state.isPasswordValid
+                                      ? 'A senha deve ter no mínimo 8 caracteres'
+                                      : null,
+                                ),
                           );
                         },
                       ),
@@ -152,13 +174,21 @@ class SignUpView extends StatelessWidget {
                       BlocBuilder<SignUpBloc, SignUpState>(
                         builder: (context, state) {
                           return TextField(
-                            onChanged: (v) => context.read<SignUpBloc>().add(SignUpConfirmPasswordChanged(v)),
-                            obscureText: true,
-                            decoration: _inputDecoration('Repita a senha', Icons.lock_clock_outlined).copyWith(
-                              errorText: state.confirmPassword.isNotEmpty && !state.doPasswordsMatch
-                                  ? 'As senhas não coincidem'
-                                  : null,
+                            onChanged: (v) => context.read<SignUpBloc>().add(
+                              SignUpConfirmPasswordChanged(v),
                             ),
+                            obscureText: true,
+                            decoration:
+                                _inputDecoration(
+                                  'Repita a senha',
+                                  Icons.lock_clock_outlined,
+                                ).copyWith(
+                                  errorText:
+                                      state.confirmPassword.isNotEmpty &&
+                                          !state.doPasswordsMatch
+                                      ? 'As senhas não coincidem'
+                                      : null,
+                                ),
                           );
                         },
                       ),
@@ -171,16 +201,28 @@ class SignUpView extends StatelessWidget {
                               ? const Center(child: CircularProgressIndicator())
                               : ElevatedButton(
                                   onPressed: state.isValid
-                                      ? () => context.read<SignUpBloc>().add(const SignUpSubmitted())
+                                      ? () => context.read<SignUpBloc>().add(
+                                          const SignUpSubmitted(),
+                                        )
                                       : null,
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: primary,
                                     foregroundColor: Colors.white,
-                                    padding: const EdgeInsets.symmetric(vertical: 18),
-                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 18,
+                                    ),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
                                     elevation: 0,
                                   ),
-                                  child: const Text('Finalizar Cadastro', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                                  child: const Text(
+                                    'Finalizar Cadastro',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 16,
+                                    ),
+                                  ),
                                 );
                         },
                       ),
@@ -190,10 +232,19 @@ class SignUpView extends StatelessWidget {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          const Text('Já possui uma conta?', style: TextStyle(color: Colors.black54)),
+                          const Text(
+                            'Já possui uma conta?',
+                            style: TextStyle(color: Colors.black54),
+                          ),
                           TextButton(
                             onPressed: () => context.push('/login'),
-                            child: Text('Entrar agora', style: TextStyle(color: primary, fontWeight: FontWeight.bold)),
+                            child: Text(
+                              'Entrar agora',
+                              style: TextStyle(
+                                color: primary,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                           ),
                         ],
                       ),
@@ -214,7 +265,11 @@ class SignUpView extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: 6.0, left: 4),
       child: Text(
         text,
-        style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13, color: Color(0xFF334155)),
+        style: const TextStyle(
+          fontWeight: FontWeight.w700,
+          fontSize: 13,
+          color: Color(0xFF334155),
+        ),
       ),
     );
   }
@@ -228,7 +283,7 @@ class SignUpView extends StatelessWidget {
       contentPadding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide(color: Colors.grey.withOpacity(0.1)),
+        borderSide: BorderSide(color: Colors.grey.withValues(alpha: 0.1)),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),

@@ -11,11 +11,7 @@ class AttendanceCategory extends Equatable {
     this.isActive = true,
   });
 
-  AttendanceCategory copyWith({
-    String? id,
-    String? name,
-    bool? isActive,
-  }) {
+  AttendanceCategory copyWith({String? id, String? name, bool? isActive}) {
     return AttendanceCategory(
       id: id ?? this.id,
       name: name ?? this.name,
