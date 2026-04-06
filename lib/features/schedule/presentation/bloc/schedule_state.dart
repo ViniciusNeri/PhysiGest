@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:physigest/features/schedule/domain/models/appointment.dart';
+import 'package:physigest/features/schedule/domain/models/agenda_lock.dart';
 
 enum ScheduleStatus { initial, loading, success, failure }
 
@@ -10,6 +11,7 @@ class ScheduleState extends Equatable {
   final ScheduleViewMode viewMode;
   final DateTime selectedDate;
   final List<Appointment> appointments;
+  final List<AgendaLock> agendaLocks;
   final List<Map<String, dynamic>> availablePatients;
   final List<Map<String, dynamic>> activeCategories;
   final String? errorMessage;
@@ -20,6 +22,7 @@ class ScheduleState extends Equatable {
     this.viewMode = ScheduleViewMode.week,
     required this.selectedDate,
     this.appointments = const [],
+    this.agendaLocks = const [],
     this.availablePatients = const [],
     this.activeCategories = const [],
     this.errorMessage,
@@ -39,20 +42,24 @@ class ScheduleState extends Equatable {
     ScheduleViewMode? viewMode,
     DateTime? selectedDate,
     List<Appointment>? appointments,
+    List<AgendaLock>? agendaLocks,
     List<Map<String, dynamic>>? availablePatients,
     List<Map<String, dynamic>>? activeCategories,
     String? errorMessage,
     String? successMessage,
+    bool resetSuccess = false,
+    bool resetError = false,
   }) {
     return ScheduleState(
       status: status ?? this.status,
       viewMode: viewMode ?? this.viewMode,
       selectedDate: selectedDate ?? this.selectedDate,
       appointments: appointments ?? this.appointments,
+      agendaLocks: agendaLocks ?? this.agendaLocks,
       availablePatients: availablePatients ?? this.availablePatients,
       activeCategories: activeCategories ?? this.activeCategories,
-      errorMessage: errorMessage ?? this.errorMessage,
-      successMessage: successMessage ?? this.successMessage,
+      errorMessage: resetError ? null : (errorMessage ?? this.errorMessage),
+      successMessage: resetSuccess ? null : (successMessage ?? this.successMessage),
     );
   }
 
@@ -62,6 +69,7 @@ class ScheduleState extends Equatable {
     viewMode,
     selectedDate,
     appointments,
+    agendaLocks,
     availablePatients,
     activeCategories,
     errorMessage,

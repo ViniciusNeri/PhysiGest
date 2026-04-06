@@ -46,6 +46,8 @@ import '../../features/financial/domain/usecases/financial_usecases.dart'
     as _i63;
 import '../../features/financial/presentation/bloc/financial_bloc.dart'
     as _i911;
+import '../../features/patient_booking/presentation/bloc/patient_booking_bloc.dart'
+    as _i570;
 import '../../features/patients/data/datasources/patient_remote_datasource.dart'
     as _i286;
 import '../../features/patients/data/repositories/patient_repository_impl.dart'
@@ -212,6 +214,12 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i399.GetCategoriesUseCase>(
       () => _i399.GetCategoriesUseCase(gh<_i226.IScheduleRepository>()),
     );
+    gh.lazySingleton<_i399.GetAgendaLocksUseCase>(
+      () => _i399.GetAgendaLocksUseCase(gh<_i226.IScheduleRepository>()),
+    );
+    gh.lazySingleton<_i399.CreateAgendaLockUseCase>(
+      () => _i399.CreateAgendaLockUseCase(gh<_i226.IScheduleRepository>()),
+    );
     gh.factory<_i228.SettingsBloc>(
       () => _i228.SettingsBloc(
         gh<_i279.GetCategoriesUseCase>(),
@@ -258,6 +266,9 @@ extension GetItInjectableX on _i174.GetIt {
       () =>
           _i509.DashboardRepositoryImpl(gh<_i817.IDashboardRemoteDataSource>()),
     );
+    gh.factory<_i570.PatientBookingBloc>(
+      () => _i570.PatientBookingBloc(gh<_i226.IScheduleRepository>()),
+    );
     gh.lazySingleton<_i527.GetDashboardSummaryUseCase>(
       () => _i527.GetDashboardSummaryUseCase(gh<_i485.IDashboardRepository>()),
     );
@@ -300,6 +311,18 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i6.VerifyBloc>(
       () => _i6.VerifyBloc(gh<_i188.ConfirmSignUpUseCase>()),
     );
+    gh.factory<_i1063.ScheduleBloc>(
+      () => _i1063.ScheduleBloc(
+        gh<_i399.GetAppointmentsUseCase>(),
+        gh<_i399.CreateAppointmentUseCase>(),
+        gh<_i399.UpdateAppointmentUseCase>(),
+        gh<_i399.GetAvailablePatientsUseCase>(),
+        gh<_i399.GetCategoriesUseCase>(),
+        gh<_i399.DeleteAppointmentUseCase>(),
+        gh<_i399.GetAgendaLocksUseCase>(),
+        gh<_i399.CreateAgendaLockUseCase>(),
+      ),
+    );
     gh.factory<_i72.DashboardBloc>(
       () => _i72.DashboardBloc(
         gh<_i527.GetDashboardSummaryUseCase>(),
@@ -322,16 +345,6 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.lazySingleton<_i63.DeleteTransactionUseCase>(
       () => _i63.DeleteTransactionUseCase(gh<_i644.IFinancialRepository>()),
-    );
-    gh.factory<_i1063.ScheduleBloc>(
-      () => _i1063.ScheduleBloc(
-        gh<_i399.GetAppointmentsUseCase>(),
-        gh<_i399.CreateAppointmentUseCase>(),
-        gh<_i399.UpdateAppointmentUseCase>(),
-        gh<_i399.GetAvailablePatientsUseCase>(),
-        gh<_i399.GetCategoriesUseCase>(),
-        gh<_i399.DeleteAppointmentUseCase>(),
-      ),
     );
     gh.factory<_i208.LoginBloc>(
       () => _i208.LoginBloc(gh<_i188.LoginUseCase>()),

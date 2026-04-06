@@ -29,14 +29,14 @@ class PatientBloc extends Bloc<PatientEvent, PatientState> {
     LoadPatients event,
     Emitter<PatientState> emit,
   ) async {
-    emit(state.copyWith(status: PatientStatus.loading));
+    emit(state.copyWith(status: PatientStatus.loading, clearMessages: true));
     try {
       final patients = await _getPatientsUseCase();
       emit(
         state.copyWith(
-          status: PatientStatus.success, 
+          status: PatientStatus.success,
           patients: patients,
-          successMessage: null,
+          clearMessages: true,
         ),
       );
     } catch (e) {
@@ -50,7 +50,7 @@ class PatientBloc extends Bloc<PatientEvent, PatientState> {
   }
 
   Future<void> _onAddPatient(AddPatient event, Emitter<PatientState> emit) async {
-    emit(state.copyWith(status: PatientStatus.loading));
+    emit(state.copyWith(status: PatientStatus.loading, clearMessages: true));
     try {
       final newPatient = await _createPatientUseCase(event.patient);
       emit(state.copyWith(
@@ -67,13 +67,17 @@ class PatientBloc extends Bloc<PatientEvent, PatientState> {
   }
 
   Future<void> _onUpdatePatient(UpdatePatient event, Emitter<PatientState> emit) async {
-    emit(state.copyWith(status: PatientStatus.loading));
+    emit(state.copyWith(status: PatientStatus.loading, clearMessages: true));
     try {
       final updatedPatient = await _updatePatientUseCase(event.patient);
       final updatedList = state.patients
           .map((p) => p.id == updatedPatient.id ? updatedPatient : p)
           .toList();
-      emit(state.copyWith(status: PatientStatus.success, patients: updatedList));
+      emit(state.copyWith(
+        status: PatientStatus.success,
+        patients: updatedList,
+        successMessage: 'Paciente atualizado com sucesso!',
+      ));
     } catch (e) {
       emit(state.copyWith(
         status: PatientStatus.failure,
@@ -83,11 +87,15 @@ class PatientBloc extends Bloc<PatientEvent, PatientState> {
   }
 
   Future<void> _onDeletePatient(DeletePatient event, Emitter<PatientState> emit) async {
-    emit(state.copyWith(status: PatientStatus.loading));
+    emit(state.copyWith(status: PatientStatus.loading, clearMessages: true));
     try {
       await _deletePatientUseCase(event.id);
       final updatedList = state.patients.where((p) => p.id != event.id).toList();
-      emit(state.copyWith(status: PatientStatus.success, patients: updatedList));
+      emit(state.copyWith(
+        status: PatientStatus.success,
+        patients: updatedList,
+        successMessage: 'Paciente removido com sucesso!',
+      ));
     } catch (e) {
       emit(state.copyWith(
         status: PatientStatus.failure,

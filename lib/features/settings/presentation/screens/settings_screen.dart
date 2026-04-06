@@ -369,13 +369,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
             color: Color(0xFFF1F5F9),
           ),
           _buildToggle(
-            title: 'Agendamentos Pendentes',
-            subtitle: 'Exibir sessões passadas que ainda não foram marcadas como concluídas.',
+            title: 'Pagamentos Pendentes',
+            subtitle: 'Exibir pagamentos que ainda não foram quitados.',
             icon: Icons.history_rounded,
             color: Colors.amber,
-            value: prefs.showPastPending,
+            value: prefs.showPendingPayments,
             onChanged: (val) {
-              final newPrefs = prefs.copyWith(showPastPending: val);
+              final newPrefs = prefs.copyWith(showPendingPayments: val);
               context.read<SettingsBloc>().add(
                 UpdateDashboardPreferences(newPrefs),
               );
@@ -407,13 +407,32 @@ class _SettingsScreenState extends State<SettingsScreen> {
             color: Color(0xFFF1F5F9),
           ),
           _buildToggle(
+            title: 'Pagamentos em Atraso',
+            subtitle: 'Exibir cobranças com vencimento ultrapassado.',
+            icon: Icons.warning_amber_rounded,
+            color: Colors.deepOrange,
+            value: prefs.showOverdueAppointments,
+            onChanged: (val) {
+              final newPrefs = prefs.copyWith(showOverdueAppointments: val);
+              context.read<SettingsBloc>().add(
+                UpdateDashboardPreferences(newPrefs),
+              );
+            },
+          ),
+          const Divider(
+            height: 1,
+            indent: 20,
+            endIndent: 20,
+            color: Color(0xFFF1F5F9),
+          ),
+          _buildToggle(
             title: 'Gráfico de Ocupação',
             subtitle: 'Visualizar horários de maior movimento na clínica.',
             icon: Icons.bar_chart_rounded,
             color: Colors.teal,
-            value: prefs.showOccupancyChart,
+            value: prefs.showOccupancyGraph,
             onChanged: (val) {
-              final newPrefs = prefs.copyWith(showOccupancyChart: val);
+              final newPrefs = prefs.copyWith(showOccupancyGraph: val);
               context.read<SettingsBloc>().add(
                 UpdateDashboardPreferences(newPrefs),
               );

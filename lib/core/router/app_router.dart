@@ -13,6 +13,7 @@ import 'package:physigest/features/settings/presentation/screens/settings_screen
 import 'package:physigest/features/settings/presentation/screens/categories_settings_screen.dart';
 import 'package:physigest/features/settings/presentation/screens/payment_methods_settings_screen.dart';
 import 'package:physigest/features/auth/presentation/screens/new_password_screen.dart';
+import 'package:physigest/features/patient_booking/presentation/screens/patient_booking_screen.dart';
 import 'package:physigest/core/storage/local_storage.dart';
 import 'package:physigest/core/di/injection.dart';
 
@@ -26,6 +27,7 @@ class AppRouter {
         '/forgot-password',
         '/reset-password',
         '/verify',
+        '/agendar',
       ];
 
       final localStorage = getIt<LocalStorage>();
@@ -71,6 +73,13 @@ class AppRouter {
       GoRoute(
         path: '/schedule',
         builder: (context, state) => const ScheduleScreen(),
+      ),
+      GoRoute(
+        path: '/agendar',
+        builder: (context, state) {
+          final userId = state.uri.queryParameters['userId'] ?? '';
+          return PatientBookingScreen(userId: userId);
+        },
       ),
       GoRoute(
         path: '/patients',

@@ -2,7 +2,9 @@ import 'package:dio/dio.dart';
 import 'package:injectable/injectable.dart';
 import '../../../../core/network/api_client.dart';
 import 'package:physigest/features/schedule/domain/models/appointment.dart';
+import 'package:physigest/features/schedule/domain/models/agenda_lock.dart';
 import '../models/appointment_model.dart';
+import '../models/agenda_lock_model.dart';
 import 'package:physigest/core/storage/local_storage.dart';
 
 abstract class IScheduleRemoteDataSource {
@@ -12,6 +14,8 @@ abstract class IScheduleRemoteDataSource {
   Future<void> deleteAppointment(String id);
   Future<List<Map<String, dynamic>>> getAvailablePatients();
   Future<List<Map<String, dynamic>>> getCategories();
+  Future<List<AgendaLockModel>> getAgendaLocks();
+  Future<AgendaLockModel> createAgendaLock(AgendaLock lock);
 }
 
 @LazySingleton(as: IScheduleRemoteDataSource)
@@ -139,6 +143,56 @@ class ScheduleRemoteDataSource implements IScheduleRemoteDataSource {
         'id': e['_id']?.toString() ?? e['id']?.toString() ?? '',
         'name': e['name']?.toString() ?? e['description']?.toString() ?? '',
       }).toList();
+    } on DioException catch (e) {
+      throw Exception(e.message);
+    } catch (e) {
+      throw Exception('Erro inesperado: $e');
+    }
+  }
+
+  @override
+  Future<List<AgendaLockModel>> getAgendaLocks() async {
+    try {
+      final user = await localStorage.getUser();
+      final userId = user?.id ?? '';
+      if (userId.isEmpty) return [];
+
+      final response = await apiClient.dio.get('/agendas/user/$userId/locks');
+      final list = response.data as List<dynamic>;
+      return list.map((json) => AgendaLockModel.fromJson(json)).toList();
+    } on DioException catch (e) {
+      throw Exception(e.message);
+    } catch (e) {
+      throw Exception('Erro inesperado: $e');
+    }
+  }
+
+  @override
+  Future<AgendaLockModel> createAgendaLock(AgendaLock lock) async {
+    try {
+      final user = await localStorage.getUser();
+      final userId = user?.id ?? '';
+
+      final body = AgendaLockModel(
+        id: lock.id,
+        userId: lock.userId.isEmpty ? userId : lock.userId,
+        type: lock.type,
+        date: lock.date,
+        dates: lock.dates,
+        startTime: lock.startTime,
+        endTime: lock.endTime,
+        description: lock.description,
+      ).toJson();
+
+      final response = await apiClient.dio.post('/agendas/lock', data: body);
+      
+      // Se a resposta for uma lista (lote), pegar o primeiro item
+      if (response.data is List && (response.data as List).isNotEmpty) {
+        return AgendaLockModel.fromJson(response.data[0]);
+      }
+      
+      // Caso contrário, tratar como objeto único
+      return AgendaLockModel.fromJson(response.data as Map<String, dynamic>);
     } on DioException catch (e) {
       throw Exception(e.message);
     } catch (e) {

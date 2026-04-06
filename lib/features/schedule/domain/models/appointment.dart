@@ -65,6 +65,8 @@ class Appointment extends Equatable {
         return 'CANCELADO';
       case 'scheduled':
         return 'AGENDADO';
+      case 'blocked':
+        return 'INDISPONÍVEL';
       default:
         return status.toUpperCase();
     }
