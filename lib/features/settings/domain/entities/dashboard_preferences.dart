@@ -2,68 +2,89 @@ import 'package:equatable/equatable.dart';
 
 class DashboardPreferences extends Equatable {
   final String id;
+  final String userId;
   final String dashboardTheme;
   final bool showWeeklyAppointments;
   final bool showMonthlyIncome;
   final bool showActivePayments;
   final bool showNextAppointment;
-  final String categoryControlMode;
-
-  final bool showPastPending;
+  final bool showPendingPayments;
   final bool showBirthdays;
-  final bool showOccupancyChart;
+  final bool showOccupancyGraph;
+  final bool showOverdueAppointments;
+  final String categoryControlMode;
+  final String? defaultCategoryId;
+  final String? defaultPaymentMethodId;
 
   const DashboardPreferences({
     this.id = '',
+    this.userId = '',
     this.dashboardTheme = 'light',
     this.showWeeklyAppointments = true,
     this.showMonthlyIncome = true,
     this.showActivePayments = true,
     this.showNextAppointment = true,
-    this.showPastPending = true,
+    this.showPendingPayments = true,
     this.showBirthdays = true,
-    this.showOccupancyChart = true,
+    this.showOccupancyGraph = true,
+    this.showOverdueAppointments = true,
     this.categoryControlMode = 'none',
+    this.defaultCategoryId,
+    this.defaultPaymentMethodId,
   });
 
   DashboardPreferences copyWith({
     String? id,
+    String? userId,
     String? dashboardTheme,
     bool? showWeeklyAppointments,
     bool? showMonthlyIncome,
     bool? showActivePayments,
     bool? showNextAppointment,
-    bool? showPastPending,
+    bool? showPendingPayments,
     bool? showBirthdays,
-    bool? showOccupancyChart,
+    bool? showOccupancyGraph,
+    bool? showOverdueAppointments,
     String? categoryControlMode,
+    String? defaultCategoryId,
+    String? defaultPaymentMethodId,
   }) {
     return DashboardPreferences(
       id: id ?? this.id,
+      userId: userId ?? this.userId,
       dashboardTheme: dashboardTheme ?? this.dashboardTheme,
       showWeeklyAppointments:
           showWeeklyAppointments ?? this.showWeeklyAppointments,
       showMonthlyIncome: showMonthlyIncome ?? this.showMonthlyIncome,
       showActivePayments: showActivePayments ?? this.showActivePayments,
       showNextAppointment: showNextAppointment ?? this.showNextAppointment,
-      showPastPending: showPastPending ?? this.showPastPending,
+      showPendingPayments: showPendingPayments ?? this.showPendingPayments,
       showBirthdays: showBirthdays ?? this.showBirthdays,
-      showOccupancyChart: showOccupancyChart ?? this.showOccupancyChart,
+      showOccupancyGraph: showOccupancyGraph ?? this.showOccupancyGraph,
+      showOverdueAppointments:
+          showOverdueAppointments ?? this.showOverdueAppointments,
       categoryControlMode: categoryControlMode ?? this.categoryControlMode,
+      defaultCategoryId: defaultCategoryId ?? this.defaultCategoryId,
+      defaultPaymentMethodId:
+          defaultPaymentMethodId ?? this.defaultPaymentMethodId,
     );
   }
 
   @override
   List<Object?> get props => [
         id,
+        userId,
         dashboardTheme,
         showWeeklyAppointments,
         showMonthlyIncome,
         showActivePayments,
         showNextAppointment,
-        showPastPending,
+        showPendingPayments,
         showBirthdays,
-        showOccupancyChart,
+        showOccupancyGraph,
+        showOverdueAppointments,
         categoryControlMode,
+        defaultCategoryId,
+        defaultPaymentMethodId,
       ];
 }

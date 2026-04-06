@@ -1,5 +1,6 @@
 import 'package:injectable/injectable.dart';
 import 'package:physigest/features/schedule/domain/models/appointment.dart';
+import 'package:physigest/features/schedule/domain/models/agenda_lock.dart';
 import '../repositories/i_schedule_repository.dart';
 
 @lazySingleton
@@ -44,4 +45,18 @@ class GetCategoriesUseCase {
   final IScheduleRepository repository;
   GetCategoriesUseCase(this.repository);
   Future<List<Map<String, dynamic>>> call() => repository.getCategories();
+}
+
+@lazySingleton
+class GetAgendaLocksUseCase {
+  final IScheduleRepository repository;
+  GetAgendaLocksUseCase(this.repository);
+  Future<List<AgendaLock>> call() => repository.getAgendaLocks();
+}
+
+@lazySingleton
+class CreateAgendaLockUseCase {
+  final IScheduleRepository repository;
+  CreateAgendaLockUseCase(this.repository);
+  Future<AgendaLock> call(AgendaLock lock) => repository.createAgendaLock(lock);
 }

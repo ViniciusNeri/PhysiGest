@@ -100,9 +100,10 @@ class _EditPatientDialogState extends State<EditPatientDialog> {
     final bool isDesktop = MediaQuery.of(context).size.width > 600;
 
     return BlocListener<PatientBloc, PatientState>(
-      listenWhen: (previous, current) => previous.status == PatientStatus.loading && current.status != PatientStatus.loading,
+      listenWhen: (previous, current) => previous.status != current.status,
       listener: (context, state) {
-        if (state.status == PatientStatus.success) {
+        if (state.status == PatientStatus.success && state.successMessage != null) {
+          AppAlerts.success(context, state.successMessage!);
           context.pop();
         } else if (state.status == PatientStatus.failure && state.errorMessage != null) {
           AppAlerts.error(context, state.errorMessage!);

@@ -23,8 +23,6 @@ class PatientsListScreen extends StatelessWidget {
         listener: (context, state) {
           if (state.status == PatientStatus.failure && state.errorMessage != null) {
             AppAlerts.error(context, state.errorMessage!);
-          } else if (state.status == PatientStatus.success && state.successMessage != null) {
-            AppAlerts.success(context, state.successMessage!);
           }
         },
         child: const PatientsListView(),

@@ -8,6 +8,7 @@ import 'package:physigest/features/dashboard/presentation/bloc/dashboard/dashboa
 import 'package:physigest/features/dashboard/presentation/bloc/dashboard/dashboard_event.dart';
 import 'package:physigest/features/dashboard/presentation/bloc/dashboard/dashboard_state.dart';
 import 'package:physigest/features/schedule/domain/models/appointment.dart';
+import 'package:physigest/features/dashboard/domain/entities/dashboard_summary.dart';
 import 'package:physigest/features/schedule/presentation/widgets/appointment_action_dialog.dart';
 import 'package:physigest/core/storage/local_storage.dart';
 import 'package:physigest/features/settings/presentation/bloc/settings/settings_bloc.dart';
@@ -76,9 +77,8 @@ class HomeView extends StatelessWidget {
               bool showIncome = true;
               bool showPayments = true;
               bool showNext = true;
-              bool showPastPending = true;
               bool showBirthdays = true;
-              bool showOccupancyChart = true;
+              bool showOccupancyGraph = true;
 
               if (settingsState is SettingsLoaded) {
                 final prefs = settingsState.dashboardPreferences;
@@ -86,9 +86,8 @@ class HomeView extends StatelessWidget {
                 showIncome = prefs.showMonthlyIncome;
                 showPayments = prefs.showActivePayments;
                 showNext = prefs.showNextAppointment;
-                showPastPending = prefs.showPastPending;
                 showBirthdays = prefs.showBirthdays;
-                showOccupancyChart = prefs.showOccupancyChart;
+                showOccupancyGraph = prefs.showOccupancyGraph;
               }
 
               // --- ESTADO DE CARREGAMENTO INICIAL (SKELETON) ---
@@ -165,7 +164,7 @@ class HomeView extends StatelessWidget {
                                 state.activePayments.toString(),
                                 Icons.payment_rounded,
                                 danger,
-                                onTap: () => _showPendingPaymentsPopup(context),
+                                onTap: () => _showPendingPaymentsPopup(context, state.pendingPayments),
                               ),
                           ],
                         ),
@@ -188,9 +187,9 @@ class HomeView extends StatelessWidget {
                                       context,
                                       state.todaysAppointments,
                                     ),
-                                  if (showOccupancyChart) ...[
+                                  if (showOccupancyGraph) ...[
                                     const SizedBox(height: 24),
-                                    _buildOccupancyChartCard(state.occupancyStats),
+                                    _buildOccupancyChartCard(state.occupancyGraph),
                                   ],
                                 ],
                               ),
@@ -208,11 +207,11 @@ class HomeView extends StatelessWidget {
                                   ],
                                   if (showBirthdays) ...[
                                     const SizedBox(height: 24),
-                                    _buildBirthdaysCard(state.monthlyBirthdays),
+                                    _buildBirthdaysCard(state.birthdayList),
                                   ],
-                                  if (state.pastPendingAppointments.isNotEmpty) ...[
+                                  if (state.overdueAppointments.isNotEmpty) ...[
                                     const SizedBox(height: 24),
-                                    _buildPastPendingAppointmentsCard(context, state.pastPendingAppointments),
+                                    _buildOverdueAppointmentsCard(context, state.overdueAppointments),
                                   ],
                                 ],
                               ),
@@ -234,17 +233,17 @@ class HomeView extends StatelessWidget {
                               const SizedBox(height: 24),
                               _buildNextAppointmentCard(state.nextAppointment),
                             ],
-                            if (showOccupancyChart) ...[
+                            if (showOccupancyGraph) ...[
                               const SizedBox(height: 24),
-                              _buildOccupancyChartCard(state.occupancyStats),
+                              _buildOccupancyChartCard(state.occupancyGraph),
                             ],
                             if (showBirthdays) ...[
                               const SizedBox(height: 24),
-                              _buildBirthdaysCard(state.monthlyBirthdays),
+                              _buildBirthdaysCard(state.birthdayList),
                             ],
-                            if (state.pastPendingAppointments.isNotEmpty) ...[
+                            if (state.overdueAppointments.isNotEmpty) ...[
                               const SizedBox(height: 24),
-                              _buildPastPendingAppointmentsCard(context, state.pastPendingAppointments),
+                              _buildOverdueAppointmentsCard(context, state.overdueAppointments),
                             ],
                           ],
                         ),
@@ -420,7 +419,7 @@ class HomeView extends StatelessWidget {
     );
   }
 
-  Widget _buildBirthdaysCard(List<Map<String, dynamic>> birthdays) {
+  Widget _buildBirthdaysCard(List<BirthdayEntry> birthdays) {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
@@ -488,9 +487,10 @@ class HomeView extends StatelessWidget {
                       CircleAvatar(
                         radius: 20,
                         backgroundColor: Colors.white.withValues(alpha: 0.2),
-                        backgroundImage: NetworkImage(b['photo'] ?? ''),
-                        onBackgroundImageError: (e, s) {},
-                        child: const Icon(Icons.person_outline, size: 20, color: Colors.white70),
+                        child: Text(
+                          b.name.isNotEmpty ? b.name[0] : '?',
+                          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                        ),
                       ),
                       const SizedBox(width: 16),
                       Expanded(
@@ -498,7 +498,7 @@ class HomeView extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              b['name'],
+                              b.name,
                               style: const TextStyle(
                                 fontWeight: FontWeight.bold,
                                 fontSize: 14,
@@ -506,7 +506,7 @@ class HomeView extends StatelessWidget {
                               ),
                             ),
                             Text(
-                              "Dia ${b['day']}",
+                              "Dia ${b.day}",
                               style: const TextStyle(
                                 fontSize: 12,
                                 color: Colors.white70,
@@ -528,7 +528,7 @@ class HomeView extends StatelessWidget {
     );
   }
 
-  Widget _buildPastPendingAppointmentsCard(BuildContext context, List<Appointment> appointments) {
+  Widget _buildOverdueAppointmentsCard(BuildContext context, List<Appointment> appointments) {
     final list = appointments.take(5).toList(); // Limite visual
     return Container(
       padding: const EdgeInsets.all(24),
@@ -555,7 +555,7 @@ class HomeView extends StatelessWidget {
                   color: danger.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: const Icon(Icons.warning_amber_rounded, color: danger, size: 20),
+                child: const Icon(Icons.history_rounded, color: danger, size: 20),
               ),
               const SizedBox(width: 12),
               const Expanded(
@@ -592,7 +592,7 @@ class HomeView extends StatelessWidget {
     );
   }
 
-  void _showPendingPaymentsPopup(BuildContext context) {
+  void _showPendingPaymentsPopup(BuildContext context, List<PendingPaymentEntry> payments) {
     showGeneralDialog(
       context: context,
       barrierDismissible: true,
@@ -633,11 +633,11 @@ class HomeView extends StatelessWidget {
                           child: const Icon(Icons.payment_rounded, color: danger),
                         ),
                         const SizedBox(width: 20),
-                        const Expanded(
+                        Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(
+                              const Text(
                                 "Pagamentos Pendentes",
                                 style: TextStyle(
                                   fontSize: 22,
@@ -647,8 +647,8 @@ class HomeView extends StatelessWidget {
                                 ),
                               ),
                               Text(
-                                "Total de 5 faturas em atraso",
-                                style: TextStyle(
+                                "Total de ${payments.length} faturas pendentes",
+                                style: const TextStyle(
                                   color: Colors.black45,
                                   fontSize: 13,
                                   fontWeight: FontWeight.w600,
@@ -666,7 +666,7 @@ class HomeView extends StatelessWidget {
                     ),
                   ),
 
-                  // SEARCH BAR
+                  // SEARCH BAR (Optional UI polish)
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 32),
                     child: TextField(
@@ -687,16 +687,24 @@ class HomeView extends StatelessWidget {
 
                   // PAYMENTS LIST
                   Expanded(
-                    child: ListView.separated(
+                    child: payments.isEmpty 
+                    ? const Center(
+                        child: Text(
+                          "Nenhum pagamento pendente no momento.",
+                          style: TextStyle(color: Colors.black38, fontWeight: FontWeight.bold),
+                        ),
+                      )
+                    : ListView.separated(
                       padding: const EdgeInsets.symmetric(horizontal: 32),
                       physics: const BouncingScrollPhysics(),
-                      itemCount: 5,
-                      separatorBuilder: (_, __) => const SizedBox(height: 12),
+                      itemCount: payments.length,
+                      separatorBuilder: (_, _) => const SizedBox(height: 12),
                       itemBuilder: (context, index) {
-                        final names = ["Julia Fernandes", "Ricardo Gomes", "Beatriz Lima", "Sonia Amaral", "Luiz Carlos"];
-                        final values = [150.0, 320.0, 90.0, 450.0, 120.0];
-                        final dates = ["12 Mar", "15 Mar", "20 Mar", "22 Mar", "25 Mar"];
-                        
+                        final payment = payments[index];
+                        final dateStr = payment.dueDate != null 
+                            ? DateFormat("dd MMM").format(DateTime.parse(payment.dueDate!))
+                            : DateFormat("dd MMM").format(DateTime.parse(payment.date));
+
                         return Container(
                           padding: const EdgeInsets.all(16),
                           decoration: BoxDecoration(
@@ -710,7 +718,7 @@ class HomeView extends StatelessWidget {
                                 radius: 22,
                                 backgroundColor: Colors.white,
                                 child: Text(
-                                  names[index][0],
+                                  payment.patientName.isNotEmpty ? payment.patientName[0].toUpperCase() : '?',
                                   style: const TextStyle(
                                     fontWeight: FontWeight.w900,
                                     color: danger,
@@ -723,7 +731,7 @@ class HomeView extends StatelessWidget {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      names[index],
+                                      payment.patientName,
                                       style: const TextStyle(
                                         fontWeight: FontWeight.w800,
                                         fontSize: 15,
@@ -731,7 +739,7 @@ class HomeView extends StatelessWidget {
                                       ),
                                     ),
                                     Text(
-                                      "Vencimento: ${dates[index]}",
+                                      "Vencimento: $dateStr",
                                       style: const TextStyle(
                                         fontSize: 12,
                                         color: Colors.black38,
@@ -745,7 +753,7 @@ class HomeView extends StatelessWidget {
                                 crossAxisAlignment: CrossAxisAlignment.end,
                                 children: [
                                   Text(
-                                    CurrencyFormatter.format(values[index]),
+                                    CurrencyFormatter.format(payment.amount),
                                     style: const TextStyle(
                                       fontWeight: FontWeight.w900,
                                       fontSize: 16,

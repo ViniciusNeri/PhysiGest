@@ -75,6 +75,7 @@ class PatientRemoteDataSource implements IPatientRemoteDataSource {
         nextAppointmentDate: patient.nextAppointmentDate,
         anamnesis: patient.anamnesis,
         photoPaths: patient.photoPaths,
+        pin: patient.pin.isEmpty ? _generateRandomPin() : patient.pin,
       ).toJson();
       
       final user = await localStorage.getUser();
@@ -106,6 +107,7 @@ class PatientRemoteDataSource implements IPatientRemoteDataSource {
         nextAppointmentDate: patient.nextAppointmentDate,
         anamnesis: patient.anamnesis,
         photoPaths: patient.photoPaths,
+        pin: patient.pin,
       ).toJson();
       final response = await apiClient.dio.put(
         '/patients/${patient.id}',
@@ -263,5 +265,10 @@ class PatientRemoteDataSource implements IPatientRemoteDataSource {
     } catch (e) {
       throw Exception('Erro inesperado: $e');
     }
+  }
+
+  String _generateRandomPin() {
+    final random = DateTime.now().millisecondsSinceEpoch.toString();
+    return random.substring(random.length - 4);
   }
 }

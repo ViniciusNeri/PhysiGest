@@ -45,29 +45,37 @@ class PaymentMethodModel extends PaymentMethod {
 class DashboardPreferencesModel extends DashboardPreferences {
   const DashboardPreferencesModel({
     super.id = '',
+    super.userId = '',
     super.dashboardTheme = 'light',
     super.showWeeklyAppointments = true,
     super.showMonthlyIncome = true,
     super.showActivePayments = true,
     super.showNextAppointment = true,
-    super.showPastPending = true,
+    super.showPendingPayments = true,
     super.showBirthdays = true,
-    super.showOccupancyChart = true,
+    super.showOccupancyGraph = true,
+    super.showOverdueAppointments = true,
     super.categoryControlMode = 'none',
+    super.defaultCategoryId,
+    super.defaultPaymentMethodId,
   });
 
   factory DashboardPreferencesModel.fromJson(Map<String, dynamic> json) {
     return DashboardPreferencesModel(
       id: (json['id'] ?? json['_id'] ?? json['codigo'])?.toString() ?? '',
+      userId: json['userId']?.toString() ?? '',
       dashboardTheme: json['dashboardTheme'] as String? ?? 'light',
       showWeeklyAppointments: json['showWeeklyAppointments'] as bool? ?? true,
       showMonthlyIncome: json['showMonthlyIncome'] as bool? ?? true,
       showActivePayments: json['showActivePayments'] as bool? ?? true,
       showNextAppointment: json['showNextAppointment'] as bool? ?? true,
-      showPastPending: json['showPastPending'] as bool? ?? true,
+      showPendingPayments: json['showPendingPayments'] as bool? ?? true,
       showBirthdays: json['showBirthdays'] as bool? ?? true,
-      showOccupancyChart: json['showOccupancyChart'] as bool? ?? true,
+      showOccupancyGraph: json['showOccupancyGraph'] as bool? ?? true,
+      showOverdueAppointments: json['showOverdueAppointments'] as bool? ?? true,
       categoryControlMode: json['categoryControlMode'] as String? ?? 'none',
+      defaultCategoryId: json['defaultCategoryId']?.toString(),
+      defaultPaymentMethodId: json['defaultPaymentMethodId']?.toString(),
     );
   }
 
@@ -79,10 +87,14 @@ class DashboardPreferencesModel extends DashboardPreferences {
       'showMonthlyIncome': showMonthlyIncome,
       'showActivePayments': showActivePayments,
       'showNextAppointment': showNextAppointment,
-      'showPastPending': showPastPending,
+      'showPendingPayments': showPendingPayments,
       'showBirthdays': showBirthdays,
-      'showOccupancyChart': showOccupancyChart,
+      'showOccupancyGraph': showOccupancyGraph,
+      'showOverdueAppointments': showOverdueAppointments,
       'categoryControlMode': categoryControlMode,
+      if (defaultCategoryId != null) 'defaultCategoryId': defaultCategoryId,
+      if (defaultPaymentMethodId != null)
+        'defaultPaymentMethodId': defaultPaymentMethodId,
     };
   }
 }

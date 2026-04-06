@@ -15,6 +15,7 @@ class PatientModel extends Patient {
     super.nextAppointmentDate,
     super.anamnesis = const Anamnesis(),
     super.photoPaths = const [],
+    super.pin = '',
   });
 
   factory PatientModel.fromJson(Map<String, dynamic> json) {
@@ -34,6 +35,7 @@ class PatientModel extends Patient {
       nextAppointmentDate: json['nextAppointmentDate'],
       anamnesis: AnamnesisModel.fromJson(anamnesisJson),
       photoPaths: photosJson.map((e) => e.toString()).toList(),
+      pin: json['pin']?.toString() ?? '',
     );
   }
 

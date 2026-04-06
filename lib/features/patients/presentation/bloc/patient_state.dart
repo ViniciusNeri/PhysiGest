@@ -21,12 +21,13 @@ class PatientState extends Equatable {
     List<Patient>? patients,
     String? errorMessage,
     String? successMessage,
+    bool clearMessages = false,
   }) {
     return PatientState(
       status: status ?? this.status,
       patients: patients ?? this.patients,
-      errorMessage: errorMessage ?? this.errorMessage,
-      successMessage: successMessage ?? this.successMessage,
+      errorMessage: clearMessages ? null : (errorMessage ?? this.errorMessage),
+      successMessage: clearMessages ? null : (successMessage ?? this.successMessage),
     );
   }
 

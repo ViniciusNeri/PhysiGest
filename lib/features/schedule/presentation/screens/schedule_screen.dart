@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
+import 'package:physigest/core/constants/app_constants.dart';
 import 'package:physigest/core/di/injection.dart';
 import 'package:physigest/core/theme/app_theme.dart';
 import 'package:physigest/core/widgets/side_menu.dart';
@@ -9,7 +12,10 @@ import 'package:physigest/features/schedule/presentation/bloc/schedule_event.dar
 import 'package:physigest/features/schedule/presentation/bloc/schedule_state.dart';
 import 'package:physigest/features/schedule/presentation/widgets/add_appointment_dialog.dart';
 import 'package:physigest/features/schedule/presentation/widgets/appointment_action_dialog.dart';
+import 'package:physigest/features/schedule/presentation/widgets/create_agenda_lock_dialog.dart';
 import 'package:physigest/features/schedule/domain/models/appointment.dart';
+import 'package:physigest/features/schedule/domain/models/agenda_lock.dart';
+import 'package:physigest/core/storage/local_storage.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:physigest/core/widgets/app_error_view.dart';
 import 'package:physigest/core/utils/app_alerts.dart';
@@ -312,6 +318,49 @@ class ScheduleView extends StatelessWidget {
                   style: TextStyle(fontWeight: FontWeight.bold),
                 ),
               ),
+              const SizedBox(width: 8),
+              TextButton.icon(
+                onPressed: () async {
+                  final user = await getIt<LocalStorage>().getUser();
+                  final userId = user?.id ?? '';
+                  final link = "${AppConstants.bookingUrl}?userId=$userId";
+                  Clipboard.setData(ClipboardData(text: link));
+                  if (context.mounted) {
+                    AppAlerts.success(context, "Link de agendamento copiado! Compartilhe no WhatsApp.");
+                  }
+                },
+                icon: Container(
+                  padding: const EdgeInsets.all(2),
+                  decoration: const BoxDecoration(
+                    color: Color(0xFF25D366),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Image.network(
+                    'https://upload.wikimedia.org/wikipedia/commons/thumb/6/6b/WhatsApp.svg/1200px-WhatsApp.svg.png',
+                    width: 16,
+                    height: 16,
+                    color: Colors.white,
+                    errorBuilder: (context, error, stackTrace) => const Icon(
+                      Icons.chat_bubble_rounded,
+                      size: 14,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+                label: const Text(
+                  "Link",
+                  style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF25D366)),
+                ),
+              ),
+              const SizedBox(width: 8),
+              TextButton.icon(
+                onPressed: () => _showBlockDayDialog(context, state),
+                icon: const Icon(Icons.block_rounded, size: 18, color: Colors.redAccent),
+                label: const Text(
+                  "Bloquear",
+                  style: TextStyle(fontWeight: FontWeight.bold, color: Colors.redAccent),
+                ),
+              ),
               if (isDesktop) ...[
                 const Spacer(),
                 _buildViewToggle(context, state),
@@ -445,22 +494,56 @@ class ScheduleView extends StatelessWidget {
         .where((a) => DateUtils.isSameDay(a.startDate, day))
         .toList();
 
-    return GestureDetector(
-      behavior: HitTestBehavior
-          .opaque, // Garante que o clique seja detectado em toda a área
-      onTapUp: (details) {
-        // Cálculo matemático da hora clicada
-        final double clickY = details.localPosition.dy;
-        final int hourClicked = (clickY / hourHeight).floor() + startHour;
-        final DateTime tappedDateTime = DateTime(
-          day.year,
-          day.month,
-          day.day,
-          hourClicked,
-        );
+    // Encontrar bloqueios para este dia (checar data única ou lista de datas)
+    final dayLocks = state.agendaLocks
+        .where((l) => (l.date != null && DateUtils.isSameDay(l.date!, day)) || 
+                      (l.dates != null && l.dates!.any((d) => DateUtils.isSameDay(d, day))))
+        .toList();
+    final bool isTotalLocked = dayLocks.any((l) => l.type == 'total');
 
-        _openAddAppointment(context, state, tappedDateTime);
-      },
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTapUp: isTotalLocked
+          ? null
+          : (details) {
+              // Cálculo matemático da hora clicada
+              final double clickY = details.localPosition.dy;
+              final double hourFract = clickY / hourHeight;
+              final int hourClicked = hourFract.floor() + startHour;
+              final int minuteClicked = ((hourFract - hourFract.floor()) * 60).round();
+
+              // Verificação de bloqueio parcial
+              bool isSlotLocked = false;
+              for (final lock in dayLocks.where((l) => l.type == 'partial')) {
+                if (lock.startTime != null && lock.endTime != null) {
+                  final startParts = lock.startTime!.split(':');
+                  final endParts = lock.endTime!.split(':');
+                  final startVal = int.parse(startParts[0]) * 60 + int.parse(startParts[1]);
+                  final endVal = int.parse(endParts[0]) * 60 + int.parse(endParts[1]);
+                  final currentVal = hourClicked * 60 + minuteClicked;
+
+                  if (currentVal >= startVal && currentVal < endVal) {
+                    isSlotLocked = true;
+                    break;
+                  }
+                }
+              }
+
+              if (isSlotLocked) {
+                AppAlerts.error(context, "Este horário está bloqueado.");
+                return;
+              }
+
+              final DateTime tappedDateTime = DateTime(
+                day.year,
+                day.month,
+                day.day,
+                hourClicked,
+                (minuteClicked / 15).round() * 15, // Arredondar para janelas de 15min
+              );
+
+              _openAddAppointment(context, state, tappedDateTime);
+            },
       child: Container(
         decoration: const BoxDecoration(
           border: Border(right: BorderSide(color: Color(0xFFF8FAFC))),
@@ -482,10 +565,8 @@ class ScheduleView extends StatelessWidget {
             ),
             ...dayApts.map((apt) {
               // Converter para double (horas + fração de minutos)
-              final double start =
-                  apt.startDate.hour + (apt.startDate.minute / 60);
-              final double end =
-                  apt.endDate.hour + (apt.endDate.minute / 60);
+              final double start = apt.startDate.hour + (apt.startDate.minute / 60);
+              final double end = apt.endDate.hour + (apt.endDate.minute / 60);
 
               // Cálculo da duração em horas (ex: 1.5 para 1h30min)
               final double duration = end - start;
@@ -503,6 +584,93 @@ class ScheduleView extends StatelessWidget {
                   child: _buildAppointmentCard(context, state, apt),
                 ),
               );
+            }),
+
+            // RENDERIZAR LOCKS
+            ...dayLocks.map((lock) {
+              if (lock.type == 'total') {
+                return Positioned.fill(
+                  child: Container(
+                    color: Colors.red.withValues(alpha: 0.15),
+                    child: Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.block_rounded, color: Colors.red.withValues(alpha: 0.4), size: 48),
+                          const SizedBox(height: 12),
+                          Text(
+                            lock.description ?? "Dia Bloqueado",
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              color: Colors.red.withValues(alpha: 0.6),
+                              fontWeight: FontWeight.w900,
+                              fontSize: 16,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                );
+              }
+
+              // Partial Lock
+              if (lock.startTime != null && lock.endTime != null) {
+                try {
+                  final startParts = lock.startTime!.split(':');
+                  final endParts = lock.endTime!.split(':');
+                  final startH = double.parse(startParts[0]);
+                  final startM = double.parse(startParts[1]);
+                  final endH = double.parse(endParts[0]);
+                  final endM = double.parse(endParts[1]);
+
+                  final double start = startH + (startM / 60);
+                  final double end = endH + (endM / 60);
+                  final double duration = end - start;
+                  final double top = (start - startHour) * hourHeight;
+
+                  if (top < 0) return const SizedBox();
+
+                  return Positioned(
+                    top: top,
+                    left: 0,
+                    right: 0,
+                    height: duration * hourHeight,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.red.withValues(alpha: 0.08),
+                        border: Border(
+                          top: BorderSide(color: Colors.red.withValues(alpha: 0.2), width: 1),
+                          bottom: BorderSide(color: Colors.red.withValues(alpha: 0.2), width: 1),
+                        ),
+                      ),
+                      child: Center(
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.block_rounded, color: Colors.red.withValues(alpha: 0.3), size: 16),
+                            const SizedBox(width: 8),
+                            Flexible(
+                              child: Text(
+                                lock.description ?? "Indisponível",
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                  color: Colors.red.withValues(alpha: 0.5),
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  );
+                } catch (e) {
+                  return const SizedBox();
+                }
+              }
+              return const SizedBox();
             }),
           ],
         ),
@@ -557,17 +725,16 @@ class ScheduleView extends StatelessWidget {
     Appointment apt,
   ) {
     Color baseColor = _getCategoryColor(apt.categoryId ?? '');
-    String categoryName = 'Atendimento';
-    
     if (apt.categoryId != null && apt.categoryId!.isNotEmpty) {
       final found = state.activeCategories.where((c) => c['id'] == apt.categoryId).firstOrNull;
       if (found != null && found['name'] != null) {
-        categoryName = found['name'];
       }
     }
 
     // Altera opacidade dependendo do status
-    if (apt.status == 'no_show' || apt.status == 'cancelled') {
+    if (apt.status == 'blocked') {
+      baseColor = Colors.grey.shade400;
+    } else if (apt.status == 'no_show' || apt.status == 'cancelled') {
       baseColor = baseColor.withValues(alpha: 0.5);
     }
 
@@ -991,5 +1158,18 @@ class ScheduleView extends StatelessWidget {
         context.read<ScheduleBloc>().add(UpdateAppointment(result));
       }
     }
+  }
+
+  void _showBlockDayDialog(BuildContext context, ScheduleState state) async {
+    final scheduleBloc = context.read<ScheduleBloc>();
+    showDialog(
+      context: context,
+      builder: (context) => CreateAgendaLockDialog(
+        initialDate: state.selectedDate,
+        onSave: (lock) {
+          scheduleBloc.add(AddAgendaLock(lock));
+        },
+      ),
+    );
   }
 }

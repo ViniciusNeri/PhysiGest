@@ -1,9 +1,14 @@
 // lib/features/patients/presentation/views/patient_summary_view.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter/services.dart';
 import '../../domain/models/patient.dart';
 import '../bloc/patient_activities_bloc.dart';
 import '../../domain/models/patient_activity.dart';
+import 'package:physigest/core/storage/local_storage.dart';
+import 'package:physigest/core/constants/app_constants.dart';
+import 'package:physigest/core/utils/app_alerts.dart';
+import 'package:physigest/core/di/injection.dart';
 
 class PatientSummaryView extends StatelessWidget {
   final Patient patient;
@@ -38,16 +43,16 @@ class PatientSummaryView extends StatelessWidget {
                   ? Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Expanded(flex: 3, child: _buildSidebarProfile()),
+                        Expanded(flex: 3, child: _buildSidebarProfile(context)),
                         const SizedBox(width: 32),
-                        Expanded(flex: 7, child: _buildRightColumn(isDesktop)),
+                        Expanded(flex: 7, child: _buildRightColumn(context, isDesktop)),
                       ],
                     )
                   : Column(
                       children: [
-                        _buildSidebarProfile(),
+                        _buildSidebarProfile(context),
                         const SizedBox(height: 24),
-                        _buildRightColumn(isDesktop),
+                        _buildRightColumn(context, isDesktop),
                       ],
                     ),
             ),
@@ -57,7 +62,7 @@ class PatientSummaryView extends StatelessWidget {
     );
   }
 
-  Widget _buildRightColumn(bool isDesktop) {
+  Widget _buildRightColumn(BuildContext context, bool isDesktop) {
     return Column(
       children: [
         _buildPremiumStatsRow(isDesktop),
@@ -74,7 +79,7 @@ class PatientSummaryView extends StatelessWidget {
     );
   }
 
-  Widget _buildSidebarProfile() {
+  Widget _buildSidebarProfile(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -184,6 +189,29 @@ class PatientSummaryView extends StatelessWidget {
                     const Color(0xFFF5F3FF),
                     Colors.purple,
                   ),
+                  _sidebarTile(
+                    Icons.lock_person_rounded,
+                    "PIN de Acesso",
+                    patient.pin,
+                    const Color(0xFFF0FDF4),
+                    const Color(0xFF16A34A),
+                    trailing: IconButton(
+                      icon: const Icon(Icons.copy_all_rounded, size: 20),
+                      color: const Color(0xFF16A34A),
+                      tooltip: "Copiar Instruções",
+                      onPressed: () async {
+                        final user = await getIt<LocalStorage>().getUser();
+                        final userId = user?.id ?? '';
+                        final link = "${AppConstants.bookingUrl}?userId=$userId";
+                        final message = "Acesse o link $link e faça o agendamento usando o pin de acesso: ${patient.pin}";
+                        
+                        Clipboard.setData(ClipboardData(text: message));
+                        if (context.mounted) {
+                          AppAlerts.success(context, "Instruções copiadas para o WhatsApp!");
+                        }
+                      },
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -198,8 +226,9 @@ class PatientSummaryView extends StatelessWidget {
     String label,
     String value,
     Color bg,
-    Color iconCol,
-  ) {
+    Color iconCol, {
+    Widget? trailing,
+  }) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 20),
       child: Row(
@@ -236,6 +265,7 @@ class PatientSummaryView extends StatelessWidget {
               ],
             ),
           ),
+          if (trailing != null) trailing,
         ],
       ),
     );

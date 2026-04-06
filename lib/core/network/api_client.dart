@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:injectable/injectable.dart';
+import 'package:physigest/core/constants/app_constants.dart';
 import 'package:physigest/core/network/interceptors/auth_interceptor.dart';
 import 'package:physigest/core/network/interceptors/logger_interceptor.dart';
 import 'package:physigest/core/network/interceptors/error_interceptor.dart';
@@ -15,7 +16,7 @@ class ApiClient {
   }) {
     dio = Dio(
       BaseOptions(
-        baseUrl: 'https://physiogest-api.onrender.com/v1',
+        baseUrl: AppConstants.apiBaseUrl,
         connectTimeout: const Duration(seconds: 15),
         receiveTimeout: const Duration(seconds: 15),
         sendTimeout: const Duration(seconds: 15),

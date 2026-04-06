@@ -1,6 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
 import 'package:physigest/features/schedule/domain/models/appointment.dart';
+import 'package:physigest/features/schedule/domain/models/agenda_lock.dart';
 import 'package:physigest/features/schedule/presentation/bloc/schedule_event.dart';
 import 'package:physigest/features/schedule/presentation/bloc/schedule_state.dart';
 
@@ -14,6 +15,8 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
   final GetAvailablePatientsUseCase _getAvailablePatientsUseCase;
   final GetCategoriesUseCase _getCategoriesUseCase;
   final DeleteAppointmentUseCase _deleteAppointmentUseCase;
+  final GetAgendaLocksUseCase _getAgendaLocksUseCase;
+  final CreateAgendaLockUseCase _createAgendaLockUseCase;
 
   ScheduleBloc(
     this._getAppointmentsUseCase,
@@ -22,6 +25,8 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
     this._getAvailablePatientsUseCase,
     this._getCategoriesUseCase,
     this._deleteAppointmentUseCase,
+    this._getAgendaLocksUseCase,
+    this._createAgendaLockUseCase,
   ) : super(ScheduleState(selectedDate: DateTime.now())) {
     on<LoadSchedule>(_onLoadSchedule);
     on<SelectDate>(_onSelectDate);
@@ -29,25 +34,34 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
     on<AddAppointment>(_onAddAppointment);
     on<UpdateAppointment>(_onUpdateAppointment);
     on<DeleteAppointment>(_onDeleteAppointment);
+    on<AddAgendaLock>(_onAddAgendaLock);
   }
 
   Future<void> _onLoadSchedule(
     LoadSchedule event,
     Emitter<ScheduleState> emit,
   ) async {
-    emit(state.copyWith(status: ScheduleStatus.loading));
+    emit(state.copyWith(
+      status: ScheduleStatus.loading,
+      resetSuccess: true,
+      resetError: true,
+    ));
 
     try {
-      final patients = await _getAvailablePatientsUseCase();
-      final categories = await _getCategoriesUseCase();
-      final appointments = await _getAppointmentsUseCase();
+      final results = await Future.wait([
+        _getAvailablePatientsUseCase(),
+        _getCategoriesUseCase(),
+        _getAppointmentsUseCase(),
+        _getAgendaLocksUseCase(),
+      ]);
 
       emit(
         state.copyWith(
           status: ScheduleStatus.success,
-          appointments: appointments,
-          availablePatients: patients,
-          activeCategories: categories,
+          availablePatients: results[0] as List<Map<String, dynamic>>,
+          activeCategories: results[1] as List<Map<String, dynamic>>,
+          appointments: results[2] as List<Appointment>,
+          agendaLocks: results[3] as List<AgendaLock>,
           successMessage: null,
         ),
       );
@@ -56,37 +70,50 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
         state.copyWith(
           status: ScheduleStatus.failure,
           errorMessage: e.toString().replaceAll('Exception: ', ''),
+          resetSuccess: true,
         ),
       );
     }
   }
 
   void _onSelectDate(SelectDate event, Emitter<ScheduleState> emit) {
-    emit(state.copyWith(selectedDate: event.selectedDate));
+    emit(state.copyWith(
+      selectedDate: event.selectedDate,
+      resetSuccess: true,
+      resetError: true,
+    ));
   }
 
   void _onChangeViewMode(ChangeViewMode event, Emitter<ScheduleState> emit) {
-    emit(state.copyWith(viewMode: event.viewMode));
+    emit(state.copyWith(
+      viewMode: event.viewMode,
+      resetSuccess: true,
+      resetError: true,
+    ));
   }
 
   Future<void> _onAddAppointment(
     AddAppointment event,
     Emitter<ScheduleState> emit,
   ) async {
-    emit(state.copyWith(status: ScheduleStatus.loading));
+    emit(state.copyWith(
+      status: ScheduleStatus.loading,
+      resetSuccess: true,
+      resetError: true,
+    ));
     try {
-      final created = await _createAppointmentUseCase(event.appointment);
-      final updatedList = List<Appointment>.from(state.appointments)..add(created);
+      await _createAppointmentUseCase(event.appointment);
       emit(state.copyWith(
         status: ScheduleStatus.success,
-        appointments: updatedList,
         successMessage: 'Agendamento adicionado com sucesso!',
       ));
+      add(LoadSchedule());
     } catch (e) {
       emit(
         state.copyWith(
           status: ScheduleStatus.failure,
           errorMessage: e.toString().replaceAll('Exception: ', ''),
+          resetSuccess: true,
         ),
       );
     }
@@ -96,23 +123,24 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
     UpdateAppointment event,
     Emitter<ScheduleState> emit,
   ) async {
-    emit(state.copyWith(status: ScheduleStatus.loading));
+    emit(state.copyWith(
+      status: ScheduleStatus.loading,
+      resetSuccess: true,
+      resetError: true,
+    ));
     try {
-      final updated = await _updateAppointmentUseCase(event.appointment);
-      final updatedList = state.appointments.map((apt) {
-        if (apt.id == updated.id) return updated;
-        return apt;
-      }).toList();
+      await _updateAppointmentUseCase(event.appointment);
       emit(state.copyWith(
         status: ScheduleStatus.success,
-        appointments: updatedList,
         successMessage: 'Agendamento atualizado com sucesso!',
       ));
+      add(LoadSchedule());
     } catch (e) {
       emit(
         state.copyWith(
           status: ScheduleStatus.failure,
           errorMessage: e.toString().replaceAll('Exception: ', ''),
+          resetSuccess: true,
         ),
       );
     }
@@ -122,15 +150,45 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
     DeleteAppointment event,
     Emitter<ScheduleState> emit,
   ) async {
-    emit(state.copyWith(status: ScheduleStatus.loading));
+    emit(state.copyWith(
+      status: ScheduleStatus.loading,
+      resetSuccess: true,
+      resetError: true,
+    ));
     try {
       await _deleteAppointmentUseCase(event.id);
-      final updatedList = state.appointments.where((apt) => apt.id != event.id).toList();
       emit(state.copyWith(
         status: ScheduleStatus.success,
-        appointments: updatedList,
         successMessage: 'Agendamento removido com sucesso!',
       ));
+      add(LoadSchedule());
+    } catch (e) {
+      emit(
+        state.copyWith(
+          status: ScheduleStatus.failure,
+          errorMessage: e.toString().replaceAll('Exception: ', ''),
+          resetSuccess: true,
+        ),
+      );
+    }
+  }
+
+  Future<void> _onAddAgendaLock(
+    AddAgendaLock event,
+    Emitter<ScheduleState> emit,
+  ) async {
+    emit(state.copyWith(
+      status: ScheduleStatus.loading,
+      resetSuccess: true,
+      resetError: true,
+    ));
+    try {
+      await _createAgendaLockUseCase(event.lock);
+      emit(state.copyWith(
+        status: ScheduleStatus.success,
+        successMessage: 'Bloqueio adicionado com sucesso!',
+      ));
+      add(LoadSchedule());
     } catch (e) {
       emit(
         state.copyWith(

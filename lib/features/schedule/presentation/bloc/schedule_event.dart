@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:physigest/features/schedule/domain/models/appointment.dart';
+import 'package:physigest/features/schedule/domain/models/agenda_lock.dart';
 import 'package:physigest/features/schedule/presentation/bloc/schedule_state.dart';
 
 abstract class ScheduleEvent extends Equatable {
@@ -42,6 +43,7 @@ class AddAppointment extends ScheduleEvent {
   @override
   List<Object?> get props => [appointment];
 }
+
 class DeleteAppointment extends ScheduleEvent {
   final String id;
 
@@ -49,4 +51,13 @@ class DeleteAppointment extends ScheduleEvent {
 
   @override
   List<Object?> get props => [id];
+}
+
+class AddAgendaLock extends ScheduleEvent {
+  final AgendaLock lock;
+
+  const AddAgendaLock(this.lock);
+
+  @override
+  List<Object?> get props => [lock];
 }
