@@ -46,3 +46,7 @@ class DeletePatient extends PatientEvent {
   @override
   List<Object?> get props => [id];
 }
+
+class ClearPatientMessages extends PatientEvent {
+  const ClearPatientMessages();
+}

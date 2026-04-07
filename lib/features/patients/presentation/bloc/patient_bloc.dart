@@ -23,6 +23,14 @@ class PatientBloc extends Bloc<PatientEvent, PatientState> {
     on<UpdatePatient>(_onUpdatePatient);
     on<DeletePatient>(_onDeletePatient);
     on<AddPhotoToPatient>(_onAddPhotoToPatient);
+    on<ClearPatientMessages>(_onClearMessages);
+  }
+
+  void _onClearMessages(
+    ClearPatientMessages event,
+    Emitter<PatientState> emit,
+  ) {
+    emit(state.copyWith(status: PatientStatus.initial, clearMessages: true));
   }
 
   Future<void> _onLoadPatients(

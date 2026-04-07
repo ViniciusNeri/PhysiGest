@@ -212,6 +212,13 @@ class PatientSummaryView extends StatelessWidget {
                       },
                     ),
                   ),
+                  _sidebarTile(
+                    patient.status == 'active' ? Icons.check_circle_rounded : Icons.info_rounded,
+                    "Status do Registro",
+                    patient.displayStatus,
+                    patient.status == 'active' ? const Color(0xFFECFDF5) : const Color(0xFFF1F5F9),
+                    patient.status == 'active' ? Colors.teal : Colors.grey,
+                  ),
                 ],
               ),
             ),

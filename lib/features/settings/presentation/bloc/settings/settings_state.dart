@@ -2,6 +2,7 @@ import 'package:equatable/equatable.dart';
 import 'package:physigest/features/settings/domain/entities/attendance_category.dart';
 import 'package:physigest/features/settings/domain/entities/payment_method.dart';
 import 'package:physigest/features/settings/domain/entities/dashboard_preferences.dart';
+import 'package:physigest/features/schedule/domain/models/agenda_lock.dart';
 
 abstract class SettingsState extends Equatable {
   final String? successMessage;
@@ -20,12 +21,14 @@ class SettingsLoaded extends SettingsState {
   final List<AttendanceCategory> categories;
   final List<PaymentMethod> paymentMethods;
   final DashboardPreferences dashboardPreferences;
+  final List<AgendaLock> agendaLocks;
 
   const SettingsLoaded({
     required this.userEmail,
     required this.categories,
     required this.paymentMethods,
     required this.dashboardPreferences,
+    this.agendaLocks = const [],
     super.successMessage,
   });
 
@@ -34,6 +37,7 @@ class SettingsLoaded extends SettingsState {
     List<AttendanceCategory>? categories,
     List<PaymentMethod>? paymentMethods,
     DashboardPreferences? dashboardPreferences,
+    List<AgendaLock>? agendaLocks,
     String? successMessage,
   }) {
     return SettingsLoaded(
@@ -41,6 +45,7 @@ class SettingsLoaded extends SettingsState {
       categories: categories ?? this.categories,
       paymentMethods: paymentMethods ?? this.paymentMethods,
       dashboardPreferences: dashboardPreferences ?? this.dashboardPreferences,
+      agendaLocks: agendaLocks ?? this.agendaLocks,
       successMessage: successMessage ?? this.successMessage,
     );
   }
@@ -51,6 +56,7 @@ class SettingsLoaded extends SettingsState {
     categories,
     paymentMethods,
     dashboardPreferences,
+    agendaLocks,
   ];
 }
 

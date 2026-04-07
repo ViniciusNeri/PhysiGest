@@ -20,10 +20,18 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
+  final ScrollController _locksScrollController = ScrollController();
+
   @override
   void initState() {
     super.initState();
     context.read<SettingsBloc>().add(LoadSettings());
+  }
+
+  @override
+  void dispose() {
+    _locksScrollController.dispose();
+    super.dispose();
   }
 
   @override
@@ -96,6 +104,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
               const SizedBox(height: 16),
               _buildManagementCard(context),
               const SizedBox(height: 32),
+              _buildSectionTitle('Gerenciamento de Atendimento'),
+              const SizedBox(height: 16),
+              _buildWorkingDaysCard(context, state),
+              const SizedBox(height: 32),
+              _buildSectionTitle('Bloqueios na Agenda'),
+              const SizedBox(height: 16),
+              _buildAgendaLocksCard(context, state),
+              const SizedBox(height: 32),
               _buildSectionTitle('Preferências do Dashboard'),
               const SizedBox(height: 16),
               _buildDashboardPreferencesCard(context, state),
@@ -103,6 +119,232 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildWorkingDaysCard(BuildContext context, SettingsLoaded state) {
+    final workingDays = state.dashboardPreferences.workingDays;
+    final days = [
+      {'label': 'Seg', 'value': 1},
+      {'label': 'Ter', 'value': 2},
+      {'label': 'Qua', 'value': 3},
+      {'label': 'Qui', 'value': 4},
+      {'label': 'Sex', 'value': 5},
+      {'label': 'Sáb', 'value': 6},
+      {'label': 'Dom', 'value': 7},
+    ];
+
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Selecione os dias em que haverá atividade na clínica:',
+            style: TextStyle(fontSize: 14, color: Colors.grey),
+          ),
+          const SizedBox(height: 16),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: days.map((day) {
+              final isSelected = workingDays.contains(day['value']);
+              return FilterChip(
+                label: Text(day['label'] as String),
+                selected: isSelected,
+                onSelected: (selected) {
+                  final newList = List<int>.from(workingDays);
+                  if (selected) {
+                    newList.add(day['value'] as int);
+                  } else {
+                    newList.remove(day['value'] as int);
+                  }
+                  newList.sort();
+                  final newPrefs = state.dashboardPreferences.copyWith(workingDays: newList);
+                  context.read<SettingsBloc>().add(UpdateDashboardPreferences(newPrefs));
+                },
+                selectedColor: AppTheme.primaryColor.withValues(alpha: 0.2),
+                checkmarkColor: AppTheme.primaryColor,
+                labelStyle: TextStyle(
+                  color: isSelected ? AppTheme.primaryColor : Colors.grey.shade700,
+                  fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                ),
+                backgroundColor: Colors.grey.shade100,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  side: BorderSide(
+                    color: isSelected ? AppTheme.primaryColor : Colors.transparent,
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAgendaLocksCard(BuildContext context, SettingsLoaded state) {
+    if (state.agendaLocks.isEmpty) {
+      return Container(
+        padding: const EdgeInsets.all(32),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.04),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: const Center(
+          child: Column(
+            children: [
+              Icon(Icons.event_available_rounded, size: 48, color: Colors.grey),
+              SizedBox(height: 16),
+              Text(
+                'Nenhum bloqueio ativo na agenda.',
+                style: TextStyle(color: Colors.grey, fontSize: 14),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: ConstrainedBox(
+        constraints: BoxConstraints(
+          maxHeight: state.agendaLocks.length > 5 ? 350 : double.infinity,
+        ),
+        child: Scrollbar(
+          controller: _locksScrollController,
+          thumbVisibility: state.agendaLocks.length > 5,
+          child: ListView.separated(
+            controller: _locksScrollController,
+            shrinkWrap: true,
+            physics: state.agendaLocks.length > 5
+                ? const AlwaysScrollableScrollPhysics()
+                : const NeverScrollableScrollPhysics(),
+            itemCount: state.agendaLocks.length,
+            separatorBuilder: (context, index) =>
+                const Divider(height: 1, indent: 20, endIndent: 20),
+            itemBuilder: (context, index) {
+              final lock = state.agendaLocks[index];
+              final isTotal = lock.type == 'total';
+
+              return ListTile(
+                contentPadding:
+                    const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                leading: _buildIconFrame(
+                  isTotal ? Icons.block_rounded : Icons.timer_outlined,
+                  isTotal ? Colors.red : Colors.orange,
+                ),
+                title: Text(
+                  _formatLockDate(lock),
+                  style:
+                      const TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
+                ),
+                subtitle: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      isTotal
+                          ? 'Dia Inteiro'
+                          : '${lock.startTime} - ${lock.endTime}',
+                      style: TextStyle(
+                        color: isTotal
+                            ? Colors.red.shade700
+                            : Colors.orange.shade700,
+                        fontWeight: FontWeight.w500,
+                        fontSize: 13,
+                      ),
+                    ),
+                    if (lock.description != null && lock.description!.isNotEmpty)
+                      Text(
+                        lock.description!,
+                        style: const TextStyle(color: Colors.grey, fontSize: 12),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                  ],
+                ),
+                trailing: IconButton(
+                  icon: const Icon(Icons.delete_outline_rounded,
+                      color: Colors.grey),
+                  onPressed: () => _confirmDeleteLock(context, lock.id),
+                ),
+              );
+            },
+          ),
+        ),
+      ),
+    );
+  }
+
+  String _formatLockDate(dynamic lock) {
+    if (lock.date != null) {
+      final d = lock.date as DateTime;
+      return '${d.day.toString().padLeft(2, '0')}/${d.month.toString().padLeft(2, '0')}/${d.year}';
+    }
+    if (lock.dates != null && (lock.dates as List).isNotEmpty) {
+      final first = (lock.dates as List).first as DateTime;
+      if ((lock.dates as List).length > 1) {
+        return '${first.day.toString().padLeft(2, '0')}/${first.month.toString().padLeft(2, '0')} + ${(lock.dates as List).length - 1} dias';
+      }
+      return '${first.day.toString().padLeft(2, '0')}/${first.month.toString().padLeft(2, '0')}/${first.year}';
+    }
+    return 'Data não definida';
+  }
+
+  void _confirmDeleteLock(BuildContext context, String id) {
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Remover Bloqueio?'),
+        content: const Text('Este horário voltará a ficar disponível para agendamentos.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: const Text('Cancelar'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              context.read<SettingsBloc>().add(DeleteAgendaLock(id));
+              Navigator.pop(dialogContext);
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('Remover'),
+          ),
+        ],
       ),
     );
   }

@@ -192,6 +192,22 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i657.ISettingsRepository>(),
       ),
     );
+    gh.factory<_i228.SettingsBloc>(
+      () => _i228.SettingsBloc(
+        gh<_i279.GetCategoriesUseCase>(),
+        gh<_i279.GetPaymentMethodsUseCase>(),
+        gh<_i279.GetDashboardPreferencesUseCase>(),
+        gh<_i279.CreateCategoryUseCase>(),
+        gh<_i279.UpdateCategoryUseCase>(),
+        gh<_i279.DeleteCategoryUseCase>(),
+        gh<_i279.CreatePaymentMethodUseCase>(),
+        gh<_i279.UpdatePaymentMethodUseCase>(),
+        gh<_i279.DeletePaymentMethodUseCase>(),
+        gh<_i279.UpdateDashboardPreferencesUseCase>(),
+        gh<_i226.IScheduleRepository>(),
+        gh<_i329.LocalStorage>(),
+      ),
+    );
     gh.lazySingleton<_i644.IFinancialRepository>(
       () =>
           _i467.FinancialRepositoryImpl(gh<_i599.IFinancialRemoteDataSource>()),
@@ -219,21 +235,6 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.lazySingleton<_i399.CreateAgendaLockUseCase>(
       () => _i399.CreateAgendaLockUseCase(gh<_i226.IScheduleRepository>()),
-    );
-    gh.factory<_i228.SettingsBloc>(
-      () => _i228.SettingsBloc(
-        gh<_i279.GetCategoriesUseCase>(),
-        gh<_i279.GetPaymentMethodsUseCase>(),
-        gh<_i279.GetDashboardPreferencesUseCase>(),
-        gh<_i279.CreateCategoryUseCase>(),
-        gh<_i279.UpdateCategoryUseCase>(),
-        gh<_i279.DeleteCategoryUseCase>(),
-        gh<_i279.CreatePaymentMethodUseCase>(),
-        gh<_i279.UpdatePaymentMethodUseCase>(),
-        gh<_i279.DeletePaymentMethodUseCase>(),
-        gh<_i279.UpdateDashboardPreferencesUseCase>(),
-        gh<_i329.LocalStorage>(),
-      ),
     );
     gh.lazySingleton<_i188.LoginUseCase>(
       () => _i188.LoginUseCase(gh<_i589.IAuthRepository>()),
