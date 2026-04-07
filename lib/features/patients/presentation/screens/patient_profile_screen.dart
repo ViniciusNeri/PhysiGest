@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:physigest/core/di/injection.dart';
 import 'package:physigest/features/patients/domain/models/patient.dart';
 import 'package:physigest/features/patients/presentation/bloc/patient_bloc.dart';
+import 'package:physigest/features/patients/presentation/bloc/patient_event.dart';
 import 'package:physigest/features/patients/presentation/bloc/patient_state.dart';
 
 // Import das novas Views
@@ -30,35 +31,59 @@ class PatientProfileScreen extends StatefulWidget {
 class _PatientProfileScreenState extends State<PatientProfileScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
+  late PatientBloc _patientBloc;
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 6, vsync: this);
+    _patientBloc = getIt<PatientBloc>()..add(LoadPatients());
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    // Nota: Como o BlocProvider(create: ...) fecha o bloco automaticamente, 
+    // não precisamos dar dispose manual aqui se passarmos o factory.
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider.value(
-      value: getIt<PatientBloc>(),
+    return BlocProvider(
+      create: (context) => _patientBloc,
       child: BlocConsumer<PatientBloc, PatientState>(
+        listenWhen: (previous, current) {
+          // Só dispara alerta se for erro ou se for sucesso COM mensagem (add/update/delete)
+          return current.status == PatientStatus.failure || 
+                 (current.status == PatientStatus.success && current.successMessage != null);
+        },
         listener: (context, state) {
+          // Pequeno delay para garantir que diálogos (como o EditPatientDialog) 
+          // fechem ANTES dos alertas de sucesso serem mostrados, evitando conflitos de Navigator.pop()
           if (state.status == PatientStatus.failure && state.errorMessage != null) {
-            AppAlerts.error(context, state.errorMessage!);
+            Future.delayed(Duration.zero, () {
+              if (mounted) AppAlerts.error(context, state.errorMessage!);
+            });
           } else if (state.status == PatientStatus.success && state.successMessage != null) {
-            AppAlerts.success(context, state.successMessage!);
+            Future.delayed(Duration.zero, () {
+              if (mounted) AppAlerts.success(context, state.successMessage!);
+            });
           }
         },
         builder: (context, state) {
-          final p = state.patients.firstWhere(
-            (p) => p.id == widget.patient.id,
-            orElse: () => widget.patient,
-          );
+          // No profile, garantimos que temos o paciente mais atualizado do estado
+          final p = state.patients.isEmpty 
+            ? widget.patient 
+            : state.patients.cast<Patient>().firstWhere(
+                (p) => p.id == widget.patient.id,
+                orElse: () => widget.patient,
+              );
           final isDesktop = MediaQuery.of(context).size.width >= 600;
 
           return LoadingOverlay(
             isLoading: state.status == PatientStatus.loading,
-            message: "Salvando...",
+            message: "Carregando...",
             child: Scaffold(
               backgroundColor: const Color(0xFFF1F5F9),
               appBar: _buildAppBar(p, isDesktop),
@@ -120,10 +145,17 @@ class _PatientProfileScreenState extends State<PatientProfileScreen>
                 bottom: 12.0,
               ),
               child: OutlinedButton.icon(
-                onPressed: () => showDialog(
-                  context: context,
-                  builder: (_) => EditPatientDialog(patient: p),
-                ),
+                onPressed: () {
+                  final bloc = context.read<PatientBloc>();
+                  bloc.add(ClearPatientMessages());
+                  showDialog(
+                    context: context,
+                    builder: (_) => BlocProvider.value(
+                      value: bloc,
+                      child: EditPatientDialog(patient: p),
+                    ),
+                  );
+                },
                 icon: const Icon(Icons.edit_outlined, size: 16),
                 label: const Text(
                   "Editar Perfil",
@@ -144,10 +176,17 @@ class _PatientProfileScreenState extends State<PatientProfileScreen>
               padding: const EdgeInsets.only(right: 8.0),
               child: IconButton(
                 icon: const Icon(Icons.edit_outlined, color: Color(0xFF64748B)),
-                onPressed: () => showDialog(
-                  context: context,
-                  builder: (_) => EditPatientDialog(patient: p),
-                ),
+                onPressed: () {
+                  final bloc = context.read<PatientBloc>();
+                  bloc.add(ClearPatientMessages());
+                  showDialog(
+                    context: context,
+                    builder: (_) => BlocProvider.value(
+                      value: bloc,
+                      child: EditPatientDialog(patient: p),
+                    ),
+                  );
+                },
               ),
             ),
         ],

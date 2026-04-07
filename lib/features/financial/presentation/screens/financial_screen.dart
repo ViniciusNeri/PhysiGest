@@ -668,14 +668,33 @@ class _YearlyPerformanceCard extends StatelessWidget {
   }
 }
 
-class _RecentTransactionsCard extends StatelessWidget {
+class _RecentTransactionsCard extends StatefulWidget {
   final FinancialState state;
 
   const _RecentTransactionsCard({required this.state});
 
   @override
+  State<_RecentTransactionsCard> createState() => _RecentTransactionsCardState();
+}
+
+class _RecentTransactionsCardState extends State<_RecentTransactionsCard> {
+  late final ScrollController _scrollController;
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController = ScrollController();
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final transacoes = state.transacoes.take(10).toList();
+    final transacoes = widget.state.transacoes;
 
     return Container(
       decoration: BoxDecoration(
@@ -686,72 +705,73 @@ class _RecentTransactionsCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Padding(
-            padding: const EdgeInsets.all(24.0),
+          const Padding(
+            padding: EdgeInsets.all(24.0),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text(
-                  'Fluxo de Caixa Recente',
+                Text(
+                  'Fluxo de Caixa',
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
-                if (state.transacoes.length > 10)
-                  Text(
-                    'Exibindo 10 de ${state.transacoes.length}',
-                    style: const TextStyle(fontSize: 12, color: Colors.grey),
-                  ),
               ],
             ),
           ),
           Divider(height: 1, color: Colors.grey.shade100),
           ConstrainedBox(
-            constraints: const BoxConstraints(maxHeight: 500),
-            child: ListView.separated(
-              shrinkWrap: true,
-              itemCount: transacoes.length,
-              separatorBuilder: (context, index) =>
-                  Divider(height: 1, color: Colors.grey.shade50),
-              itemBuilder: (context, index) {
-                final transacao = transacoes[index];
-                final isExpense = transacao.isExpense;
-                return ListTile(
-                  leading: CircleAvatar(
-                    backgroundColor: isExpense
-                        ? Colors.red.shade50
-                        : FinancialView.azulPetroleo.withAlpha(25),
-                    child: Icon(
-                      isExpense ? Icons.arrow_downward : Icons.arrow_upward,
-                      color: isExpense ? Colors.red : FinancialView.azulPetroleo,
-                      size: 18,
+            constraints: const BoxConstraints(maxHeight: 550),
+            child: Scrollbar(
+              controller: _scrollController,
+              thumbVisibility: true,
+              trackVisibility: true,
+              child: ListView.separated(
+                controller: _scrollController,
+                shrinkWrap: true,
+                padding: const EdgeInsets.only(bottom: 16),
+                itemCount: transacoes.length,
+                separatorBuilder: (context, index) =>
+                    Divider(height: 1, color: Colors.grey.shade50),
+                itemBuilder: (context, index) {
+                  final transacao = transacoes[index];
+                  final isExpense = transacao.isExpense;
+                  return ListTile(
+                    leading: CircleAvatar(
+                      backgroundColor: isExpense
+                          ? Colors.red.shade50
+                          : FinancialView.azulPetroleo.withAlpha(25),
+                      child: Icon(
+                        isExpense ? Icons.arrow_downward : Icons.arrow_upward,
+                        color: isExpense ? Colors.red : FinancialView.azulPetroleo,
+                        size: 18,
+                      ),
                     ),
-                  ),
-                  title: Text(transacao.titulo),
-                  subtitle: Text(
-                    '${_formatDate(transacao.data)} • ${transacao.subtitulo}${transacao.isExpense && transacao.expenseType != null ? " • ${_translateExpenseType(transacao.expenseType!)}" : ""}',
-                    style: TextStyle(color: Colors.grey.shade500, fontSize: 12),
-                  ),
-                  trailing: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        isExpense ? '- ${CurrencyFormatter.format(transacao.valor)}' : '+ ${CurrencyFormatter.format(transacao.valor)}',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          color: isExpense ? Colors.red : FinancialView.azulPetroleo,
+                    title: Text(transacao.titulo),
+                    subtitle: Text(
+                      '${_formatDate(transacao.data)} • ${transacao.subtitulo}${transacao.isExpense && transacao.expenseType != null ? " • ${_translateExpenseType(transacao.expenseType!)}" : ""}',
+                      style: TextStyle(color: Colors.grey.shade500, fontSize: 12),
+                    ),
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          isExpense ? '- ${CurrencyFormatter.format(transacao.valor)}' : '+ ${CurrencyFormatter.format(transacao.valor)}',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: isExpense ? Colors.red : FinancialView.azulPetroleo,
+                          ),
                         ),
-                      ),
-                      const SizedBox(width: 8),
-                      IconButton(
-                        icon: const Icon(Icons.delete_outline_rounded, color: Colors.grey, size: 20),
-                        onPressed: () => _confirmDelete(context, transacao.id, transacao.source),
-                      ),
-                    ],
-                  ),
-                );
-              },
+                        const SizedBox(width: 8),
+                        IconButton(
+                          icon: const Icon(Icons.delete_outline_rounded, color: Colors.grey, size: 20),
+                          onPressed: () => _confirmDelete(context, transacao.id, transacao.source),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
             ),
           ),
-          const SizedBox(height: 16),
         ],
       ),
     );

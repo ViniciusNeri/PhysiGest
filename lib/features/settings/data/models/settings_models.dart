@@ -58,6 +58,7 @@ class DashboardPreferencesModel extends DashboardPreferences {
     super.categoryControlMode = 'none',
     super.defaultCategoryId,
     super.defaultPaymentMethodId,
+    super.workingDays = const [1, 2, 3, 4, 5],
   });
 
   factory DashboardPreferencesModel.fromJson(Map<String, dynamic> json) {
@@ -76,6 +77,9 @@ class DashboardPreferencesModel extends DashboardPreferences {
       categoryControlMode: json['categoryControlMode'] as String? ?? 'none',
       defaultCategoryId: json['defaultCategoryId']?.toString(),
       defaultPaymentMethodId: json['defaultPaymentMethodId']?.toString(),
+      workingDays: json['workingDays'] is List
+          ? (json['workingDays'] as List).map((e) => int.parse(e.toString())).toList()
+          : const [1, 2, 3, 4, 5],
     );
   }
 
@@ -95,6 +99,7 @@ class DashboardPreferencesModel extends DashboardPreferences {
       if (defaultCategoryId != null) 'defaultCategoryId': defaultCategoryId,
       if (defaultPaymentMethodId != null)
         'defaultPaymentMethodId': defaultPaymentMethodId,
+      'workingDays': workingDays,
     };
   }
 }

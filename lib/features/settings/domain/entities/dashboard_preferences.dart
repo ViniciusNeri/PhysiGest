@@ -15,6 +15,7 @@ class DashboardPreferences extends Equatable {
   final String categoryControlMode;
   final String? defaultCategoryId;
   final String? defaultPaymentMethodId;
+  final List<int> workingDays;
 
   const DashboardPreferences({
     this.id = '',
@@ -31,6 +32,7 @@ class DashboardPreferences extends Equatable {
     this.categoryControlMode = 'none',
     this.defaultCategoryId,
     this.defaultPaymentMethodId,
+    this.workingDays = const [1, 2, 3, 4, 5], // Padrão Seg-Sex
   });
 
   DashboardPreferences copyWith({
@@ -48,6 +50,7 @@ class DashboardPreferences extends Equatable {
     String? categoryControlMode,
     String? defaultCategoryId,
     String? defaultPaymentMethodId,
+    List<int>? workingDays,
   }) {
     return DashboardPreferences(
       id: id ?? this.id,
@@ -67,6 +70,7 @@ class DashboardPreferences extends Equatable {
       defaultCategoryId: defaultCategoryId ?? this.defaultCategoryId,
       defaultPaymentMethodId:
           defaultPaymentMethodId ?? this.defaultPaymentMethodId,
+      workingDays: workingDays ?? this.workingDays,
     );
   }
 
@@ -86,5 +90,6 @@ class DashboardPreferences extends Equatable {
         categoryControlMode,
         defaultCategoryId,
         defaultPaymentMethodId,
+        workingDays,
       ];
 }

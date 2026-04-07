@@ -10,4 +10,5 @@ abstract class IScheduleRepository {
   Future<List<Map<String, dynamic>>> getCategories();
   Future<List<AgendaLock>> getAgendaLocks();
   Future<AgendaLock> createAgendaLock(AgendaLock lock);
+  Future<void> deleteAgendaLock(String id);
 }

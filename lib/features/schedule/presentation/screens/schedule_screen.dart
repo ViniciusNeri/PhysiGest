@@ -106,12 +106,8 @@ class ScheduleView extends StatelessWidget {
           bottom: BorderSide(color: Color(0xFFE2E8F0), width: 1),
         ),
         actions: [
-          IconButton(
-            onPressed: () {},
-            icon: const Icon(
-              Icons.notifications_none_rounded,
-              color: Colors.black45,
-            ),
+          BlocBuilder<ScheduleBloc, ScheduleState>(
+            builder: (context, state) => _buildViewToggle(context, state, isMobile: true),
           ),
           const SizedBox(width: 16),
         ],
@@ -361,14 +357,7 @@ class ScheduleView extends StatelessWidget {
                   style: TextStyle(fontWeight: FontWeight.bold, color: Colors.redAccent),
                 ),
               ),
-              if (isDesktop) ...[
-                const Spacer(),
-                _buildViewToggle(context, state),
-              ] else ...[
-                const Spacer(),
-                // Simplificação pro Mobile (Ícone ou Menu)
-                _buildViewToggle(context, state, isMobile: true),
-              ],
+              const Spacer(),
             ],
           ),
         );
@@ -1047,7 +1036,7 @@ class ScheduleView extends StatelessWidget {
   }) {
     if (isMobile) {
       return PopupMenuButton<ScheduleViewMode>(
-        icon: const Icon(Icons.more_vert),
+        icon: const Icon(Icons.calendar_view_day_rounded),
         onSelected: (mode) =>
             context.read<ScheduleBloc>().add(ChangeViewMode(mode)),
         itemBuilder: (context) => [

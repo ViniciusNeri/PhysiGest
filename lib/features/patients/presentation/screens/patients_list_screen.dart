@@ -20,9 +20,20 @@ class PatientsListScreen extends StatelessWidget {
     return BlocProvider(
       create: (_) => getIt<PatientBloc>()..add(LoadPatients()),
       child: BlocListener<PatientBloc, PatientState>(
+        listenWhen: (previous, current) {
+          // Só dispara alerta se for erro ou se for sucesso COM mensagem (add/update/delete)
+          return current.status == PatientStatus.failure || 
+                 (current.status == PatientStatus.success && current.successMessage != null);
+        },
         listener: (context, state) {
           if (state.status == PatientStatus.failure && state.errorMessage != null) {
-            AppAlerts.error(context, state.errorMessage!);
+            Future.delayed(Duration.zero, () {
+              if (context.mounted) AppAlerts.error(context, state.errorMessage!);
+            });
+          } else if (state.status == PatientStatus.success && state.successMessage != null) {
+            Future.delayed(Duration.zero, () {
+              if (context.mounted) AppAlerts.success(context, state.successMessage!);
+            });
           }
         },
         child: const PatientsListView(),
@@ -108,11 +119,12 @@ class _PatientsListViewState extends State<PatientsListView> {
           ElevatedButton.icon(
             onPressed: () {
               final bloc = context.read<PatientBloc>();
+              bloc.add(ClearPatientMessages());
               showDialog(
                 context: context,
                 builder: (_) => BlocProvider.value(
                   value: bloc,
-                  child: const EditPatientDialog(),
+                  child: EditPatientDialog(),
                 ),
               );
             },
@@ -292,7 +304,6 @@ class _PatientsListViewState extends State<PatientsListView> {
   }
 
   Widget _buildTableHeader(BuildContext context) {
-    final bool isDesktop = MediaQuery.of(context).size.width > 800;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
       child: Row(
@@ -309,34 +320,21 @@ class _PatientsListViewState extends State<PatientsListView> {
               ),
             ),
           ),
-          if (isDesktop)
-            const Expanded(
-              flex: 2,
-              child: Text(
-                "NASCIMENTO",
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w800,
-                  color: Color(0xFF94A3B8),
-                ),
+          const Expanded(
+            flex: 2,
+            child: Text(
+              "TELEFONE",
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w800,
+                color: Color(0xFF94A3B8),
               ),
             ),
-          if (isDesktop)
-            const Expanded(
-              flex: 2,
-              child: Text(
-                "TELEFONE",
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w800,
-                  color: Color(0xFF94A3B8),
-                ),
-              ),
-            ),
-          Expanded(
-            flex: isDesktop ? 1 : 2,
-            child: const Text(
-              "TRATAMENTOS",
+          ),
+          const Expanded(
+            flex: 2,
+            child: Text(
+              "STATUS",
               style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w800,
@@ -367,7 +365,6 @@ class _PatientRow extends StatelessWidget {
     final Color bgColor =
         avatarColors[patient.name.length % avatarColors.length];
     final Color textColor = Color.lerp(bgColor, Colors.black, 0.7)!;
-    final bool isDesktop = MediaQuery.of(context).size.width > 800;
 
     return InkWell(
       onTap: () => context.push('/patients/${patient.id}', extra: patient),
@@ -392,65 +389,112 @@ class _PatientRow extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: 16),
-                  Text(
-                    patient.name,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.w700,
-                      color: Color(0xFF1E293B),
-                      fontSize: 15,
+                  Expanded(
+                    child: Text(
+                      patient.name,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w700,
+                        color: Color(0xFF1E293B),
+                        fontSize: 15,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
                   ),
                 ],
               ),
             ),
-            // Idade (Suposição de campo, ajuste conforme seu modelo)
-            if (isDesktop)
-              Expanded(
-                flex: 2,
-                child: Text(
-                  patient.displayBirthDate,
-                  style: const TextStyle(color: Color(0xFF64748B)),
-                ),
-              ),
             // Telefone
-            if (isDesktop)
-              Expanded(
-                flex: 2,
-                child: Text(
-                  patient.phone,
-                  style: TextStyle(color: const Color(0xFF64748B)),
-                ),
-              ),
-            // Badge de Tratamentos
             Expanded(
-              flex: isDesktop ? 1 : 2,
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 4,
-                ),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFF1F5F9),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Text(
-                  "${patient.completedAppointments} sessões",
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                    color: AppTheme.primaryColor,
+              flex: 2,
+              child: Text(
+                patient.phone,
+                style: const TextStyle(color: Color(0xFF64748B)),
+              ),
+            ),
+            // Status Badge
+            Expanded(
+              flex: 2,
+              child: UnconstrainedBox(
+                alignment: Alignment.centerLeft,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 4,
+                  ),
+                  decoration: BoxDecoration(
+                    color: patient.status == 'active' 
+                        ? Colors.teal.withValues(alpha: 0.1) 
+                        : Colors.grey.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: patient.status == 'active' 
+                        ? Colors.teal.withValues(alpha: 0.2) 
+                        : Colors.grey.withValues(alpha: 0.2)
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        width: 6,
+                        height: 6,
+                        decoration: BoxDecoration(
+                          color: patient.status == 'active' ? Colors.teal : Colors.grey,
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        patient.displayStatus,
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w900,
+                          color: patient.status == 'active' 
+                              ? Colors.teal.shade700 
+                              : Colors.grey.shade700,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),
             ),
             // Menu de Ações
-            IconButton(
-              onPressed: () {},
+            PopupMenuButton<String>(
+              onSelected: (value) {
+                if (value == 'toggle_status') {
+                  final newStatus = patient.status == 'active' ? 'inactive' : 'active';
+                  context.read<PatientBloc>().add(
+                    UpdatePatient(patient.copyWith(status: newStatus))
+                  );
+                }
+              },
               icon: const Icon(
                 Icons.more_horiz_rounded,
                 color: Color(0xFF94A3B8),
               ),
+              itemBuilder: (context) => [
+                PopupMenuItem(
+                  value: 'toggle_status',
+                  child: Row(
+                    children: [
+                      Icon(
+                        patient.status == 'active' 
+                            ? Icons.person_off_rounded 
+                            : Icons.person_add_rounded,
+                        size: 18,
+                        color: const Color(0xFF64748B),
+                      ),
+                      const SizedBox(width: 12),
+                      Text(
+                        patient.status == 'active' ? "Inativar" : "Ativar",
+                        style: const TextStyle(fontSize: 14),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
           ],
         ),

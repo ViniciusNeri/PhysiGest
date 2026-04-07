@@ -10,6 +10,8 @@ import 'package:physigest/features/settings/presentation/bloc/settings/settings_
 import 'package:physigest/features/settings/presentation/bloc/settings/settings_state.dart';
 
 import 'package:physigest/features/settings/domain/usecases/settings_usecases.dart';
+import 'package:physigest/features/schedule/domain/repositories/i_schedule_repository.dart';
+import 'package:physigest/features/schedule/domain/models/agenda_lock.dart';
 
 @injectable
 class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
@@ -23,6 +25,7 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
   final UpdatePaymentMethodUseCase _updatePaymentMethodUseCase;
   final DeletePaymentMethodUseCase _deletePaymentMethodUseCase;
   final UpdateDashboardPreferencesUseCase _updateDashboardPreferencesUseCase;
+  final IScheduleRepository _scheduleRepository;
   final LocalStorage _localStorage;
   final _uuid = const Uuid();
 
@@ -37,6 +40,7 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
     this._updatePaymentMethodUseCase,
     this._deletePaymentMethodUseCase,
     this._updateDashboardPreferencesUseCase,
+    this._scheduleRepository,
     this._localStorage,
   ) : super(SettingsInitial()) {
     on<LoadSettings>(_onLoadSettings);
@@ -47,6 +51,7 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
     on<AddPaymentMethod>(_onAddPaymentMethod);
     on<UpdatePaymentMethod>(_onUpdatePaymentMethod);
     on<DeletePaymentMethod>(_onDeletePaymentMethod);
+    on<DeleteAgendaLock>(_onDeleteAgendaLock);
   }
 
   Future<void> _onLoadSettings(
@@ -59,11 +64,13 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
         _getCategoriesUseCase(),
         _getPaymentMethodsUseCase(),
         _getDashboardPreferencesUseCase(),
+        _scheduleRepository.getAgendaLocks(),
       ]);
 
       final categories = results[0] as List<AttendanceCategory>;
       final paymentMethods = results[1] as List<PaymentMethod>;
       final dashboardPreferences = results[2] as DashboardPreferences;
+      final agendaLocks = results[3] as List<AgendaLock>;
 
       final user = await _localStorage.getUser();
       final userEmail = user?.email ?? 'fisioterapeuta@physigest.com';
@@ -74,6 +81,7 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
           categories: categories,
           paymentMethods: paymentMethods,
           dashboardPreferences: dashboardPreferences,
+          agendaLocks: agendaLocks,
         ),
       );
     } catch (e) {
@@ -219,6 +227,28 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
         emit(currentState.copyWith(
           paymentMethods: filteredMethods,
           successMessage: 'Metodo removido!',
+        ));
+      } catch (e) {
+        emit(SettingsError(e.toString().replaceAll('Exception: ', '')));
+      }
+    }
+  }
+
+  Future<void> _onDeleteAgendaLock(
+    DeleteAgendaLock event,
+    Emitter<SettingsState> emit,
+  ) async {
+    if (state is SettingsLoaded) {
+      final currentState = state as SettingsLoaded;
+      try {
+        await _scheduleRepository.deleteAgendaLock(event.id);
+        final updatedLocks = currentState.agendaLocks
+            .where((l) => l.id != event.id)
+            .toList();
+        
+        emit(currentState.copyWith(
+          agendaLocks: updatedLocks,
+          successMessage: 'Bloqueio removido com sucesso!',
         ));
       } catch (e) {
         emit(SettingsError(e.toString().replaceAll('Exception: ', '')));

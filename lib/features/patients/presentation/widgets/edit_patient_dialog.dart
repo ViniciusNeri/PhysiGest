@@ -83,6 +83,7 @@ class _EditPatientDialogState extends State<EditPatientDialog> {
         profession: _professionCtrl.text,
         anamnesis: widget.patient?.anamnesis ?? const Anamnesis(),
         photoPaths: widget.patient?.photoPaths ?? const [],
+        status: widget.patient?.status ?? 'active',
       );
 
       final bloc = context.read<PatientBloc>();
@@ -102,265 +103,269 @@ class _EditPatientDialogState extends State<EditPatientDialog> {
     return BlocListener<PatientBloc, PatientState>(
       listenWhen: (previous, current) => previous.status != current.status,
       listener: (context, state) {
-        if (state.status == PatientStatus.success && state.successMessage != null) {
-          AppAlerts.success(context, state.successMessage!);
-          context.pop();
-        } else if (state.status == PatientStatus.failure && state.errorMessage != null) {
-          AppAlerts.error(context, state.errorMessage!);
+        if (state.status == PatientStatus.success) {
+          Navigator.of(context).pop();
         }
       },
       child: Dialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         backgroundColor: const Color(0xFFF8F9FE),
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 600),
-        child: Padding(
-          padding: EdgeInsets.all(isDesktop ? 32.0 : 20.0),
-          child: Form(
-            key: _formKey,
-            child: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Expanded(
-                        child: Text(
-                          isEditing ? 'Editar Cadastro' : 'Novo Paciente',
-                          style: TextStyle(
-                            fontSize: isDesktop ? 24 : 20,
-                            fontWeight: FontWeight.w900,
-                            color: const Color(0xFF0F172A),
-                          ),
-                        ),
-                      ),
-                      IconButton(
-                        icon: const Icon(
-                          Icons.close_rounded,
-                          color: Color(0xFF94A3B8),
-                        ),
-                        onPressed: () => context.pop(),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 24),
-
-                  _buildTextFieldCard(
-                    label: 'Nome Completo',
-                    controller: _nameCtrl,
-                    icon: Icons.person_outline,
-                    validator: (v) =>
-                        v == null || v.isEmpty ? 'Campo obrigatório' : null,
-                  ),
-                  const SizedBox(height: 16),
-                  _buildTextFieldCard(
-                    label: 'E-mail',
-                    controller: _emailCtrl,
-                    icon: Icons.email_outlined,
-                    keyboardType: TextInputType.emailAddress,
-                  ),
-                  const SizedBox(height: 16),
-
-                  // Responsivo: Lado a Lado ou Um Embaixo do outro
-                  LayoutBuilder(
-                    builder: (context, constraints) {
-                      final isWide = constraints.maxWidth > 400;
-                      if (isWide) {
-                        return Row(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 600),
+          child: BlocBuilder<PatientBloc, PatientState>(
+            builder: (context, state) {
+              return Padding(
+                padding: EdgeInsets.all(isDesktop ? 32.0 : 20.0),
+                child: Form(
+                  key: _formKey,
+                  child: SingleChildScrollView(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Expanded(
-                              child: _buildTextFieldCard(
-                                label: 'Telefone',
-                                controller: _phoneCtrl,
-                                icon: Icons.phone_outlined,
-                                keyboardType: TextInputType.phone,
-                                inputFormatters: [PhoneInputFormatter()],
+                              child: Text(
+                                isEditing ? 'Editar Cadastro' : 'Novo Paciente',
+                                style: TextStyle(
+                                  fontSize: isDesktop ? 24 : 20,
+                                  fontWeight: FontWeight.w900,
+                                  color: const Color(0xFF0F172A),
+                                ),
+                              ),
+                            ),
+                            IconButton(
+                              icon: const Icon(
+                                Icons.close_rounded,
+                                color: Color(0xFF94A3B8),
+                              ),
+                              onPressed: () => context.pop(),
+                            ),
+                          ],
+                        ),
+                        if (state.status == PatientStatus.failure && state.errorMessage != null)
+                          Container(
+                            margin: const EdgeInsets.only(top: 16),
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: Colors.red.withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Text(
+                              state.errorMessage!,
+                              style: const TextStyle(color: Colors.red, fontSize: 13),
+                            ),
+                          ),
+                        const SizedBox(height: 24),
+
+                        _buildTextFieldCard(
+                          label: 'Nome Completo',
+                          controller: _nameCtrl,
+                          icon: Icons.person_outline,
+                          validator: (v) =>
+                              v == null || v.isEmpty ? 'Campo obrigatório' : null,
+                        ),
+                        const SizedBox(height: 16),
+                        _buildTextFieldCard(
+                          label: 'E-mail',
+                          controller: _emailCtrl,
+                          icon: Icons.email_outlined,
+                          keyboardType: TextInputType.emailAddress,
+                        ),
+                        const SizedBox(height: 16),
+
+                        // Responsivo: Lado a Lado ou Um Embaixo do outro
+                        LayoutBuilder(
+                          builder: (context, constraints) {
+                            final isWide = constraints.maxWidth > 400;
+                            if (isWide) {
+                              return Row(
+                                children: [
+                                  Expanded(
+                                    child: _buildTextFieldCard(
+                                      label: 'Telefone',
+                                      controller: _phoneCtrl,
+                                      icon: Icons.phone_outlined,
+                                      keyboardType: TextInputType.phone,
+                                      inputFormatters: [PhoneInputFormatter()],
+                                    ),
+                                  ),
+                                  const SizedBox(width: 16),
+                                  Expanded(
+                                    child: _buildTextFieldCard(
+                                      label: 'Data de Nascimento',
+                                      controller: _birthDateCtrl,
+                                      icon: Icons.calendar_today_outlined,
+                                      keyboardType: TextInputType.number,
+                                      inputFormatters: [DateInputFormatter()],
+                                    ),
+                                  ),
+                                ],
+                              );
+                            } else {
+                              return Column(
+                                children: [
+                                  _buildTextFieldCard(
+                                    label: 'Telefone',
+                                    controller: _phoneCtrl,
+                                    icon: Icons.phone_outlined,
+                                    keyboardType: TextInputType.phone,
+                                    inputFormatters: [PhoneInputFormatter()],
+                                  ),
+                                  const SizedBox(height: 16),
+                                  _buildTextFieldCard(
+                                    label: 'Data de Nascimento',
+                                    controller: _birthDateCtrl,
+                                    icon: Icons.calendar_today_outlined,
+                                    keyboardType: TextInputType.number,
+                                    inputFormatters: [DateInputFormatter()],
+                                  ),
+                                ],
+                              );
+                            }
+                          },
+                        ),
+                        const SizedBox(height: 16),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: _buildDropdownCard(
+                                label: 'Gênero',
+                                value: _selectedGender,
+                                items: ['male', 'female', 'other'],
+                                icon: Icons.wc_outlined,
+                                onChanged: (val) {
+                                  if (val != null) setState(() => _selectedGender = val);
+                                },
                               ),
                             ),
                             const SizedBox(width: 16),
                             Expanded(
                               child: _buildTextFieldCard(
-                                label: 'Data de Nascimento',
-                                controller: _birthDateCtrl,
-                                icon: Icons.calendar_today_outlined,
-                                keyboardType: TextInputType.number,
-                                inputFormatters: [DateInputFormatter()],
+                                label: 'Profissão',
+                                controller: _professionCtrl,
+                                icon: Icons.work_outline,
                               ),
                             ),
                           ],
-                        );
-                      } else {
-                        return Column(
-                          children: [
-                            _buildTextFieldCard(
-                              label: 'Telefone',
-                              controller: _phoneCtrl,
-                              icon: Icons.phone_outlined,
-                              keyboardType: TextInputType.phone,
-                              inputFormatters: [PhoneInputFormatter()],
-                            ),
-                            const SizedBox(height: 16),
-                            _buildTextFieldCard(
-                              label: 'Data de Nascimento',
-                              controller: _birthDateCtrl,
-                              icon: Icons.calendar_today_outlined,
-                              keyboardType: TextInputType.number,
-                              inputFormatters: [DateInputFormatter()],
-                            ),
-                          ],
-                        );
-                      }
-                    },
-                  ),
-                  const SizedBox(height: 16),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _buildDropdownCard(
-                          label: 'Gênero',
-                          value: _selectedGender,
-                          items: ['male', 'female', 'other'],
-                          icon: Icons.wc_outlined,
-                          onChanged: (val) {
-                            if (val != null) setState(() => _selectedGender = val);
-                          },
                         ),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: _buildTextFieldCard(
-                          label: 'Profissão',
-                          controller: _professionCtrl,
-                          icon: Icons.work_outline,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 32),
+                        const SizedBox(height: 32),
 
-                  if (isDesktop)
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        TextButton(
-                          onPressed: () => context.pop(),
-                          style: TextButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 24,
-                              vertical: 16,
-                            ),
-                            foregroundColor: const Color(0xFF64748B),
-                          ),
-                          child: const Text(
-                            'Cancelar',
-                            style: TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                        ),
-                        const SizedBox(width: 16),
-                        BlocBuilder<PatientBloc, PatientState>(
-                          builder: (context, state) {
-                            final isLoading = state.status == PatientStatus.loading;
-                            return ElevatedButton.icon(
-                              onPressed: isLoading ? null : _savePatient,
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: azulPetroleo,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
+                        if (isDesktop)
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              TextButton(
+                                onPressed: () => context.pop(),
+                                style: TextButton.styleFrom(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 24,
+                                    vertical: 16,
+                                  ),
+                                  foregroundColor: const Color(0xFF64748B),
                                 ),
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 24,
-                                  vertical: 16,
-                                ),
-                                elevation: 0,
-                              ),
-                              icon: isLoading 
-                                  ? const SizedBox(
-                                      width: 20, 
-                                      height: 20, 
-                                      child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
-                                    )
-                                  : const Icon(
-                                      Icons.save_rounded,
-                                      color: Colors.white,
-                                      size: 20,
-                                    ),
-                              label: Text(
-                                isLoading
-                                    ? 'Salvando...'
-                                    : (isEditing ? 'Salvar Alterações' : 'Cadastrar Paciente'),
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
+                                child: const Text(
+                                  'Cancelar',
+                                  style: TextStyle(fontWeight: FontWeight.bold),
                                 ),
                               ),
-                            );
-                          },
-                        ),
-                      ],
-                    )
-                  else
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        BlocBuilder<PatientBloc, PatientState>(
-                          builder: (context, state) {
-                            final isLoading = state.status == PatientStatus.loading;
-                            return ElevatedButton.icon(
-                              onPressed: isLoading ? null : _savePatient,
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: azulPetroleo,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
+                              const SizedBox(width: 16),
+                              ElevatedButton.icon(
+                                onPressed: state.status == PatientStatus.loading ? null : _savePatient,
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: azulPetroleo,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 24,
+                                    vertical: 16,
+                                  ),
+                                  elevation: 0,
                                 ),
-                                padding: const EdgeInsets.symmetric(vertical: 16),
-                                elevation: 0,
-                              ),
-                              icon: isLoading
-                                  ? const SizedBox(
-                                      width: 20, 
-                                      height: 20, 
-                                      child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
-                                    )
-                                  : const Icon(
-                                      Icons.save_rounded,
-                                      color: Colors.white,
-                                      size: 20,
-                                    ),
-                              label: Text(
-                                isLoading 
-                                    ? 'Salvando...' 
-                                    : (isEditing ? 'Salvar Alterações' : 'Cadastrar'),
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
+                                icon: state.status == PatientStatus.loading 
+                                    ? const SizedBox(
+                                        width: 20, 
+                                        height: 20, 
+                                        child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                                      )
+                                    : const Icon(
+                                        Icons.save_rounded,
+                                        color: Colors.white,
+                                        size: 20,
+                                      ),
+                                label: Text(
+                                  state.status == PatientStatus.loading
+                                      ? 'Salvando...'
+                                      : (isEditing ? 'Salvar Alterações' : 'Cadastrar Paciente'),
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                 ),
                               ),
-                            );
-                          },
-                        ),
-                        const SizedBox(height: 12),
-                        TextButton(
-                          onPressed: () => context.pop(),
-                          style: TextButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(vertical: 16),
-                            foregroundColor: const Color(0xFF64748B),
+                            ],
+                          )
+                        else
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              ElevatedButton.icon(
+                                onPressed: state.status == PatientStatus.loading ? null : _savePatient,
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: azulPetroleo,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  padding: const EdgeInsets.symmetric(vertical: 16),
+                                  elevation: 0,
+                                ),
+                                icon: state.status == PatientStatus.loading
+                                    ? const SizedBox(
+                                        width: 20, 
+                                        height: 20, 
+                                        child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                                      )
+                                    : const Icon(
+                                        Icons.save_rounded,
+                                        color: Colors.white,
+                                        size: 20,
+                                      ),
+                                label: Text(
+                                  state.status == PatientStatus.loading 
+                                      ? 'Salvando...' 
+                                      : (isEditing ? 'Salvar Alterações' : 'Cadastrar'),
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 12),
+                              TextButton(
+                                onPressed: () => context.pop(),
+                                style: TextButton.styleFrom(
+                                  padding: const EdgeInsets.symmetric(vertical: 16),
+                                  foregroundColor: const Color(0xFF64748B),
+                                ),
+                                child: const Text(
+                                  'Cancelar',
+                                  style: TextStyle(fontWeight: FontWeight.bold),
+                                ),
+                              ),
+                            ],
                           ),
-                          child: const Text(
-                            'Cancelar',
-                            style: TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                        ),
                       ],
                     ),
-                ],
-              ),
-            ),
+                  ),
+                ),
+              );
+            },
           ),
         ),
       ),
-     ),
     );
   }
 
@@ -417,7 +422,7 @@ class _EditPatientDialogState extends State<EditPatientDialog> {
         border: Border.all(color: const Color(0xFFE2E8F0)),
       ),
       child: DropdownButtonFormField<String>(
-        initialValue: value,
+        value: value,
         onChanged: onChanged,
         decoration: InputDecoration(
           labelText: label,

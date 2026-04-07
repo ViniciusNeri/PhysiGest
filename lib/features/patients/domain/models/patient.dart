@@ -84,6 +84,7 @@ class Patient extends Equatable {
   final Anamnesis anamnesis;
   final List<String> photoPaths; // Lista de caminhos para as fotos locais mockadas
   final String pin; // 4-digit PIN for booking access
+  final String status; // 'active' or 'inactive'
 
   const Patient({
     required this.id,
@@ -99,6 +100,7 @@ class Patient extends Equatable {
     this.anamnesis = const Anamnesis(),
     this.photoPaths = const [],
     this.pin = '',
+    this.status = 'active',
   });
 
   String get displayBirthDate {
@@ -133,6 +135,8 @@ class Patient extends Equatable {
       return nextAppointmentDate!;
     }
   }
+
+  String get displayStatus => status == 'active' ? 'Ativo' : 'Inativo';
 
   String get displayAge {
     if (birthDate.isEmpty) return 'Idade N/A';
@@ -177,6 +181,7 @@ class Patient extends Equatable {
     Anamnesis? anamnesis,
     List<String>? photoPaths,
     String? pin,
+    String? status,
   }) {
     return Patient(
       id: id ?? this.id,
@@ -192,6 +197,7 @@ class Patient extends Equatable {
       anamnesis: anamnesis ?? this.anamnesis,
       photoPaths: photoPaths ?? this.photoPaths,
       pin: pin ?? this.pin,
+      status: status ?? this.status,
     );
   }
 
@@ -210,6 +216,7 @@ class Patient extends Equatable {
     anamnesis,
     photoPaths,
     pin,
+    status,
   ];
 }
 

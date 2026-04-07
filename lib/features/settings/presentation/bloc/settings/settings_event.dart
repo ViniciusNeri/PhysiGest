@@ -74,3 +74,12 @@ class DeletePaymentMethod extends SettingsEvent {
   @override
   List<Object?> get props => [id];
 }
+
+class DeleteAgendaLock extends SettingsEvent {
+  final String id;
+
+  const DeleteAgendaLock(this.id);
+
+  @override
+  List<Object?> get props => [id];
+}

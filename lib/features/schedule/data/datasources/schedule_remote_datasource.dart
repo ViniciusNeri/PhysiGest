@@ -16,6 +16,7 @@ abstract class IScheduleRemoteDataSource {
   Future<List<Map<String, dynamic>>> getCategories();
   Future<List<AgendaLockModel>> getAgendaLocks();
   Future<AgendaLockModel> createAgendaLock(AgendaLock lock);
+  Future<void> deleteAgendaLock(String id);
 }
 
 @LazySingleton(as: IScheduleRemoteDataSource)
@@ -193,6 +194,17 @@ class ScheduleRemoteDataSource implements IScheduleRemoteDataSource {
       
       // Caso contrário, tratar como objeto único
       return AgendaLockModel.fromJson(response.data as Map<String, dynamic>);
+    } on DioException catch (e) {
+      throw Exception(e.message);
+    } catch (e) {
+      throw Exception('Erro inesperado: $e');
+    }
+  }
+
+  @override
+  Future<void> deleteAgendaLock(String id) async {
+    try {
+      await apiClient.dio.delete('/agendas/lock/$id');
     } on DioException catch (e) {
       throw Exception(e.message);
     } catch (e) {

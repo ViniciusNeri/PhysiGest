@@ -49,4 +49,9 @@ class ScheduleRepositoryImpl implements IScheduleRepository {
   Future<AgendaLock> createAgendaLock(AgendaLock lock) async {
     return await remoteDataSource.createAgendaLock(lock);
   }
+
+  @override
+  Future<void> deleteAgendaLock(String id) async {
+    return await remoteDataSource.deleteAgendaLock(id);
+  }
 }
