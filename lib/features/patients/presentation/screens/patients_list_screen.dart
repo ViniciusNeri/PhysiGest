@@ -321,18 +321,7 @@ class _PatientsListViewState extends State<PatientsListView> {
             ),
           ),
           const Expanded(
-            flex: 2,
-            child: Text(
-              "TELEFONE",
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w800,
-                color: Color(0xFF94A3B8),
-              ),
-            ),
-          ),
-          const Expanded(
-            flex: 2,
+            flex: 3,
             child: Text(
               "STATUS",
               style: TextStyle(
@@ -403,17 +392,9 @@ class _PatientRow extends StatelessWidget {
                 ],
               ),
             ),
-            // Telefone
-            Expanded(
-              flex: 2,
-              child: Text(
-                patient.phone,
-                style: const TextStyle(color: Color(0xFF64748B)),
-              ),
-            ),
             // Status Badge
             Expanded(
-              flex: 2,
+              flex: 3,
               child: UnconstrainedBox(
                 alignment: Alignment.centerLeft,
                 child: Container(
@@ -464,9 +445,41 @@ class _PatientRow extends StatelessWidget {
             PopupMenuButton<String>(
               onSelected: (value) {
                 if (value == 'toggle_status') {
-                  final newStatus = patient.status == 'active' ? 'inactive' : 'active';
-                  context.read<PatientBloc>().add(
-                    UpdatePatient(patient.copyWith(status: newStatus))
+                  final isCurrentlyActive = patient.status == 'active';
+                  final actionText = isCurrentlyActive ? 'Inativar' : 'Ativar';
+                  final confirmationMessage = isCurrentlyActive
+                      ? 'O paciente ficará inativo e não aparecerá nas buscas rápidas e dashboard.'
+                      : 'O paciente voltará a ficar ativo em sua base de dados.';
+
+                  showDialog(
+                    context: context,
+                    builder: (dialogContext) => AlertDialog(
+                      title: Text('$actionText Paciente?'),
+                      content: Text(confirmationMessage),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(dialogContext),
+                          child: const Text('Cancelar'),
+                        ),
+                        ElevatedButton(
+                          onPressed: () {
+                            final newStatus =
+                                isCurrentlyActive ? 'inactive' : 'active';
+                            context.read<PatientBloc>().add(
+                                  UpdatePatient(
+                                      patient.copyWith(status: newStatus)),
+                                );
+                            Navigator.pop(dialogContext);
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor:
+                                isCurrentlyActive ? Colors.red : Colors.teal,
+                            foregroundColor: Colors.white,
+                          ),
+                          child: Text(actionText),
+                        ),
+                      ],
+                    ),
                   );
                 }
               },

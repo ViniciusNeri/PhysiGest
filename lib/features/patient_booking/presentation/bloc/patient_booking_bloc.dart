@@ -20,41 +20,75 @@ class PatientBookingBloc extends Bloc<PatientBookingEvent, PatientBookingState> 
     on<ConfirmBooking>(_onConfirmBooking);
     on<ChangeBookingMonth>(_onChangeBookingMonth);
     on<SelectBookingCategory>(_onSelectBookingCategory);
+    on<ResetBookingStatus>(_onResetBookingStatus);
   }
 
   void _onLoadBookingData(LoadBookingData event, Emitter<PatientBookingState> emit) async {
     emit(state.copyWith(status: PatientBookingStatus.loading));
     try {
-      final appointments = await _repository.getAppointments();
-      final categories = await _repository.getCategories();
+      final categories = await _repository.getCategories(userId: event.userId);
+      
+      final dateStr = "${state.selectedDate.year}-${state.selectedDate.month.toString().padLeft(2, '0')}-${state.selectedDate.day.toString().padLeft(2, '0')}";
+      final slots = await _repository.getAvailableSlots(event.userId, dateStr);
+
       emit(state.copyWith(
         status: PatientBookingStatus.initial,
-        appointments: appointments,
         categories: categories,
         userId: event.userId,
+        availableSlots: slots,
       ));
-      _calculateAvailableSlots(state.selectedDate, emit);
     } catch (e) {
       emit(state.copyWith(status: PatientBookingStatus.failure, errorMessage: e.toString()));
     }
   }
 
-  void _onSelectBookingDate(SelectBookingDate event, Emitter<PatientBookingState> emit) {
-    emit(state.copyWith(selectedDate: event.date, selectedSlot: null));
-    _calculateAvailableSlots(event.date, emit);
+  void _onSelectBookingDate(SelectBookingDate event, Emitter<PatientBookingState> emit) async {
+    if (state.userId == null) return;
+    
+    emit(state.copyWith(
+      status: PatientBookingStatus.loading,
+      selectedDate: event.date,
+      selectedSlot: null,
+    ));
+    try {
+      final dateStr = "${event.date.year}-${event.date.month.toString().padLeft(2, '0')}-${event.date.day.toString().padLeft(2, '0')}";
+      final slots = await _repository.getAvailableSlots(state.userId!, dateStr);
+      
+      emit(state.copyWith(
+        status: PatientBookingStatus.initial,
+        availableSlots: slots,
+      ));
+    } catch (e) {
+      emit(state.copyWith(status: PatientBookingStatus.failure, errorMessage: e.toString()));
+    }
   }
 
   void _onSelectBookingSlot(SelectBookingSlot event, Emitter<PatientBookingState> emit) {
-    emit(state.copyWith(selectedSlot: event.slot));
+    if (state.status == PatientBookingStatus.success) return; // Bloqueia novos cliques após sucesso
+    emit(state.copyWith(selectedSlot: event.slot, status: PatientBookingStatus.initial));
   }
 
-  void _onChangeBookingMonth(ChangeBookingMonth event, Emitter<PatientBookingState> emit) {
+  void _onChangeBookingMonth(ChangeBookingMonth event, Emitter<PatientBookingState> emit) async {
+    if (state.userId == null) return;
+
     final newFocusedDate = DateTime(event.year, event.month, 1);
     emit(state.copyWith(
       focusedDate: newFocusedDate,
       selectedSlot: null,
+      status: PatientBookingStatus.loading,
     ));
-    _calculateAvailableSlots(state.selectedDate, emit);
+    
+    try {
+      final dateStr = "${state.selectedDate.year}-${state.selectedDate.month.toString().padLeft(2, '0')}-${state.selectedDate.day.toString().padLeft(2, '0')}";
+      final slots = await _repository.getAvailableSlots(state.userId!, dateStr);
+      
+      emit(state.copyWith(
+        status: PatientBookingStatus.initial,
+        availableSlots: slots,
+      ));
+    } catch (e) {
+      // Falha silenciosa ou log na troca de mês para não quebrar a navegação
+    }
   }
 
   void _onSelectBookingCategory(SelectBookingCategory event, Emitter<PatientBookingState> emit) {
@@ -72,54 +106,29 @@ class PatientBookingBloc extends Bloc<PatientBookingEvent, PatientBookingState> 
       return;
     }
 
-    if (event.pin != "1234") { // Validação Mock conforme solicitado para exibição de erro
-      emit(state.copyWith(status: PatientBookingStatus.failure, errorMessage: "PIN incorreto tente novamente."));
-      return;
-    }
-
     emit(state.copyWith(status: PatientBookingStatus.loading));
     try {
-      final category = state.categories.firstWhere((c) => c['id'] == state.selectedCategoryId);
-      
-      final newAppt = Appointment(
-        id: DateTime.now().millisecondsSinceEpoch.toString(),
-        patientName: "Agendamento PIN: ${event.pin}", 
-        userId: state.userId,
-        categoryId: state.selectedCategoryId,
-        categoryName: category['name'],
+      await _repository.createOnlineAppointment(
+        userId: state.userId!,
+        pin: event.pin,
         startDate: state.selectedSlot!,
-        endDate: state.selectedSlot!.add(const Duration(hours: 1)),
-        status: 'scheduled',
+        categoryId: state.selectedCategoryId!,
       );
 
-      await _repository.createAppointment(newAppt);
       emit(state.copyWith(
         status: PatientBookingStatus.success,
-        successMessage: "Solicitação de agendamento realizada com sucesso! em alguns instantes entraremos em contato para confirmar a solicitação",
+        successMessage: "✨ Tudo pronto! Seu agendamento foi realizado com sucesso.\n\nEm instantes, nossa equipe entrará em contato para confirmar os detalhes. Obrigado pela confiança!",
       ));
     } catch (e) {
-      emit(state.copyWith(status: PatientBookingStatus.failure, errorMessage: e.toString()));
+      emit(state.copyWith(status: PatientBookingStatus.failure, errorMessage: e.toString().replaceAll('Exception: ', '')));
     }
   }
 
-  void _calculateAvailableSlots(DateTime date, Emitter<PatientBookingState> emit) {
-    final List<DateTime> slots = [];
-    final startOfDay = DateTime(date.year, date.month, date.day, 8);
-
-    for (int i = 0; i <= 10; i++) {
-      final slotTime = startOfDay.add(Duration(hours: i));
-      
-      // Verifica se já existe agendamento neste horário
-      final isOccupied = state.appointments.any((appt) {
-        return appt.startDate.isBefore(slotTime.add(const Duration(minutes: 59))) &&
-               appt.endDate.isAfter(slotTime);
-      });
-
-      if (!isOccupied && slotTime.isAfter(DateTime.now())) {
-        slots.add(slotTime);
-      }
-    }
-
-    emit(state.copyWith(availableSlots: slots));
+  void _onResetBookingStatus(ResetBookingStatus event, Emitter<PatientBookingState> emit) {
+    emit(state.copyWith(
+      status: PatientBookingStatus.initial,
+      selectedSlot: null,
+      successMessage: null,
+    ));
   }
 }

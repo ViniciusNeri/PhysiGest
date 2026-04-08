@@ -36,8 +36,8 @@ class ScheduleRepositoryImpl implements IScheduleRepository {
   }
 
   @override
-  Future<List<Map<String, dynamic>>> getCategories() async {
-    return await remoteDataSource.getCategories();
+  Future<List<Map<String, dynamic>>> getCategories({String? userId}) async {
+    return await remoteDataSource.getCategories(userId: userId);
   }
 
   @override
@@ -53,5 +53,25 @@ class ScheduleRepositoryImpl implements IScheduleRepository {
   @override
   Future<void> deleteAgendaLock(String id) async {
     return await remoteDataSource.deleteAgendaLock(id);
+  }
+
+  @override
+  Future<List<DateTime>> getAvailableSlots(String userId, String date) async {
+    return await remoteDataSource.getAvailableSlots(userId, date);
+  }
+
+  @override
+  Future<void> createOnlineAppointment({
+    required String userId,
+    required String pin,
+    required DateTime startDate,
+    required String categoryId,
+  }) async {
+    return await remoteDataSource.createOnlineAppointment(
+      userId: userId,
+      pin: pin,
+      startDate: startDate,
+      categoryId: categoryId,
+    );
   }
 }

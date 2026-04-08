@@ -56,3 +56,7 @@ class SelectBookingCategory extends PatientBookingEvent {
   @override
   List<Object?> get props => [categoryId];
 }
+
+class ResetBookingStatus extends PatientBookingEvent {
+  const ResetBookingStatus();
+}

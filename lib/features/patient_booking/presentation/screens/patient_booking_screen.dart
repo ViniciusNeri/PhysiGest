@@ -232,6 +232,110 @@ class _PatientBookingViewState extends State<_PatientBookingView> {
     );
   }
 
+  void _showSuccessDialog(BuildContext context, String message) {
+    showGeneralDialog(
+      context: context,
+      barrierDismissible: false,
+      barrierLabel: "Sucesso",
+      barrierColor: Colors.black.withOpacity(0.4),
+      transitionDuration: const Duration(milliseconds: 500),
+      pageBuilder: (dialogContext, anim1, anim2) {
+        return Center(
+          child: Container(
+            width: 400,
+            margin: const EdgeInsets.symmetric(horizontal: 24),
+            padding: const EdgeInsets.all(40),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(40),
+              boxShadow: [
+                BoxShadow(
+                  color: AppTheme.primaryColor.withOpacity(0.15),
+                  blurRadius: 40,
+                  offset: const Offset(0, 20),
+                )
+              ],
+            ),
+            child: Material(
+              color: Colors.transparent,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 80,
+                    height: 80,
+                    decoration: BoxDecoration(
+                      color: AppTheme.primaryColor.withOpacity(0.1),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Center(
+                      child: Icon(
+                        Icons.check_circle_rounded,
+                        color: AppTheme.primaryColor,
+                        size: 48,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 32),
+                  const Text(
+                    "Agendamento Confirmado!",
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.w900,
+                      color: Color(0xFF1E293B),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    message,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      color: Color(0xFF64748B),
+                      height: 1.5,
+                    ),
+                  ),
+                  const SizedBox(height: 40),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 56,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        context.read<PatientBookingBloc>().add(const ResetBookingStatus());
+                        Navigator.pop(dialogContext);
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppTheme.primaryColor,
+                        foregroundColor: Colors.white,
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                      ),
+                      child: const Text(
+                        "Maravilha!",
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+      transitionBuilder: (context, anim1, anim2, child) {
+        return ScaleTransition(
+          scale: Tween<double>(begin: 0.8, end: 1.0).animate(
+            CurvedAnimation(parent: anim1, curve: Curves.easeOutBack),
+          ),
+          child: FadeTransition(opacity: anim1, child: child),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -245,17 +349,19 @@ class _PatientBookingViewState extends State<_PatientBookingView> {
               if (state.status == PatientBookingStatus.failure) {
                 AppAlerts.error(context, state.errorMessage!);
               } else if (state.status == PatientBookingStatus.success) {
-                AppAlerts.success(context, state.successMessage!);
+                _showSuccessDialog(context, state.successMessage!);
               }
             },
             builder: (context, state) {
               return LoadingOverlay(
                 isLoading: state.status == PatientBookingStatus.loading,
                 message: "Processando reserva...",
-                child: Container(
-                  width: double.infinity,
-                  height: double.infinity,
-                  decoration: BoxDecoration(
+                child: IgnorePointer(
+                  ignoring: state.status == PatientBookingStatus.success,
+                  child: Container(
+                    width: double.infinity,
+                    height: double.infinity,
+                    decoration: BoxDecoration(
                     gradient: LinearGradient(
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
@@ -289,6 +395,7 @@ class _PatientBookingViewState extends State<_PatientBookingView> {
                                   sliver: _buildSlotsGrid(context, state, constraints.maxWidth),
                                 ),
                               ],
+                              ),
                             ),
                           ),
                         ),

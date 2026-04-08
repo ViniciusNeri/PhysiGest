@@ -189,6 +189,55 @@ class _PatientProfileScreenState extends State<PatientProfileScreen>
                 },
               ),
             ),
+          Padding(
+            padding: const EdgeInsets.only(right: 16.0),
+            child: IconButton(
+              icon: Icon(
+                p.status == 'active'
+                    ? Icons.person_off_rounded
+                    : Icons.person_add_rounded,
+                color: p.status == 'active' ? Colors.red : Colors.teal,
+              ),
+              tooltip: p.status == 'active' ? 'Inativar Paciente' : 'Ativar Paciente',
+              onPressed: () {
+                final isCurrentlyActive = p.status == 'active';
+                final actionText = isCurrentlyActive ? 'Inativar' : 'Ativar';
+                final confirmationMessage = isCurrentlyActive
+                    ? 'Ao inativar este paciente, ele não será mais exibido no seu dashboard ou buscas padrão.'
+                    : 'Ao ativar este paciente, ele voltará a aparecer nos agendamentos e buscas.';
+
+                showDialog(
+                  context: context,
+                  builder: (dialogContext) => AlertDialog(
+                    title: Text('$actionText Paciente?'),
+                    content: Text(confirmationMessage),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(dialogContext),
+                        child: const Text('Cancelar'),
+                      ),
+                      ElevatedButton(
+                        onPressed: () {
+                          final newStatus =
+                              isCurrentlyActive ? 'inactive' : 'active';
+                          context.read<PatientBloc>().add(
+                                UpdatePatient(p.copyWith(status: newStatus)),
+                              );
+                          Navigator.pop(dialogContext);
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor:
+                              isCurrentlyActive ? Colors.red : Colors.teal,
+                          foregroundColor: Colors.white,
+                        ),
+                        child: Text(actionText),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
+          ),
         ],
         bottom: TabBar(
           controller: _tabController,
