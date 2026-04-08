@@ -96,8 +96,8 @@ class DashboardPreferencesModel extends DashboardPreferences {
       lunchStart: businessHours['lunchStart']?.toString() ?? '12:00',
       lunchEnd: businessHours['lunchEnd']?.toString() ?? '13:00',
       timezone: json['timezone']?.toString() ?? 'America/Sao_Paulo',
-      updatedAt: json['updatedAt'] != null ? DateTime.parse(json['updatedAt']) : null,
-      createdAt: json['createdAt'] != null ? DateTime.parse(json['createdAt']) : null,
+      updatedAt: json['updatedAt'] != null ? DateTime.parse(json['updatedAt'].toString().split('Z')[0]) : null,
+      createdAt: json['createdAt'] != null ? DateTime.parse(json['createdAt'].toString().split('Z')[0]) : null,
     );
   }
 

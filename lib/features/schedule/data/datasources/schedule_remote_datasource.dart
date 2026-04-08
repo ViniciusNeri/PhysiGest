@@ -250,7 +250,7 @@ class ScheduleRemoteDataSource implements IScheduleRemoteDataSource {
       return list.map((slot) {
         // Se o slot já for uma data completa (ISO)
         if (slot.toString().contains('T')) {
-          return DateTime.parse(slot.toString()).toLocal();
+          return DateTime.parse(slot.toString().split('Z')[0]);
         }
         
         // Se o slot for apenas o horário (HH:mm)

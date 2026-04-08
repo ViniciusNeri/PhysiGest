@@ -576,7 +576,7 @@ class HomeView extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 24),
-          ...list.map((apt) => _buildAppointmentItem(context, apt)),
+          ...list.map((apt) => _buildAppointmentItem(context, apt, showDate: true)),
           if (appointments.length > 5)
             Padding(
               padding: const EdgeInsets.only(top: 8),
@@ -702,8 +702,8 @@ class HomeView extends StatelessWidget {
                       itemBuilder: (context, index) {
                         final payment = payments[index];
                         final dateStr = payment.dueDate != null 
-                            ? DateFormat("dd MMM").format(DateTime.parse(payment.dueDate!))
-                            : DateFormat("dd MMM").format(DateTime.parse(payment.date));
+                            ? DateFormat("dd MMM").format(DateTime.parse(payment.dueDate!.split('Z')[0]))
+                            : DateFormat("dd MMM").format(DateTime.parse(payment.date.split('Z')[0]));
 
                         return Container(
                           padding: const EdgeInsets.all(16),
@@ -1036,7 +1036,7 @@ class HomeView extends StatelessWidget {
     );
   }
 
-  Widget _buildAppointmentItem(BuildContext context, Appointment apt) {
+  Widget _buildAppointmentItem(BuildContext context, Appointment apt, {bool showDate = false}) {
     IconData statusIcon = Icons.access_time_rounded;
     Color statusColor = warning;
 
@@ -1077,7 +1077,7 @@ class HomeView extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Text(
-              DateFormat('HH:mm').format(apt.startDate),
+              "${showDate ? DateFormat('dd/MM ').format(apt.startDate) : ''}${DateFormat('HH:mm').format(apt.startDate)}",
               style: const TextStyle(
                 fontWeight: FontWeight.w900,
                 color: primary,

@@ -19,7 +19,7 @@ class PatientActivityModel extends PatientActivity {
       type: json['type'] ?? '',
       description: json['description'] ?? '',
       date: json['date'] != null 
-          ? DateTime.parse(json['date']).toLocal() 
+          ? DateTime.parse(json['date'].toString().split('Z')[0]) 
           : DateTime.now(),
       metadata: json['metadata'] as Map<String, dynamic>?,
     );

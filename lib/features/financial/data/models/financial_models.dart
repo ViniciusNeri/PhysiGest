@@ -39,7 +39,9 @@ class TransactionModel extends Transaction {
       ),
       valor: amount,
       isExpense: isExpense,
-      data: json['date'] ?? '',
+      data: json['date'] != null 
+          ? json['date'].toString().split('Z')[0] 
+          : '',
       paymentMethod: json['paymentMethod'] ?? '',
       patientId: json['patientId']?.toString(),
       patientName: json['patientName'],

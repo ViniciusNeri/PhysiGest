@@ -779,7 +779,7 @@ class _RecentTransactionsCardState extends State<_RecentTransactionsCard> {
 
   String _formatDate(String isoDate) {
     try {
-      final date = DateTime.parse(isoDate);
+      final date = DateTime.parse(isoDate.split('Z')[0]);
       return '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}';
     } catch (_) {
       return isoDate.split('T')[0];

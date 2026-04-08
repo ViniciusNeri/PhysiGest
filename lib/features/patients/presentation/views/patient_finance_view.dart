@@ -396,7 +396,7 @@ class _PatientFinanceViewState extends State<PatientFinanceView> {
 
           String displayDate = tx.date;
           try {
-            final date = DateTime.parse(tx.date).toLocal();
+            final date = DateTime.parse(tx.date.split('Z')[0]);
             displayDate =
                 '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}';
           } catch (_) {}
