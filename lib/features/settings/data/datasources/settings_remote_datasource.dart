@@ -198,7 +198,11 @@ class SettingsRemoteDataSource implements ISettingsRemoteDataSource {
         if (data.isEmpty) return const DashboardPreferencesModel();
         return DashboardPreferencesModel.fromJson(data.first);
       }
-      return DashboardPreferencesModel.fromJson(data);
+      final model = DashboardPreferencesModel.fromJson(data);
+      if (model.userId.isEmpty) {
+        return model.copyWith(userId: userId) as DashboardPreferencesModel;
+      }
+      return model;
     } on DioException catch (e) {
       throw Exception(e.message);
     } catch (e) {
@@ -211,15 +215,7 @@ class SettingsRemoteDataSource implements ISettingsRemoteDataSource {
     DashboardPreferences preferences,
   ) async {
     try {
-      final body = DashboardPreferencesModel(
-        id: preferences.id,
-        dashboardTheme: preferences.dashboardTheme,
-        showWeeklyAppointments: preferences.showWeeklyAppointments,
-        showMonthlyIncome: preferences.showMonthlyIncome,
-        showActivePayments: preferences.showActivePayments,
-        showNextAppointment: preferences.showNextAppointment,
-        categoryControlMode: preferences.categoryControlMode,
-      ).toJson();
+      final body = DashboardPreferencesModel.fromEntity(preferences).toJson();
 
       final response = await apiClient.dio.put(
         preferences.id.isEmpty ? '/settings' : '/settings/${preferences.id}',

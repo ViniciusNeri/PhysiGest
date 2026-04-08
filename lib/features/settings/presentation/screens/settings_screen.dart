@@ -108,6 +108,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
               const SizedBox(height: 16),
               _buildWorkingDaysCard(context, state),
               const SizedBox(height: 32),
+              _buildSectionTitle('Horários de Atendimento'),
+              const SizedBox(height: 16),
+              _buildWorkingHoursCard(context, state),
+              const SizedBox(height: 32),
               _buildSectionTitle('Bloqueios na Agenda'),
               const SizedBox(height: 16),
               _buildAgendaLocksCard(context, state),
@@ -124,7 +128,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Widget _buildWorkingDaysCard(BuildContext context, SettingsLoaded state) {
-    final workingDays = state.dashboardPreferences.workingDays;
+    final operatingDays = state.dashboardPreferences.operatingDays;
     final days = [
       {'label': 'Seg', 'value': 1},
       {'label': 'Ter', 'value': 2},
@@ -132,7 +136,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       {'label': 'Qui', 'value': 4},
       {'label': 'Sex', 'value': 5},
       {'label': 'Sáb', 'value': 6},
-      {'label': 'Dom', 'value': 7},
+      {'label': 'Dom', 'value': 0},
     ];
 
     return Container(
@@ -160,19 +164,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
             spacing: 8,
             runSpacing: 8,
             children: days.map((day) {
-              final isSelected = workingDays.contains(day['value']);
+              final isSelected = operatingDays.contains(day['value']);
               return FilterChip(
                 label: Text(day['label'] as String),
                 selected: isSelected,
                 onSelected: (selected) {
-                  final newList = List<int>.from(workingDays);
+                  final newList = List<int>.from(operatingDays);
                   if (selected) {
                     newList.add(day['value'] as int);
                   } else {
                     newList.remove(day['value'] as int);
                   }
                   newList.sort();
-                  final newPrefs = state.dashboardPreferences.copyWith(workingDays: newList);
+                  final newPrefs = state.dashboardPreferences.copyWith(operatingDays: newList);
                   context.read<SettingsBloc>().add(UpdateDashboardPreferences(newPrefs));
                 },
                 selectedColor: AppTheme.primaryColor.withValues(alpha: 0.2),
@@ -192,6 +196,169 @@ class _SettingsScreenState extends State<SettingsScreen> {
             }).toList(),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildWorkingHoursCard(BuildContext context, SettingsLoaded state) {
+    final prefs = state.dashboardPreferences;
+
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildTimeRow(
+            context,
+            'Expediente',
+            prefs.startTime,
+            prefs.endTime,
+            (start) => context.read<SettingsBloc>().add(
+                  UpdateDashboardPreferences(
+                      prefs.copyWith(startTime: start)),
+                ),
+            (end) => context.read<SettingsBloc>().add(
+                  UpdateDashboardPreferences(
+                      prefs.copyWith(endTime: end)),
+                ),
+          ),
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 16),
+            child: Divider(height: 1, color: Color(0xFFF1F5F9)),
+          ),
+          _buildTimeRow(
+            context,
+            'Intervalo / Almoço',
+            prefs.lunchStart,
+            prefs.lunchEnd,
+            (start) => context.read<SettingsBloc>().add(
+                  UpdateDashboardPreferences(
+                      prefs.copyWith(lunchStart: start)),
+                ),
+            (end) => context.read<SettingsBloc>().add(
+                  UpdateDashboardPreferences(
+                      prefs.copyWith(lunchEnd: end)),
+                ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTimeRow(
+    BuildContext context,
+    String label,
+    String start,
+    String end,
+    Function(String) onStartChanged,
+    Function(String) onEndChanged,
+  ) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: const TextStyle(
+            fontSize: 15,
+            fontWeight: FontWeight.bold,
+            color: Color(0xFF334155),
+          ),
+        ),
+        const SizedBox(height: 12),
+        Row(
+          children: [
+            Expanded(
+              child: _timePickerButton(context, 'Início', start, onStartChanged),
+            ),
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 12),
+              child: Text('até', style: TextStyle(color: Colors.grey)),
+            ),
+            Expanded(
+              child: _timePickerButton(context, 'Fim', end, onEndChanged),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _timePickerButton(
+    BuildContext context,
+    String label,
+    String current,
+    Function(String) onSelected,
+  ) {
+    return InkWell(
+      onTap: () async {
+        final parts = current.split(':');
+        final time = TimeOfDay(
+          hour: int.parse(parts[0]),
+          minute: int.parse(parts[1]),
+        );
+        final picked = await showTimePicker(
+          context: context,
+          initialTime: time,
+          builder: (context, child) {
+            return Theme(
+              data: Theme.of(context).copyWith(
+                colorScheme: const ColorScheme.light(
+                  primary: AppTheme.primaryColor,
+                  onPrimary: Colors.white,
+                  onSurface: Color(0xFF1E293B),
+                ),
+              ),
+              child: child!,
+            );
+          },
+        );
+        if (picked != null) {
+          final formatted =
+              '${picked.hour.toString().padLeft(2, '0')}:${picked.minute.toString().padLeft(2, '0')}';
+          onSelected(formatted);
+        }
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        decoration: BoxDecoration(
+          color: Colors.grey.shade50,
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: Colors.grey.shade200),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: const TextStyle(fontSize: 11, color: Colors.grey),
+                ),
+                Text(
+                  current,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF1E293B),
+                  ),
+                ),
+              ],
+            ),
+            const Icon(Icons.access_time_rounded, size: 18, color: Colors.grey),
+          ],
+        ),
       ),
     );
   }

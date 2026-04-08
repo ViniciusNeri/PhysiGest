@@ -15,7 +15,14 @@ class DashboardPreferences extends Equatable {
   final String categoryControlMode;
   final String? defaultCategoryId;
   final String? defaultPaymentMethodId;
-  final List<int> workingDays;
+  final List<int> operatingDays;
+  final String startTime;
+  final String endTime;
+  final String lunchStart;
+  final String lunchEnd;
+  final String timezone;
+  final DateTime? updatedAt;
+  final DateTime? createdAt;
 
   const DashboardPreferences({
     this.id = '',
@@ -32,7 +39,14 @@ class DashboardPreferences extends Equatable {
     this.categoryControlMode = 'none',
     this.defaultCategoryId,
     this.defaultPaymentMethodId,
-    this.workingDays = const [1, 2, 3, 4, 5], // Padrão Seg-Sex
+    this.operatingDays = const [1, 2, 3, 4, 5], // Padrão Seg-Sex (Seg=1, ..., Sex=5)
+    this.startTime = '08:00',
+    this.endTime = '18:00',
+    this.lunchStart = '12:00',
+    this.lunchEnd = '13:00',
+    this.timezone = 'America/Sao_Paulo',
+    this.updatedAt,
+    this.createdAt,
   });
 
   DashboardPreferences copyWith({
@@ -50,7 +64,14 @@ class DashboardPreferences extends Equatable {
     String? categoryControlMode,
     String? defaultCategoryId,
     String? defaultPaymentMethodId,
-    List<int>? workingDays,
+    List<int>? operatingDays,
+    String? startTime,
+    String? endTime,
+    String? lunchStart,
+    String? lunchEnd,
+    String? timezone,
+    DateTime? updatedAt,
+    DateTime? createdAt,
   }) {
     return DashboardPreferences(
       id: id ?? this.id,
@@ -70,7 +91,14 @@ class DashboardPreferences extends Equatable {
       defaultCategoryId: defaultCategoryId ?? this.defaultCategoryId,
       defaultPaymentMethodId:
           defaultPaymentMethodId ?? this.defaultPaymentMethodId,
-      workingDays: workingDays ?? this.workingDays,
+      operatingDays: operatingDays ?? this.operatingDays,
+      startTime: startTime ?? this.startTime,
+      endTime: endTime ?? this.endTime,
+      lunchStart: lunchStart ?? this.lunchStart,
+      lunchEnd: lunchEnd ?? this.lunchEnd,
+      timezone: timezone ?? this.timezone,
+      updatedAt: updatedAt ?? this.updatedAt,
+      createdAt: createdAt ?? this.createdAt,
     );
   }
 
@@ -90,6 +118,13 @@ class DashboardPreferences extends Equatable {
         categoryControlMode,
         defaultCategoryId,
         defaultPaymentMethodId,
-        workingDays,
+        operatingDays,
+        startTime,
+        endTime,
+        lunchStart,
+        lunchEnd,
+        timezone,
+        updatedAt,
+        createdAt,
       ];
 }

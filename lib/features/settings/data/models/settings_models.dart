@@ -58,10 +58,19 @@ class DashboardPreferencesModel extends DashboardPreferences {
     super.categoryControlMode = 'none',
     super.defaultCategoryId,
     super.defaultPaymentMethodId,
-    super.workingDays = const [1, 2, 3, 4, 5],
+    super.operatingDays = const [1, 2, 3, 4, 5],
+    super.startTime = '08:00',
+    super.endTime = '18:00',
+    super.lunchStart = '12:00',
+    super.lunchEnd = '13:00',
+    super.timezone = 'America/Sao_Paulo',
+    super.updatedAt,
+    super.createdAt,
   });
 
   factory DashboardPreferencesModel.fromJson(Map<String, dynamic> json) {
+    final businessHours = json['businessHours'] as Map<String, dynamic>? ?? {};
+
     return DashboardPreferencesModel(
       id: (json['id'] ?? json['_id'] ?? json['codigo'])?.toString() ?? '',
       userId: json['userId']?.toString() ?? '',
@@ -77,15 +86,25 @@ class DashboardPreferencesModel extends DashboardPreferences {
       categoryControlMode: json['categoryControlMode'] as String? ?? 'none',
       defaultCategoryId: json['defaultCategoryId']?.toString(),
       defaultPaymentMethodId: json['defaultPaymentMethodId']?.toString(),
-      workingDays: json['workingDays'] is List
-          ? (json['workingDays'] as List).map((e) => int.parse(e.toString())).toList()
-          : const [1, 2, 3, 4, 5],
+      operatingDays: json['operatingDays'] is List
+          ? (json['operatingDays'] as List).map((e) => int.parse(e.toString())).toList()
+          : (json['workingDays'] is List // Fallback for transition
+              ? (json['workingDays'] as List).map((e) => int.parse(e.toString())).toList()
+              : const [1, 2, 3, 4, 5]),
+      startTime: businessHours['startTime']?.toString() ?? '08:00',
+      endTime: businessHours['endTime']?.toString() ?? '18:00',
+      lunchStart: businessHours['lunchStart']?.toString() ?? '12:00',
+      lunchEnd: businessHours['lunchEnd']?.toString() ?? '13:00',
+      timezone: json['timezone']?.toString() ?? 'America/Sao_Paulo',
+      updatedAt: json['updatedAt'] != null ? DateTime.parse(json['updatedAt']) : null,
+      createdAt: json['createdAt'] != null ? DateTime.parse(json['createdAt']) : null,
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
-      if (id.isNotEmpty) 'id': id,
+      'id': id,
+      'userId': userId,
       'dashboardTheme': dashboardTheme,
       'showWeeklyAppointments': showWeeklyAppointments,
       'showMonthlyIncome': showMonthlyIncome,
@@ -96,10 +115,45 @@ class DashboardPreferencesModel extends DashboardPreferences {
       'showOccupancyGraph': showOccupancyGraph,
       'showOverdueAppointments': showOverdueAppointments,
       'categoryControlMode': categoryControlMode,
-      if (defaultCategoryId != null) 'defaultCategoryId': defaultCategoryId,
-      if (defaultPaymentMethodId != null)
-        'defaultPaymentMethodId': defaultPaymentMethodId,
-      'workingDays': workingDays,
+      'defaultCategoryId': defaultCategoryId,
+      'defaultPaymentMethodId': defaultPaymentMethodId,
+      'operatingDays': operatingDays,
+      'businessHours': {
+        'startTime': startTime,
+        'endTime': endTime,
+        'lunchStart': lunchStart,
+        'lunchEnd': lunchEnd,
+      },
+      'timezone': timezone,
+      'updatedAt': updatedAt?.toIso8601String(),
+      'createdAt': createdAt?.toIso8601String(),
     };
+  }
+
+  factory DashboardPreferencesModel.fromEntity(DashboardPreferences entity) {
+    return DashboardPreferencesModel(
+      id: entity.id,
+      userId: entity.userId,
+      dashboardTheme: entity.dashboardTheme,
+      showWeeklyAppointments: entity.showWeeklyAppointments,
+      showMonthlyIncome: entity.showMonthlyIncome,
+      showActivePayments: entity.showActivePayments,
+      showNextAppointment: entity.showNextAppointment,
+      showPendingPayments: entity.showPendingPayments,
+      showBirthdays: entity.showBirthdays,
+      showOccupancyGraph: entity.showOccupancyGraph,
+      showOverdueAppointments: entity.showOverdueAppointments,
+      categoryControlMode: entity.categoryControlMode,
+      defaultCategoryId: entity.defaultCategoryId,
+      defaultPaymentMethodId: entity.defaultPaymentMethodId,
+      operatingDays: entity.operatingDays,
+      startTime: entity.startTime,
+      endTime: entity.endTime,
+      lunchStart: entity.lunchStart,
+      lunchEnd: entity.lunchEnd,
+      timezone: entity.timezone,
+      updatedAt: entity.updatedAt,
+      createdAt: entity.createdAt,
+    );
   }
 }

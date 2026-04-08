@@ -76,6 +76,7 @@ class PatientRemoteDataSource implements IPatientRemoteDataSource {
         anamnesis: patient.anamnesis,
         photoPaths: patient.photoPaths,
         pin: patient.pin.isEmpty ? _generateRandomPin() : patient.pin,
+        status: patient.status,
       ).toJson();
       
       final user = await localStorage.getUser();
@@ -108,6 +109,7 @@ class PatientRemoteDataSource implements IPatientRemoteDataSource {
         anamnesis: patient.anamnesis,
         photoPaths: patient.photoPaths,
         pin: patient.pin,
+        status: patient.status,
       ).toJson();
       final response = await apiClient.dio.put(
         '/patients/${patient.id}',

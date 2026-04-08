@@ -37,8 +37,14 @@ class PatientModel extends Patient {
       anamnesis: AnamnesisModel.fromJson(anamnesisJson),
       photoPaths: photosJson.map((e) => e.toString()).toList(),
       pin: json['pin']?.toString() ?? '',
-      status: json['status'] ?? 'active',
+      status: _mapStatusFromJson(json['status']),
     );
+  }
+
+  static String _mapStatusFromJson(dynamic status) {
+    if (status == 1 || status == '1' || status == 'active' || status == true) return 'active';
+    if (status == 0 || status == '0' || status == 'inactive' || status == false) return 'inactive';
+    return 'active'; // fallback
   }
 
   Map<String, dynamic> toJson() {
@@ -68,7 +74,7 @@ class PatientModel extends Patient {
         weight: anamnesis.weight,
         height: anamnesis.height,
       ).toJson(),
-      'status': status,
+      'status': status == 'active' ? 1 : 0,
     };
   }
 }

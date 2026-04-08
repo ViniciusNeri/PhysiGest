@@ -13,10 +13,17 @@ abstract class IScheduleRemoteDataSource {
   Future<AppointmentModel> updateAppointment(Appointment appointment);
   Future<void> deleteAppointment(String id);
   Future<List<Map<String, dynamic>>> getAvailablePatients();
-  Future<List<Map<String, dynamic>>> getCategories();
+  Future<List<Map<String, dynamic>>> getCategories({String? userId});
   Future<List<AgendaLockModel>> getAgendaLocks();
   Future<AgendaLockModel> createAgendaLock(AgendaLock lock);
   Future<void> deleteAgendaLock(String id);
+  Future<List<DateTime>> getAvailableSlots(String userId, String date);
+  Future<void> createOnlineAppointment({
+    required String userId,
+    required String pin,
+    required DateTime startDate,
+    required String categoryId,
+  });
 }
 
 @LazySingleton(as: IScheduleRemoteDataSource)
@@ -120,10 +127,18 @@ class ScheduleRemoteDataSource implements IScheduleRemoteDataSource {
 
       final response = await apiClient.dio.get('/patients/user/$userId');
       final list = response.data as List<dynamic>;
-      return list.map((e) => {
-        'id': e['_id']?.toString() ?? e['id']?.toString() ?? '',
-        'name': e['name']?.toString() ?? '',
-      }).toList();
+      return list
+          .where((e) {
+            final s = e['status'];
+            if (s == 1 || s == '1' || s == 'active' || s == true) return true;
+            if (s == 0 || s == '0' || s == 'inactive' || s == false) return false;
+            return true; // fallback active
+          })
+          .map((e) => {
+            'id': e['_id']?.toString() ?? e['id']?.toString() ?? '',
+            'name': e['name']?.toString() ?? '',
+          })
+          .toList();
     } on DioException catch (e) {
       throw Exception(e.message);
     } catch (e) {
@@ -132,13 +147,18 @@ class ScheduleRemoteDataSource implements IScheduleRemoteDataSource {
   }
 
   @override
-  Future<List<Map<String, dynamic>>> getCategories() async {
+  Future<List<Map<String, dynamic>>> getCategories({String? userId}) async {
     try {
-      final user = await localStorage.getUser();
-      final userId = user?.id ?? '';
-      if (userId.isEmpty) return [];
+      String id = userId ?? '';
+      
+      if (id.isEmpty) {
+        final user = await localStorage.getUser();
+        id = user?.id ?? '';
+      }
+      
+      if (id.isEmpty) return [];
 
-      final response = await apiClient.dio.get('/categories/user/$userId');
+      final response = await apiClient.dio.get('/categories/user/$id');
       final list = response.data as List<dynamic>;
       return list.map((e) => {
         'id': e['_id']?.toString() ?? e['id']?.toString() ?? '',
@@ -209,6 +229,69 @@ class ScheduleRemoteDataSource implements IScheduleRemoteDataSource {
       throw Exception(e.message);
     } catch (e) {
       throw Exception('Erro inesperado: $e');
+    }
+  }
+
+  @override
+  Future<List<DateTime>> getAvailableSlots(String userId, String date) async {
+    try {
+      final response = await apiClient.dio.get(
+        '/agendas/available-slots',
+        queryParameters: {
+          'userId': userId,
+          'date': date,
+        },
+      );
+      
+      if (response.data == null) return [];
+      
+      final List<dynamic> list = response.data as List<dynamic>;
+      
+      return list.map((slot) {
+        // Se o slot já for uma data completa (ISO)
+        if (slot.toString().contains('T')) {
+          return DateTime.parse(slot.toString()).toLocal();
+        }
+        
+        // Se o slot for apenas o horário (HH:mm)
+        final parts = date.split('-');
+        final timeParts = slot.toString().split(':');
+        return DateTime(
+          int.parse(parts[0]),
+          int.parse(parts[1]),
+          int.parse(parts[2]),
+          int.parse(timeParts[0]),
+          int.parse(timeParts[1]),
+        );
+      }).toList();
+    } on DioException catch (e) {
+      throw Exception(e.message);
+    } catch (e) {
+      throw Exception('Erro inesperado ao buscar horários: $e');
+    }
+  }
+
+  @override
+  Future<void> createOnlineAppointment({
+    required String userId,
+    required String pin,
+    required DateTime startDate,
+    required String categoryId,
+  }) async {
+    try {
+      final body = {
+        'userId': userId,
+        'pin': pin,
+        'startDate': startDate.toIso8601String(),
+        'categoryId': categoryId,
+      };
+
+      await apiClient.dio.post('/agendas/online', data: body);
+    } on DioException catch (e) {
+      final message = e.response?.data?['message'] ?? e.message;
+      throw Exception(message);
+    } catch (e) {
+      throw Exception('Erro inesperado ao realizar agendamento online: $e');
     }
   }
 }
