@@ -52,6 +52,7 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
     on<UpdatePaymentMethod>(_onUpdatePaymentMethod);
     on<DeletePaymentMethod>(_onDeletePaymentMethod);
     on<DeleteAgendaLock>(_onDeleteAgendaLock);
+    on<ClearSettingsMessage>(_onClearSettingsMessage);
   }
 
   Future<void> _onLoadSettings(
@@ -114,12 +115,19 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
     if (state is SettingsLoaded) {
       final currentState = state as SettingsLoaded;
       try {
-        final newCategory =
-            AttendanceCategory(id: _uuid.v4(), name: event.name);
-        await _createCategoryUseCase(newCategory);
+        final user = await _localStorage.getUser();
+        final userId = user?.id ?? '';
+        
+        final newCategory = AttendanceCategory(
+          id: _uuid.v4(),
+          name: event.name,
+          duration: event.duration,
+          userId: userId,
+        );
+        final createdCategory = await _createCategoryUseCase(newCategory);
         emit(
           currentState.copyWith(
-            categories: [...currentState.categories, newCategory],
+            categories: [...currentState.categories, createdCategory],
             successMessage: 'Categoria adicionada!',
           ),
         );
@@ -179,10 +187,10 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
       final currentState = state as SettingsLoaded;
       try {
         final newMethod = PaymentMethod(id: _uuid.v4(), name: event.name);
-        await _createPaymentMethodUseCase(newMethod);
+        final createdMethod = await _createPaymentMethodUseCase(newMethod);
         emit(
           currentState.copyWith(
-            paymentMethods: [...currentState.paymentMethods, newMethod],
+            paymentMethods: [...currentState.paymentMethods, createdMethod],
             successMessage: 'Metodo de pagamento adicionado!',
           ),
         );
@@ -253,6 +261,16 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
       } catch (e) {
         emit(SettingsError(e.toString().replaceAll('Exception: ', '')));
       }
+    }
+  }
+
+  Future<void> _onClearSettingsMessage(
+    ClearSettingsMessage event,
+    Emitter<SettingsState> emit,
+  ) async {
+    if (state is SettingsLoaded) {
+      final currentState = state as SettingsLoaded;
+      emit(currentState.copyWith(clearMessage: true));
     }
   }
 }

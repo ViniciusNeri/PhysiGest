@@ -23,6 +23,9 @@ class FinancialBloc extends Bloc<FinancialEvent, FinancialState> {
     on<AddTransaction>(_onAddTransaction);
     on<DeleteTransaction>(_onDeleteTransaction);
     on<UpdateDateFilter>(_onUpdateDateFilter);
+    on<ClearFinancialMessage>((event, emit) {
+      emit(state.copyWith(clearMessage: true));
+    });
   }
 
   Future<void> _onLoadFinancialData(
@@ -30,7 +33,7 @@ class FinancialBloc extends Bloc<FinancialEvent, FinancialState> {
     Emitter<FinancialState> emit,
   ) async {
     try {
-      emit(state.copyWith(status: FinancialStatus.loading, successMessage: null, errorMessage: null));
+      emit(state.copyWith(status: FinancialStatus.loading, clearMessage: true));
 
       final user = await _storage.getUser();
       if (user == null) {
@@ -48,20 +51,6 @@ class FinancialBloc extends Bloc<FinancialEvent, FinancialState> {
         year,
       );
 
-      final yearlyRevenueMock = summary.yearlyRevenue.isNotEmpty
-          ? summary.yearlyRevenue
-          : {
-              1: 5000.0, 2: 4800.0, 3: 5200.0, 4: 6100.0, 5: 5800.0, 6: 6400.0,
-              7: 7000.0, 8: 7200.0, 9: 6800.0, 10: 7500.0, 11: 8000.0, 12: 9000.0,
-            };
-
-      final yearlyExpensesMock = summary.yearlyExpenses.isNotEmpty
-          ? summary.yearlyExpenses
-          : {
-              1: 2000.0, 2: 2100.0, 3: 2050.0, 4: 2200.0, 5: 2150.0, 6: 2300.0,
-              7: 2400.0, 8: 2350.0, 9: 2250.0, 10: 2400.0, 11: 2500.0, 12: 2600.0,
-            };
-
       emit(
         state.copyWith(
           status: FinancialStatus.success,
@@ -71,8 +60,8 @@ class FinancialBloc extends Bloc<FinancialEvent, FinancialState> {
           lucroLiquido: summary.lucroLiquido,
           incomeByMethod: summary.incomeByMethod,
           expenseByMethod: summary.expenseByMethod,
-          yearlyRevenue: yearlyRevenueMock,
-          yearlyExpenses: yearlyExpensesMock,
+          yearlyRevenue: summary.yearlyRevenue,
+          yearlyExpenses: summary.yearlyExpenses,
           transacoes: transactions,
           selectedMonth: month,
           selectedYear: year,
@@ -92,27 +81,13 @@ class FinancialBloc extends Bloc<FinancialEvent, FinancialState> {
       final user = await _storage.getUser();
       if (user == null) return;
 
-      emit(state.copyWith(status: FinancialStatus.loading, successMessage: null, errorMessage: null));
+      emit(state.copyWith(status: FinancialStatus.loading, clearMessage: true));
 
       final (summary, transactions) = await _getConsolidatedData(
         user.id,
         event.month,
         event.year,
       );
-
-      final yearlyRevenueMock = summary.yearlyRevenue.isNotEmpty
-          ? summary.yearlyRevenue
-          : {
-              1: 5000.0, 2: 4800.0, 3: 5200.0, 4: 6100.0, 5: 5800.0, 6: 6400.0,
-              7: 7000.0, 8: 7200.0, 9: 6800.0, 10: 7500.0, 11: 8000.0, 12: 9000.0,
-            };
-
-      final yearlyExpensesMock = summary.yearlyExpenses.isNotEmpty
-          ? summary.yearlyExpenses
-          : {
-              1: 2000.0, 2: 2100.0, 3: 2050.0, 4: 2200.0, 5: 2150.0, 6: 2300.0,
-              7: 2400.0, 8: 2350.0, 9: 2250.0, 10: 2400.0, 11: 2500.0, 12: 2600.0,
-            };
 
       emit(
         state.copyWith(
@@ -123,8 +98,8 @@ class FinancialBloc extends Bloc<FinancialEvent, FinancialState> {
           lucroLiquido: summary.lucroLiquido,
           incomeByMethod: summary.incomeByMethod,
           expenseByMethod: summary.expenseByMethod,
-          yearlyRevenue: yearlyRevenueMock,
-          yearlyExpenses: yearlyExpensesMock,
+          yearlyRevenue: summary.yearlyRevenue,
+          yearlyExpenses: summary.yearlyExpenses,
           transacoes: transactions,
           selectedMonth: event.month,
           selectedYear: event.year,
@@ -144,7 +119,7 @@ class FinancialBloc extends Bloc<FinancialEvent, FinancialState> {
       final user = await _storage.getUser();
       if (user == null) return;
 
-      emit(state.copyWith(status: FinancialStatus.loading, successMessage: null, errorMessage: null));
+      emit(state.copyWith(status: FinancialStatus.loading, clearMessage: true));
 
       final data = event.transaction;
       final type = data['type'] == 'revenue' ? 'income' : 'expense';
@@ -187,7 +162,7 @@ class FinancialBloc extends Bloc<FinancialEvent, FinancialState> {
     Emitter<FinancialState> emit,
   ) async {
     try {
-      emit(state.copyWith(status: FinancialStatus.loading, successMessage: null, errorMessage: null));
+      emit(state.copyWith(status: FinancialStatus.loading, clearMessage: true));
       await _deleteTransaction(event.id, event.source);
       
       emit(state.copyWith(

@@ -63,13 +63,40 @@ class _AddAppointmentDialogState extends State<AddAppointmentDialog> {
     } else {
       // Modo Novo Agendamento
       if (widget.activeCategories.isNotEmpty) {
-        selectedCategoryId = widget.activeCategories.first['id'];
-        selectedCategoryName = widget.activeCategories.first['name'];
+        selectedCategoryId = widget.activeCategories.first['id']?.toString();
+        selectedCategoryName = widget.activeCategories.first['name']?.toString();
       }
       
       selectedDate = widget.initialDate;
-      startTime = TimeOfDay(hour: widget.initialDate.hour, minute: 0);
-      endTime = TimeOfDay(hour: (widget.initialDate.hour + 1) % 24, minute: 0);
+      
+      startTime = TimeOfDay(
+        hour: widget.initialDate.hour,
+        minute: widget.initialDate.minute,
+      );
+      _updateEndTime(shouldSetState: false);
+    }
+  }
+
+  void _updateEndTime({bool shouldSetState = true}) {
+    final category = widget.activeCategories
+        .where((c) => c['id']?.toString() == selectedCategoryId)
+        .firstOrNull;
+    final duration = (category?['duration'] as num?)?.toInt() ?? 60;
+
+    final startMinutes = startTime.hour * 60 + startTime.minute;
+    final endMinutes = startMinutes + duration;
+
+    final newEndTime = TimeOfDay(
+      hour: (endMinutes ~/ 60) % 24,
+      minute: endMinutes % 60,
+    );
+
+    if (shouldSetState) {
+      setState(() {
+        endTime = newEndTime;
+      });
+    } else {
+      endTime = newEndTime;
     }
   }
 
@@ -253,7 +280,8 @@ class _AddAppointmentDialogState extends State<AddAppointmentDialog> {
           onChanged: (val) {
             setState(() {
               selectedCategoryId = val;
-              selectedCategoryName = widget.activeCategories.firstWhere((c) => c['id'] == val)['name'];
+              selectedCategoryName = widget.activeCategories.firstWhere((c) => c['id'].toString() == val)['name'];
+              _updateEndTime();
             });
           },
         ),
@@ -329,10 +357,7 @@ class _AddAppointmentDialogState extends State<AddAppointmentDialog> {
           setState(() {
             if (isStart) {
               startTime = picked;
-              endTime = TimeOfDay(
-                hour: (picked.hour + 1) % 24,
-                minute: picked.minute,
-              );
+              _updateEndTime();
             } else {
               endTime = picked;
             }

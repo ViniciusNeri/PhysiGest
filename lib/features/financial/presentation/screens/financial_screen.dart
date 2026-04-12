@@ -115,8 +115,10 @@ class _FinancialViewState extends State<FinancialView> {
           listener: (context, state) {
             if (state.status == FinancialStatus.failure && state.errorMessage != null) {
               AppAlerts.error(context, state.errorMessage!);
+              context.read<FinancialBloc>().add(ClearFinancialMessage());
             } else if (state.status == FinancialStatus.success && state.successMessage != null) {
               AppAlerts.success(context, state.successMessage!);
+              context.read<FinancialBloc>().add(ClearFinancialMessage());
             }
           },
           builder: (context, state) {

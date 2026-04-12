@@ -40,7 +40,7 @@ class _PatientBookingViewState extends State<_PatientBookingView> {
       context: context,
       barrierDismissible: true,
       barrierLabel: "PIN",
-      barrierColor: Colors.black.withOpacity(0.5),
+      barrierColor: Colors.black.withValues(alpha: 0.5),
       transitionDuration: const Duration(milliseconds: 300),
       pageBuilder: (dialogContext, anim1, anim2) {
         return BlocProvider.value(
@@ -63,38 +63,18 @@ class _PatientBookingViewState extends State<_PatientBookingView> {
                       const Icon(Icons.lock_person_rounded, size: 48, color: AppTheme.primaryColor),
                       const SizedBox(height: 16),
                       const Text(
-                        "Identificação",
+                        "Confirmação",
                         style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
                       ),
-                      const Text(
-                        "Selecione o atendimento e digite seu PIN",
-                        style: TextStyle(color: Color(0xFF64748B), fontSize: 14),
+                      const Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 16.0),
+                        child: Text(
+                          "Digite seu PIN para finalizar o agendamento",
+                          textAlign: TextAlign.center,
+                          style: TextStyle(color: Color(0xFF64748B), fontSize: 14),
+                        ),
                       ),
                       const SizedBox(height: 32),
-                      // Dropdown de Categorias Premium
-                      BlocBuilder<PatientBookingBloc, PatientBookingState>(
-                        builder: (context, state) {
-                          return _buildPremiumDropdown<String>(
-                            label: "Qual o atendimento?",
-                            value: state.selectedCategoryId ?? "",
-                            icon: Icons.medical_services_outlined,
-                            items: [
-                              const DropdownMenuItem(value: "", child: Text("Clique para escolher...", style: TextStyle(color: Colors.black26, fontSize: 13))),
-                              ...state.categories.map((cat) => DropdownMenuItem(
-                                value: cat['id'].toString(),
-                                child: Text(cat['name']),
-                              )),
-                            ],
-                            onChanged: (val) {
-                              if (val != null && val.isNotEmpty) {
-                                context.read<PatientBookingBloc>().add(SelectBookingCategory(val));
-                                setModalState(() {});
-                              }
-                            },
-                          );
-                        },
-                      ),
-                      const SizedBox(height: 24),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: List.generate(4, (index) {
@@ -237,7 +217,7 @@ class _PatientBookingViewState extends State<_PatientBookingView> {
       context: context,
       barrierDismissible: false,
       barrierLabel: "Sucesso",
-      barrierColor: Colors.black.withOpacity(0.4),
+      barrierColor: Colors.black.withValues(alpha: 0.4),
       transitionDuration: const Duration(milliseconds: 500),
       pageBuilder: (dialogContext, anim1, anim2) {
         return Center(
@@ -250,7 +230,7 @@ class _PatientBookingViewState extends State<_PatientBookingView> {
               borderRadius: BorderRadius.circular(40),
               boxShadow: [
                 BoxShadow(
-                  color: AppTheme.primaryColor.withOpacity(0.15),
+                  color: AppTheme.primaryColor.withValues(alpha: 0.15),
                   blurRadius: 40,
                   offset: const Offset(0, 20),
                 )
@@ -265,7 +245,7 @@ class _PatientBookingViewState extends State<_PatientBookingView> {
                     width: 80,
                     height: 80,
                     decoration: BoxDecoration(
-                      color: AppTheme.primaryColor.withOpacity(0.1),
+                      color: AppTheme.primaryColor.withValues(alpha: 0.1),
                       shape: BoxShape.circle,
                     ),
                     child: const Center(
@@ -339,7 +319,7 @@ class _PatientBookingViewState extends State<_PatientBookingView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF1F5F9), // Fundo mais escuro para destacar o card no desktop
+      backgroundColor: const Color(0xFFF1F5F9), 
       body: LayoutBuilder(
         builder: (context, constraints) {
           final bool isDesktop = constraints.maxWidth > 800;
@@ -419,11 +399,9 @@ class _PatientBookingViewState extends State<_PatientBookingView> {
     final currentYear = DateTime.now().year;
     final years = [currentYear, currentYear + 1];
 
-    // Calcula os dias do mês selecionado (focusedDate)
     final firstDayOfMonth = DateTime(state.focusedDate.year, state.focusedDate.month, 1);
     final lastDayOfMonth = DateTime(state.focusedDate.year, state.focusedDate.month + 1, 0);
     
-    // Se o mês for o atual, começamos de hoje. Se for futuro, começamos do dia 1.
     final bool isCurrentMonth = state.focusedDate.year == DateTime.now().year && 
                                state.focusedDate.month == DateTime.now().month;
     
@@ -438,7 +416,7 @@ class _PatientBookingViewState extends State<_PatientBookingView> {
           borderRadius: isDesktop 
             ? const BorderRadius.vertical(bottom: Radius.circular(32)) 
             : const BorderRadius.only(bottomLeft: Radius.circular(32), bottomRight: Radius.circular(32)),
-          boxShadow: [BoxShadow(color: Colors.black12.withOpacity(0.05), blurRadius: 20, offset: const Offset(0, 10))],
+          boxShadow: [BoxShadow(color: Colors.black12.withValues(alpha: 0.05), blurRadius: 20, offset: const Offset(0, 10))],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -448,11 +426,35 @@ class _PatientBookingViewState extends State<_PatientBookingView> {
               style: TextStyle(fontSize: 32, fontWeight: FontWeight.w900, letterSpacing: -1.5),
             ),
             const Text(
-              "Escolha o melhor dia e horário para seu atendimento",
+              "Escolha o tipo de atendimento, o dia e o horário desejado",
               style: TextStyle(color: Colors.black45, fontSize: 16),
             ),
             const SizedBox(height: 32),
-            // Seletores de Mês e Ano Premium
+            
+            // NOVO: Dropdown de Categorias (Dropbox)
+            _buildPremiumDropdown<String>(
+              label: "1. O que vamos fazer hoje?",
+              value: state.selectedCategoryId ?? "",
+              icon: Icons.medical_services_outlined,
+              items: [
+                const DropdownMenuItem(
+                  value: "", 
+                  child: Text("Selecione o tipo de atendimento...", style: TextStyle(color: Colors.black26, fontSize: 13))
+                ),
+                ...state.categories.map((cat) => DropdownMenuItem(
+                  value: cat['id'].toString(),
+                  child: Text(cat['name']),
+                )),
+              ],
+              onChanged: (val) {
+                if (val != null && val.isNotEmpty) {
+                  context.read<PatientBookingBloc>().add(SelectBookingCategory(val));
+                }
+              },
+            ),
+            const SizedBox(height: 32),
+            
+            _buildLabel("2. Escolha o melhor período"),
             Row(
               children: [
                 Expanded(
@@ -565,48 +567,93 @@ class _PatientBookingViewState extends State<_PatientBookingView> {
 
     final int crossAxisCount = maxWidth > 800 ? 5 : 3;
 
-    return SliverGrid(
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: crossAxisCount,
-        childAspectRatio: 2.0,
-        mainAxisSpacing: 16,
-        crossAxisSpacing: 16,
-      ),
-      delegate: SliverChildBuilderDelegate(
-        (context, index) {
-          final slot = state.availableSlots[index];
-          final isSelected = state.selectedSlot == slot;
-
-          return InkWell(
-            onTap: () {
-              context.read<PatientBookingBloc>().add(SelectBookingSlot(slot));
-              _showPinDialog(context, slot);
-            },
-            borderRadius: BorderRadius.circular(16),
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
-              decoration: BoxDecoration(
-                color: isSelected ? AppTheme.primaryColor : Colors.white,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: isSelected ? AppTheme.primaryColor : Colors.black.withOpacity(0.05)),
-                boxShadow: [
-                  BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 10, offset: const Offset(0, 5)),
+    return SliverPadding(
+      padding: const EdgeInsets.only(bottom: 40),
+      sliver: SliverMainAxisGroup(
+        slivers: [
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.only(bottom: 24.0),
+              child: Row(
+                children: [
+                  _buildLabel("3. Por fim, escolha o horário"),
+                  if (state.selectedCategoryId != null) ...[
+                    const Spacer(),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: AppTheme.primaryColor.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.check_circle_outline_rounded, size: 14, color: AppTheme.primaryColor),
+                          const SizedBox(width: 6),
+                          Text(
+                            state.categories.firstWhere((c) => c['id'].toString() == state.selectedCategoryId)['name'],
+                            style: const TextStyle(
+                              color: AppTheme.primaryColor,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ],
               ),
-              child: Center(
-                child: Text(
-                  DateFormat('HH:mm').format(slot),
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: isSelected ? Colors.white : Colors.black87,
-                  ),
-                ),
-              ),
             ),
-          );
-        },
-        childCount: state.availableSlots.length,
+          ),
+          SliverGrid(
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: crossAxisCount,
+              childAspectRatio: 2.0,
+              mainAxisSpacing: 16,
+              crossAxisSpacing: 16,
+            ),
+            delegate: SliverChildBuilderDelegate(
+              (context, index) {
+                final slot = state.availableSlots[index];
+                final isSelected = state.selectedSlot == slot;
+
+                return InkWell(
+                  onTap: () {
+                    if (state.selectedCategoryId == null) {
+                      AppAlerts.info(context, "Por favor, selecione primeiro o tipo de atendimento no topo da tela.");
+                      return;
+                    }
+                    context.read<PatientBookingBloc>().add(SelectBookingSlot(slot));
+                    _showPinDialog(context, slot);
+                  },
+                  borderRadius: BorderRadius.circular(16),
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    decoration: BoxDecoration(
+                      color: isSelected ? AppTheme.primaryColor : Colors.white,
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: isSelected ? AppTheme.primaryColor : Colors.black.withValues(alpha: 0.05)),
+                      boxShadow: [
+                        BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 10, offset: const Offset(0, 5)),
+                      ],
+                    ),
+                    child: Center(
+                      child: Text(
+                        DateFormat('HH:mm').format(slot),
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: isSelected ? Colors.white : Colors.black87,
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              },
+              childCount: state.availableSlots.length,
+            ),
+          ),
+        ],
       ),
     );
   }

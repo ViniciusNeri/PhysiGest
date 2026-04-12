@@ -23,11 +23,12 @@ class UpdateDashboardPreferences extends SettingsEvent {
 
 class AddAttendanceCategory extends SettingsEvent {
   final String name;
+  final int duration;
 
-  const AddAttendanceCategory(this.name);
+  const AddAttendanceCategory({required this.name, required this.duration});
 
   @override
-  List<Object?> get props => [name];
+  List<Object?> get props => [name, duration];
 }
 
 class UpdateAttendanceCategory extends SettingsEvent {
@@ -83,3 +84,5 @@ class DeleteAgendaLock extends SettingsEvent {
   @override
   List<Object?> get props => [id];
 }
+
+class ClearSettingsMessage extends SettingsEvent {}

@@ -163,6 +163,7 @@ class ScheduleRemoteDataSource implements IScheduleRemoteDataSource {
       return list.map((e) => {
         'id': e['_id']?.toString() ?? e['id']?.toString() ?? '',
         'name': e['name']?.toString() ?? e['description']?.toString() ?? '',
+        'duration': (e['duration'] as num?)?.toInt() ?? 60,
       }).toList();
     } on DioException catch (e) {
       throw Exception(e.message);

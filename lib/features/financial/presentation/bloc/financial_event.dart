@@ -36,3 +36,5 @@ class UpdateDateFilter extends FinancialEvent {
   @override
   List<Object?> get props => [month, year];
 }
+
+class ClearFinancialMessage extends FinancialEvent {}

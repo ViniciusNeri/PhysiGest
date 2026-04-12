@@ -39,6 +39,7 @@ class SettingsLoaded extends SettingsState {
     DashboardPreferences? dashboardPreferences,
     List<AgendaLock>? agendaLocks,
     String? successMessage,
+    bool clearMessage = false,
   }) {
     return SettingsLoaded(
       userEmail: userEmail ?? this.userEmail,
@@ -46,7 +47,7 @@ class SettingsLoaded extends SettingsState {
       paymentMethods: paymentMethods ?? this.paymentMethods,
       dashboardPreferences: dashboardPreferences ?? this.dashboardPreferences,
       agendaLocks: agendaLocks ?? this.agendaLocks,
-      successMessage: successMessage ?? this.successMessage,
+      successMessage: clearMessage ? null : (successMessage ?? this.successMessage),
     );
   }
 

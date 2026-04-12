@@ -42,3 +42,5 @@ class UpdatePaymentStatus extends PatientFinancialEvent {
   @override
   List<Object?> get props => [patientId, paymentId, status, paymentMethod];
 }
+
+class ClearPatientFinancialMessage extends PatientFinancialEvent {}

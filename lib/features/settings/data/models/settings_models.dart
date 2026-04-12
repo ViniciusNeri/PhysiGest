@@ -6,19 +6,29 @@ class AttendanceCategoryModel extends AttendanceCategory {
   const AttendanceCategoryModel({
     required super.id,
     required super.name,
+    required super.duration,
+    required super.userId,
     super.isActive = true,
   });
 
   factory AttendanceCategoryModel.fromJson(Map<String, dynamic> json) {
     return AttendanceCategoryModel(
-      id: json['id']?.toString() ?? '',
+      id: (json['id'] ?? json['_id'] ?? json['codigo'])?.toString() ?? '',
       name: json['name'] ?? '',
+      duration: (json['duration'] as num?)?.toInt() ?? 60,
       isActive: json['isActive'] as bool? ?? true,
+      userId: json['userId']?.toString() ?? '',
     );
   }
 
   Map<String, dynamic> toJson() {
-    return {'id': id, 'name': name, 'isActive': isActive};
+    return {
+      'id': id,
+      'name': name,
+      'duration': duration,
+      'isActive': isActive,
+      'userId': userId,
+    };
   }
 }
 
@@ -31,7 +41,7 @@ class PaymentMethodModel extends PaymentMethod {
 
   factory PaymentMethodModel.fromJson(Map<String, dynamic> json) {
     return PaymentMethodModel(
-      id: json['id']?.toString() ?? '',
+      id: (json['id'] ?? json['_id'])?.toString() ?? '',
       name: json['name'] ?? '',
       isActive: json['isActive'] as bool? ?? true,
     );

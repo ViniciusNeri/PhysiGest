@@ -108,9 +108,24 @@ class FinancialSummaryModel extends FinancialSummary {
       return data.map((key, value) => MapEntry(key, (value as num).toDouble()));
     }
 
-    Map<int, double> parseYearlyMap(Map<String, dynamic>? data) {
-      if (data == null) return {};
-      return data.map((key, value) => MapEntry(int.parse(key), (value as num).toDouble()));
+    final yearlyRevenue = <int, double>{};
+    final yearlyExpenses = <int, double>{};
+
+    final history = json['monthlyHistory'] as Map<String, dynamic>?;
+    if (history != null) {
+      final monthMap = {
+        'Janeiro': 1, 'Fevereiro': 2, 'Março': 3, 'Abril': 4,
+        'Maio': 5, 'Junho': 6, 'Julho': 7, 'Agosto': 8,
+        'Setembro': 9, 'Outubro': 10, 'Novembro': 11, 'Dezembro': 12,
+      };
+
+      history.forEach((key, value) {
+        final monthIndex = monthMap[key];
+        if (monthIndex != null && value is Map<String, dynamic>) {
+          yearlyRevenue[monthIndex] = (value['income'] as num?)?.toDouble() ?? 0.0;
+          yearlyExpenses[monthIndex] = (value['expenses'] as num?)?.toDouble() ?? 0.0;
+        }
+      });
     }
 
     return FinancialSummaryModel(
@@ -120,8 +135,8 @@ class FinancialSummaryModel extends FinancialSummary {
       lucroLiquido: (json['netProfit'] as num?)?.toDouble() ?? 0.0,
       incomeByMethod: parseMethodMap(json['incomeByMethod']),
       expenseByMethod: parseMethodMap(json['expenseByMethod']),
-      yearlyRevenue: parseYearlyMap(json['yearlyRevenue']),
-      yearlyExpenses: parseYearlyMap(json['yearlyExpenses']),
+      yearlyRevenue: yearlyRevenue,
+      yearlyExpenses: yearlyExpenses,
     );
   }
 }
