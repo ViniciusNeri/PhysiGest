@@ -17,10 +17,10 @@ class AgendaLockModel extends AgendaLock {
       id: (json['id'] ?? json['_id'] ?? json['userId'] ?? '').toString(),
       userId: (json['userId'] ?? '').toString(),
       type: (json['type'] ?? 'partial').toString(),
-      date: json['date'] != null ? DateTime.parse(json['date'].toString()).toLocal() : null,
+      date: json['date'] != null ? DateTime.parse(json['date'].toString().split('Z')[0]) : null,
       dates: json['dates'] is List
           ? (json['dates'] as List)
-              .map((d) => DateTime.parse(d.toString()).toLocal())
+              .map((d) => DateTime.parse(d.toString().split('Z')[0]))
               .toList()
           : null,
       startTime: json['startTime']?.toString(),

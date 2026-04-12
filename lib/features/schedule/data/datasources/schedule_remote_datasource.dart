@@ -163,6 +163,7 @@ class ScheduleRemoteDataSource implements IScheduleRemoteDataSource {
       return list.map((e) => {
         'id': e['_id']?.toString() ?? e['id']?.toString() ?? '',
         'name': e['name']?.toString() ?? e['description']?.toString() ?? '',
+        'duration': (e['duration'] as num?)?.toInt() ?? 60,
       }).toList();
     } on DioException catch (e) {
       throw Exception(e.message);
@@ -250,7 +251,7 @@ class ScheduleRemoteDataSource implements IScheduleRemoteDataSource {
       return list.map((slot) {
         // Se o slot já for uma data completa (ISO)
         if (slot.toString().contains('T')) {
-          return DateTime.parse(slot.toString()).toLocal();
+          return DateTime.parse(slot.toString().split('Z')[0]);
         }
         
         // Se o slot for apenas o horário (HH:mm)

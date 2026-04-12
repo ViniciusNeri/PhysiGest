@@ -57,8 +57,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
         listener: (context, state) {
           if (state is SettingsError) {
             AppAlerts.error(context, state.message);
-          } else if (state.successMessage != null) {
+          } else if (state.successMessage != null && (ModalRoute.of(context)?.isCurrent ?? false)) {
             AppAlerts.success(context, state.successMessage!);
+            context.read<SettingsBloc>().add(ClearSettingsMessage());
           }
         },
         builder: (context, state) {

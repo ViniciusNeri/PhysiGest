@@ -26,7 +26,7 @@ class Appointment {
   // Formata a data para exibição: "05 Mar" e "14:00"
   String get displayDate {
     try {
-      final dt = DateTime.parse(date).toLocal();
+      final dt = DateTime.parse(date.split('Z')[0]);
       const months = [
         'Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun',
         'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez',
@@ -39,7 +39,7 @@ class Appointment {
 
   String get displayTime {
     try {
-      final dt = DateTime.parse(date).toLocal();
+      final dt = DateTime.parse(date.split('Z')[0]);
       return '${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
     } catch (_) {
       return '';

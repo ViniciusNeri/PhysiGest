@@ -106,7 +106,7 @@ class Patient extends Equatable {
   String get displayBirthDate {
     if (birthDate.isEmpty) return 'N/A';
     try {
-      final date = DateTime.parse(birthDate).toLocal();
+      final date = DateTime.parse(birthDate.split('Z')[0]);
       return '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}';
     } catch (_) {
       return birthDate;
@@ -129,7 +129,7 @@ class Patient extends Equatable {
   String get displayNextAppointmentDate {
     if (nextAppointmentDate == null || nextAppointmentDate!.isEmpty) return 'N/A';
     try {
-      final date = DateTime.parse(nextAppointmentDate!).toLocal();
+      final date = DateTime.parse(nextAppointmentDate!.split('Z')[0]);
       return '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}';
     } catch (_) {
       return nextAppointmentDate!;
@@ -141,7 +141,7 @@ class Patient extends Equatable {
   String get displayAge {
     if (birthDate.isEmpty) return 'Idade N/A';
     try {
-      final date = DateTime.parse(birthDate).toLocal();
+      final date = DateTime.parse(birthDate.split('Z')[0]);
       final today = DateTime.now();
       int currentAge = today.year - date.year;
       if (today.month < date.month ||

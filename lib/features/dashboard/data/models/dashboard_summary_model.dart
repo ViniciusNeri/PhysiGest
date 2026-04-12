@@ -56,9 +56,8 @@ class DashboardSummaryModel extends DashboardSummary {
       description: json['description'] ?? '',
       categoryId: json['categoryId']?.toString(),
       categoryName: json['categoryName']?.toString(),
-      startDate: (DateTime.tryParse(json['date'] ?? '') ?? DateTime.now()).toLocal(),
-      endDate: (DateTime.tryParse(json['date'] ?? '') ?? DateTime.now())
-          .toLocal()
+      startDate: DateTime.parse(json['date'].toString().split('Z')[0]),
+      endDate: DateTime.parse(json['date'].toString().split('Z')[0])
           .add(const Duration(hours: 1)),
       status: normalizedStatus,
       notes: json['notes'],

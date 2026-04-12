@@ -69,6 +69,7 @@ class FinancialState extends Equatable {
     int? selectedYear,
     String? errorMessage,
     String? successMessage,
+    bool clearMessage = false,
   }) {
     return FinancialState(
       status: status ?? this.status,
@@ -83,8 +84,8 @@ class FinancialState extends Equatable {
       yearlyExpenses: yearlyExpenses ?? this.yearlyExpenses,
       selectedMonth: selectedMonth ?? this.selectedMonth,
       selectedYear: selectedYear ?? this.selectedYear,
-      errorMessage: errorMessage ?? this.errorMessage,
-      successMessage: successMessage ?? this.successMessage,
+      errorMessage: clearMessage ? null : (errorMessage ?? this.errorMessage),
+      successMessage: clearMessage ? null : (successMessage ?? this.successMessage),
     );
   }
 }

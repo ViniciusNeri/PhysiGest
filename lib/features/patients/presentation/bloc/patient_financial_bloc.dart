@@ -18,13 +18,19 @@ class PatientFinancialBloc extends Bloc<PatientFinancialEvent, PatientFinancialS
     on<LoadFinancialSummary>(_onLoadFinancialSummary);
     on<AddFinancialPayment>(_onAddFinancialPayment);
     on<UpdatePaymentStatus>(_onUpdatePaymentStatus);
+    on<ClearPatientFinancialMessage>((event, emit) {
+      emit(state.copyWith(
+        status: PatientFinancialStatus.success,
+        clearMessage: true,
+      ));
+    });
   }
 
   Future<void> _onLoadFinancialSummary(
     LoadFinancialSummary event,
     Emitter<PatientFinancialState> emit,
   ) async {
-    emit(state.copyWith(status: PatientFinancialStatus.loading));
+    emit(state.copyWith(status: PatientFinancialStatus.loading, clearMessage: true));
     try {
       final summary = await _getFinancialSummaryUseCase(event.patientId);
       emit(state.copyWith(status: PatientFinancialStatus.success, summary: summary));
@@ -40,7 +46,7 @@ class PatientFinancialBloc extends Bloc<PatientFinancialEvent, PatientFinancialS
     AddFinancialPayment event,
     Emitter<PatientFinancialState> emit,
   ) async {
-    emit(state.copyWith(status: PatientFinancialStatus.addingPayment));
+    emit(state.copyWith(status: PatientFinancialStatus.addingPayment, clearMessage: true));
     try {
       await _addFinancialRecordUseCase(event.patientId, event.payment);
       
@@ -64,7 +70,7 @@ class PatientFinancialBloc extends Bloc<PatientFinancialEvent, PatientFinancialS
     UpdatePaymentStatus event,
     Emitter<PatientFinancialState> emit,
   ) async {
-    emit(state.copyWith(status: PatientFinancialStatus.loading));
+    emit(state.copyWith(status: PatientFinancialStatus.loading, clearMessage: true));
     try {
       await _updateFinancialStatusUseCase(
         event.patientId,

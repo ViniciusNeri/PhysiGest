@@ -45,9 +45,15 @@ class VerificationView extends StatelessWidget {
           ),
         ),
         child: BlocListener<VerifyBloc, VerifyState>(
-          listener: (context, state) {
+          listener: (context, state) async {
             if (state.status == VerifyStatus.success) {
-              context.go('/'); // Navega para a Home ou Login após sucesso
+              await AppAlerts.success(
+                context, 
+                'Usuário autenticado com sucesso! Você será direcionado para o login para iniciar no sistema.',
+              );
+              if (context.mounted) {
+                context.go('/'); // Navega para a Home ou Login após sucesso
+              }
             } else if (state.status == VerifyStatus.failure) {
               AppAlerts.error(context, state.errorMessage);
             }

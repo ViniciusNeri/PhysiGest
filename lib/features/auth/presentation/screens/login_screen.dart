@@ -105,7 +105,7 @@ class LoginView extends StatelessWidget {
                             ),
                           ),
                           const Text(
-                            'Gestão inteligente para fisioterapia',
+                            'Gestão inteligente para sua clínica',
                             textAlign: TextAlign.center,
                             style: TextStyle(color: Colors.black45, fontSize: 14),
                           ),

@@ -309,7 +309,7 @@ class _PatientsListViewState extends State<PatientsListView> {
       child: Row(
         children: [
           const Expanded(
-            flex: 3,
+            flex: 8,
             child: Text(
               "PACIENTE",
               style: TextStyle(
@@ -320,18 +320,18 @@ class _PatientsListViewState extends State<PatientsListView> {
               ),
             ),
           ),
-          const Expanded(
-            flex: 3,
+          Expanded(
+            flex: 2,
             child: Text(
               "STATUS",
-              style: TextStyle(
+              textAlign: TextAlign.right,
+              style: const TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w800,
                 color: Color(0xFF94A3B8),
               ),
             ),
           ),
-          const SizedBox(width: 48), // Espaço para o menu de ações
         ],
       ),
     );
@@ -361,9 +361,9 @@ class _PatientRow extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
         child: Row(
           children: [
-            // Avatar + Nome
+            // Avatar + Nome (80%)
             Expanded(
-              flex: 3,
+              flex: 8,
               child: Row(
                 children: [
                   CircleAvatar(
@@ -392,11 +392,11 @@ class _PatientRow extends StatelessWidget {
                 ],
               ),
             ),
-            // Status Badge
+            // Status Badge (20%) - Alinhado no lugar dos 3 pontos
             Expanded(
-              flex: 3,
-              child: UnconstrainedBox(
-                alignment: Alignment.centerLeft,
+              flex: 2,
+              child: Align(
+                alignment: Alignment.centerRight,
                 child: Container(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 10,
@@ -440,74 +440,6 @@ class _PatientRow extends StatelessWidget {
                   ),
                 ),
               ),
-            ),
-            // Menu de Ações
-            PopupMenuButton<String>(
-              onSelected: (value) {
-                if (value == 'toggle_status') {
-                  final isCurrentlyActive = patient.status == 'active';
-                  final actionText = isCurrentlyActive ? 'Inativar' : 'Ativar';
-                  final confirmationMessage = isCurrentlyActive
-                      ? 'O paciente ficará inativo e não aparecerá nas buscas rápidas e dashboard.'
-                      : 'O paciente voltará a ficar ativo em sua base de dados.';
-
-                  showDialog(
-                    context: context,
-                    builder: (dialogContext) => AlertDialog(
-                      title: Text('$actionText Paciente?'),
-                      content: Text(confirmationMessage),
-                      actions: [
-                        TextButton(
-                          onPressed: () => Navigator.pop(dialogContext),
-                          child: const Text('Cancelar'),
-                        ),
-                        ElevatedButton(
-                          onPressed: () {
-                            final newStatus =
-                                isCurrentlyActive ? 'inactive' : 'active';
-                            context.read<PatientBloc>().add(
-                                  UpdatePatient(
-                                      patient.copyWith(status: newStatus)),
-                                );
-                            Navigator.pop(dialogContext);
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor:
-                                isCurrentlyActive ? Colors.red : Colors.teal,
-                            foregroundColor: Colors.white,
-                          ),
-                          child: Text(actionText),
-                        ),
-                      ],
-                    ),
-                  );
-                }
-              },
-              icon: const Icon(
-                Icons.more_horiz_rounded,
-                color: Color(0xFF94A3B8),
-              ),
-              itemBuilder: (context) => [
-                PopupMenuItem(
-                  value: 'toggle_status',
-                  child: Row(
-                    children: [
-                      Icon(
-                        patient.status == 'active' 
-                            ? Icons.person_off_rounded 
-                            : Icons.person_add_rounded,
-                        size: 18,
-                        color: const Color(0xFF64748B),
-                      ),
-                      const SizedBox(width: 12),
-                      Text(
-                        patient.status == 'active' ? "Inativar" : "Ativar",
-                        style: const TextStyle(fontSize: 14),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
             ),
           ],
         ),

@@ -43,10 +43,10 @@ class AppointmentModel extends Appointment {
       categoryId: json['categoryId'],
       categoryName: json['categoryName'],
       startDate: json['startDate'] != null
-          ? DateTime.parse(json['startDate']).toLocal()
+          ? DateTime.parse(json['startDate'].toString().split('Z')[0])
           : DateTime.now(),
       endDate: json['endDate'] != null
-          ? DateTime.parse(json['endDate']).toLocal()
+          ? DateTime.parse(json['endDate'].toString().split('Z')[0])
           : DateTime.now().add(const Duration(hours: 1)),
       status: normalizedStatus,
       description: json['description'] as String?,
@@ -62,8 +62,8 @@ class AppointmentModel extends Appointment {
       'userId': userId,
       'categoryId': categoryId,
       'categoryName': categoryName,
-      'startDate': startDate.toUtc().toIso8601String(),
-      'endDate': endDate.toUtc().toIso8601String(),
+      'startDate': startDate.toIso8601String(),
+      'endDate': endDate.toIso8601String(),
       'status': status,
       'description': description,
       'notes': notes,

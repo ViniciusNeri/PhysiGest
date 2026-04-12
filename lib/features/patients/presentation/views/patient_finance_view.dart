@@ -12,6 +12,7 @@ import '../bloc/patient_financial_state.dart';
 import 'package:physigest/core/utils/app_alerts.dart';
 import '../widgets/payment_action_dialog.dart';
 import 'package:physigest/core/widgets/app_error_view.dart';
+import 'package:physigest/core/utils/pdf_receipt_generator.dart';
 
 class PatientFinanceView extends StatefulWidget {
   final Patient patient;
@@ -44,12 +45,15 @@ class _PatientFinanceViewState extends State<PatientFinanceView> {
   Widget build(BuildContext context) {
     return BlocListener<PatientFinancialBloc, PatientFinancialState>(
       listener: (context, state) {
-        if (state.status == PatientFinancialStatus.paymentAdded) {
-          AppAlerts.success(context, state.successMessage ?? "Lançamento registrado com sucesso!");
-        } else if (state.status == PatientFinancialStatus.statusUpdated) {
-          AppAlerts.success(context, state.successMessage ?? "Pagamento atualizado com sucesso!");
+        if (state.status == PatientFinancialStatus.paymentAdded && state.successMessage != null) {
+          AppAlerts.success(context, state.successMessage!);
+          context.read<PatientFinancialBloc>().add(ClearPatientFinancialMessage());
+        } else if (state.status == PatientFinancialStatus.statusUpdated && state.successMessage != null) {
+          AppAlerts.success(context, state.successMessage!);
+          context.read<PatientFinancialBloc>().add(ClearPatientFinancialMessage());
         } else if (state.status == PatientFinancialStatus.failure && state.errorMessage != null) {
           AppAlerts.error(context, state.errorMessage!);
+          context.read<PatientFinancialBloc>().add(ClearPatientFinancialMessage());
         }
       },
       child: BlocBuilder<PatientFinancialBloc, PatientFinancialState>(
@@ -132,25 +136,25 @@ class _PatientFinanceViewState extends State<PatientFinanceView> {
             ),
           ],
         ),
-        if (isDesktop)
-          ElevatedButton.icon(
-            onPressed: () {},
-            icon: const Icon(Icons.receipt_long, color: Colors.white, size: 18),
-            label: const Text(
-              "GERAR RECIBO",
-              style: TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF7C3AED),
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 18),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ),
-          ),
+        // if (isDesktop)
+        //   ElevatedButton.icon(
+        //     onPressed: () {},
+        //     icon: const Icon(Icons.receipt_long, color: Colors.white, size: 18),
+        //     label: const Text(
+        //       "GERAR RECIBO",
+        //       style: TextStyle(
+        //         color: Colors.white,
+        //         fontWeight: FontWeight.bold,
+        //       ),
+        //     ),
+        //     style: ElevatedButton.styleFrom(
+        //       backgroundColor: const Color(0xFF7C3AED),
+        //       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 18),
+        //       shape: RoundedRectangleBorder(
+        //         borderRadius: BorderRadius.circular(12),
+        //       ),
+        //     ),
+        //   ),
       ],
     );
   }
@@ -396,7 +400,7 @@ class _PatientFinanceViewState extends State<PatientFinanceView> {
 
           String displayDate = tx.date;
           try {
-            final date = DateTime.parse(tx.date).toLocal();
+            final date = DateTime.parse(tx.date.split('Z')[0]);
             displayDate =
                 '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}';
           } catch (_) {}
@@ -504,6 +508,18 @@ class _PatientFinanceViewState extends State<PatientFinanceView> {
               tooltip: 'Marcar como Pago',
               style: IconButton.styleFrom(
                 backgroundColor: Colors.teal.withValues(alpha: 0.1),
+                padding: const EdgeInsets.all(8),
+              ),
+            ),
+          ] else ...[
+            const SizedBox(width: 16),
+            IconButton(
+              onPressed: () => _showReceiptDialog(context, tx),
+              icon: const Icon(Icons.receipt_long_outlined),
+              color: const Color(0xFF7C3AED),
+              tooltip: 'Ver Recibo',
+              style: IconButton.styleFrom(
+                backgroundColor: const Color(0xFF7C3AED).withValues(alpha: 0.1),
                 padding: const EdgeInsets.all(8),
               ),
             ),
@@ -642,5 +658,153 @@ class _PatientFinanceViewState extends State<PatientFinanceView> {
         ),
       ),
     );
+  }
+  void _showReceiptDialog(BuildContext context, PatientPayment tx) {
+    String displayDate = tx.paymentDate ?? tx.date;
+    try {
+      final date = DateTime.parse(displayDate.split('Z')[0]);
+      displayDate = '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year} às ${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
+    } catch (_) {}
+
+    showDialog(
+      context: context,
+      builder: (dlgContext) => Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        backgroundColor: Colors.white,
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 450),
+          child: Padding(
+            padding: const EdgeInsets.all(32.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Icon(Icons.receipt_long_rounded, color: Color(0xFF7C3AED), size: 32),
+                    IconButton(
+                      onPressed: () => Navigator.pop(dlgContext),
+                      icon: const Icon(Icons.close, color: Colors.grey),
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 24),
+                const Text(
+                  'RECIBO DE PAGAMENTO',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w900,
+                    color: Color(0xFF1E293B),
+                    letterSpacing: 1.5,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 32),
+                Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF8FAFC),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: const Color(0xFFE2E8F0)),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildReceiptRow('Paciente', widget.patient.name),
+                      const SizedBox(height: 12),
+                      _buildReceiptRow('Data', displayDate),
+                      const Divider(height: 24, color: Color(0xFFE2E8F0)),
+                      _buildReceiptRow('Serviço', tx.category),
+                      if (tx.description.isNotEmpty) ...[
+                        const SizedBox(height: 12),
+                        _buildReceiptRow('Descrição', tx.description),
+                      ],
+                      const SizedBox(height: 12),
+                      _buildReceiptRow('Quantidade', '${tx.totalSessions} Sessõe(s)'),
+                      const Divider(height: 24, color: Color(0xFFE2E8F0)),
+                      _buildReceiptRow('Forma de Pagto.', _translateMethod(tx.paymentMethod)),
+                      const SizedBox(height: 16),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Text(
+                            'TOTAL PAGO',
+                            style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF1E293B)),
+                          ),
+                          Text(
+                            CurrencyFormatter.format(tx.amount),
+                            style: const TextStyle(
+                              fontWeight: FontWeight.w900, 
+                              fontSize: 20, 
+                              color: Color(0xFF10B981),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 32),
+                ElevatedButton.icon(
+                  onPressed: () {
+                    Navigator.pop(dlgContext);
+                    PdfReceiptGenerator.generateAndPrint(
+                      widget.patient.name,
+                      tx,
+                      displayDate,
+                      _translateMethod(tx.paymentMethod),
+                    );
+                  },
+                  icon: const Icon(Icons.print_outlined, color: Colors.white, size: 20),
+                  label: const Text('IMPRIMIR / EXPORTAR', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF7C3AED),
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildReceiptRow(String label, String value) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          label,
+          style: const TextStyle(color: Color(0xFF64748B), fontSize: 13, fontWeight: FontWeight.w600),
+        ),
+        const SizedBox(width: 16),
+        Expanded(
+          child: Text(
+            value,
+            textAlign: TextAlign.right,
+            style: const TextStyle(color: Color(0xFF1E293B), fontSize: 14, fontWeight: FontWeight.bold),
+          ),
+        ),
+      ],
+    );
+  }
+
+  String _translateMethod(String method) {
+    switch (method.toLowerCase()) {
+      case 'credit_card': return 'Cartão de Crédito';
+      case 'debit_card': return 'Cartão de Débito';
+      case 'bank_transfer': return 'Transferência Bancária';
+      case 'cash': return 'Dinheiro';
+      case 'pix': return 'Pix';
+      case 'check': return 'Cheque';
+      default: return method;
+    }
   }
 }

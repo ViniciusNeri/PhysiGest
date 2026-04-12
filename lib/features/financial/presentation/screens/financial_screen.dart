@@ -115,8 +115,10 @@ class _FinancialViewState extends State<FinancialView> {
           listener: (context, state) {
             if (state.status == FinancialStatus.failure && state.errorMessage != null) {
               AppAlerts.error(context, state.errorMessage!);
+              context.read<FinancialBloc>().add(ClearFinancialMessage());
             } else if (state.status == FinancialStatus.success && state.successMessage != null) {
               AppAlerts.success(context, state.successMessage!);
+              context.read<FinancialBloc>().add(ClearFinancialMessage());
             }
           },
           builder: (context, state) {
@@ -779,7 +781,7 @@ class _RecentTransactionsCardState extends State<_RecentTransactionsCard> {
 
   String _formatDate(String isoDate) {
     try {
-      final date = DateTime.parse(isoDate);
+      final date = DateTime.parse(isoDate.split('Z')[0]);
       return '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}';
     } catch (_) {
       return isoDate.split('T')[0];

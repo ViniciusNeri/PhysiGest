@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
 class AppAlerts {
-  static void success(BuildContext context, String message, {String? title}) {
-    _showCustomDialog(
+  static Future<void> success(BuildContext context, String message, {String? title}) {
+    return _showCustomDialog(
       context,
       title: title ?? 'Sucesso!',
       message: message,
@@ -11,8 +11,8 @@ class AppAlerts {
     );
   }
 
-  static void error(BuildContext context, String message, {String? title}) {
-    _showCustomDialog(
+  static Future<void> error(BuildContext context, String message, {String? title}) {
+    return _showCustomDialog(
       context,
       title: title ?? 'Ocorreu um Erro',
       message: message,
@@ -21,8 +21,8 @@ class AppAlerts {
     );
   }
 
-  static void info(BuildContext context, String message, {String? title}) {
-    _showCustomDialog(
+  static Future<void> info(BuildContext context, String message, {String? title}) {
+    return _showCustomDialog(
       context,
       title: title ?? 'Informação',
       message: message,
@@ -83,14 +83,14 @@ class AppAlerts {
     }
   }
 
-  static void _showCustomDialog(
+  static Future<void> _showCustomDialog(
     BuildContext context, {
     required String title,
     required String message,
     required IconData icon,
     required Color color,
   }) {
-    showGeneralDialog(
+    return showGeneralDialog(
       context: context,
       barrierDismissible: true,
       barrierLabel: '',
