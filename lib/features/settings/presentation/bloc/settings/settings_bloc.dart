@@ -186,7 +186,11 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
     if (state is SettingsLoaded) {
       final currentState = state as SettingsLoaded;
       try {
-        final newMethod = PaymentMethod(id: _uuid.v4(), name: event.name);
+        final newMethod = PaymentMethod(
+          id: _uuid.v4(),
+          name: event.name,
+          userId: '',
+        );
         final createdMethod = await _createPaymentMethodUseCase(newMethod);
         emit(
           currentState.copyWith(

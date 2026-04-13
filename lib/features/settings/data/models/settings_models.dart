@@ -27,7 +27,7 @@ class AttendanceCategoryModel extends AttendanceCategory {
       'name': name,
       'duration': duration,
       'isActive': isActive,
-      'userId': userId,
+      'userId': (userId.isEmpty || userId == 'null') ? null : userId,
     };
   }
 }
@@ -36,6 +36,7 @@ class PaymentMethodModel extends PaymentMethod {
   const PaymentMethodModel({
     required super.id,
     required super.name,
+    required super.userId,
     super.isActive = true,
   });
 
@@ -43,12 +44,18 @@ class PaymentMethodModel extends PaymentMethod {
     return PaymentMethodModel(
       id: (json['id'] ?? json['_id'])?.toString() ?? '',
       name: json['name'] ?? '',
+      userId: json['userId']?.toString() ?? '',
       isActive: json['isActive'] as bool? ?? true,
     );
   }
 
   Map<String, dynamic> toJson() {
-    return {'id': id, 'name': name, 'isActive': isActive};
+    return {
+      'id': id,
+      'name': name,
+      'userId': (userId.isEmpty || userId == 'null') ? null : userId,
+      'isActive': isActive
+    };
   }
 }
 
