@@ -247,15 +247,44 @@ class _PaymentDialogState extends State<_PaymentDialog> {
                 ],
               ),
               const SizedBox(height: 32),
+              if (isEditing && (widget.method!.userId.isEmpty || widget.method!.userId == 'null'))
+                Container(
+                  margin: const EdgeInsets.only(bottom: 24),
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.blue.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: Colors.blue.withValues(alpha: 0.2)),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.info_outline_rounded, color: Colors.blue, size: 20),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          'Esta é uma forma de pagamento padrão do sistema e não pode ser alterada.',
+                          style: TextStyle(
+                            color: Colors.blue.shade800,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               TextFormField(
                 controller: _controller,
+                readOnly: isEditing && (widget.method!.userId.isEmpty || widget.method!.userId == 'null'),
                 style: const TextStyle(fontWeight: FontWeight.w600),
                 decoration: InputDecoration(
                   labelText: 'Nome da Forma de Pagamento',
                   hintText: 'Ex: Cartão de Crédito',
                   prefixIcon: const Icon(Icons.edit_note_rounded),
                   filled: true,
-                  fillColor: const Color(0xFFF8FAFC),
+                  fillColor: isEditing && (widget.method!.userId.isEmpty || widget.method!.userId == 'null') 
+                      ? Colors.grey.shade50 
+                      : const Color(0xFFF8FAFC),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(16),
                     borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
@@ -291,38 +320,40 @@ class _PaymentDialogState extends State<_PaymentDialog> {
                     ),
                   ),
                   const SizedBox(width: 8),
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppTheme.primaryColor,
-                      foregroundColor: Colors.white,
-                      elevation: 0,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 32,
-                        vertical: 16,
+                  if (!(isEditing && (widget.method!.userId.isEmpty || widget.method!.userId == 'null')))
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppTheme.primaryColor,
+                        foregroundColor: Colors.white,
+                        elevation: 0,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 32,
+                          vertical: 16,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
                       ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                    ),
-                    onPressed: () {
-                      if (_formKey.currentState!.validate()) {
-                        final name = _controller.text.trim();
-                        if (isEditing) {
-                          widget.blocContext.read<SettingsBloc>().add(
-                            UpdatePaymentMethod(
-                              widget.method!.copyWith(name: name),
-                            ),
-                          );
-                        } else {
-                          widget.blocContext.read<SettingsBloc>().add(
-                            AddPaymentMethod(name),
-                          );
+                      onPressed: () {
+                        if (_formKey.currentState!.validate()) {
+                          final name = _controller.text.trim();
+                          if (isEditing) {
+                            widget.blocContext.read<SettingsBloc>().add(
+                                  UpdatePaymentMethod(
+                                    widget.method!.copyWith(name: name),
+                                  ),
+                                );
+                          } else {
+                            widget.blocContext.read<SettingsBloc>().add(
+                                  AddPaymentMethod(name),
+                                );
+                          }
+                          Navigator.of(context).pop();
                         }
-                        Navigator.of(context).pop();
-                      }
-                    },
-                    child: Text(isEditing ? 'Atualizar' : 'Criar Pagamento', style: const TextStyle(fontWeight: FontWeight.bold)),
-                  ),
+                      },
+                      child: Text(isEditing ? 'Atualizar' : 'Criar Pagamento',
+                          style: const TextStyle(fontWeight: FontWeight.bold)),
+                    ),
                 ],
               ),
             ],

@@ -79,14 +79,12 @@ class SettingsRemoteDataSource implements ISettingsRemoteDataSource {
     AttendanceCategory category,
   ) async {
     try {
-      final user = await localStorage.getUser();
-      final userId = user?.id ?? '';
       final body = AttendanceCategoryModel(
         id: category.id,
         name: category.name,
         isActive: category.isActive,
         duration: category.duration,
-        userId: userId,
+        userId: category.userId,
       ).toJson();
       final response = await apiClient.dio.put(
         '/categories/${category.id}',
@@ -134,6 +132,7 @@ class SettingsRemoteDataSource implements ISettingsRemoteDataSource {
         id: method.id,
         name: method.name,
         isActive: method.isActive,
+        userId: method.userId,
       ).toJson();
       final response = await apiClient.dio.post(
         '/payment-methods',
@@ -154,6 +153,7 @@ class SettingsRemoteDataSource implements ISettingsRemoteDataSource {
         id: method.id,
         name: method.name,
         isActive: method.isActive,
+        userId: method.userId,
       ).toJson();
       final response = await apiClient.dio.put(
         '/payment-methods/${method.id}',

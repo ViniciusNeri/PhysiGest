@@ -2,11 +2,13 @@ import 'package:dio/dio.dart';
 import 'package:injectable/injectable.dart';
 import '../../../../core/network/api_client.dart';
 import 'package:physigest/features/patients/domain/models/patient.dart';
+import 'package:physigest/features/patients/domain/models/patient_attachment.dart';
 import '../models/patient_model.dart';
 import '../models/anamnesis_model.dart';
 import '../models/appointment_model.dart';
 import '../models/patient_financial_model.dart';
 import '../models/patient_activity_model.dart';
+import '../models/patient_attachment_model.dart';
 import 'package:physigest/core/storage/local_storage.dart';
 
 abstract class IPatientRemoteDataSource {
@@ -23,6 +25,10 @@ abstract class IPatientRemoteDataSource {
   Future<PatientFinancialSummary> getFinancialSummary(String patientId);
   Future<void> addFinancialRecord(String patientId, PatientPayment payment);
   Future<void> updateFinancialRecordStatus(String patientId, String paymentId, String status, {String? paymentMethod});
+  // Attachments
+  Future<List<PatientAttachment>> getAttachments(String patientId);
+  Future<PatientAttachment> uploadAttachment(String patientId, List<int> fileBytes, String fileName, String mimeType, String category, String description);
+  Future<void> deleteAttachment(String patientId, String attachmentId);
 }
 
 @LazySingleton(as: IPatientRemoteDataSource)
@@ -262,6 +268,57 @@ class PatientRemoteDataSource implements IPatientRemoteDataSource {
         '/patients/$patientId/financial/$paymentId/pay',
         data: data,
       );
+    } on DioException catch (e) {
+      throw Exception(e.message);
+    } catch (e) {
+      throw Exception('Erro inesperado: $e');
+    }
+  }
+
+  @override
+  Future<List<PatientAttachment>> getAttachments(String patientId) async {
+    try {
+      final response = await apiClient.dio.get('/patients/$patientId/attachments');
+      final list = response.data as List<dynamic>;
+      return list.map((json) => PatientAttachmentModel.fromJson(json)).toList();
+    } on DioException catch (e) {
+      throw Exception(e.message);
+    } catch (e) {
+      throw Exception('Erro inesperado: $e');
+    }
+  }
+
+  @override
+  Future<PatientAttachment> uploadAttachment(
+    String patientId,
+    List<int> fileBytes,
+    String fileName,
+    String mimeType,
+    String category,
+    String description,
+  ) async {
+    try {
+      final formData = FormData.fromMap({
+        'file': MultipartFile.fromBytes(fileBytes, filename: fileName, contentType: DioMediaType.parse(mimeType)),
+        'category': category,
+        'description': description,
+      });
+      final response = await apiClient.dio.post(
+        '/patients/$patientId/attachments',
+        data: formData,
+      );
+      return PatientAttachmentModel.fromJson(response.data);
+    } on DioException catch (e) {
+      throw Exception(e.message);
+    } catch (e) {
+      throw Exception('Erro inesperado: $e');
+    }
+  }
+
+  @override
+  Future<void> deleteAttachment(String patientId, String attachmentId) async {
+    try {
+      await apiClient.dio.delete('/patients/$patientId/attachments/$attachmentId');
     } on DioException catch (e) {
       throw Exception(e.message);
     } catch (e) {

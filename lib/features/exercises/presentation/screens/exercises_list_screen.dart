@@ -8,6 +8,7 @@ import '../bloc/exercise_state.dart';
 import '../widgets/exercise_detail_dialog.dart';
 import 'package:physigest/core/widgets/app_error_view.dart';
 import 'package:physigest/core/utils/app_alerts.dart';
+import 'package:physigest/core/widgets/side_menu.dart';
 
 class ExercisesListScreen extends StatefulWidget {
   const ExercisesListScreen({super.key});
@@ -49,6 +50,21 @@ class _ExercisesListScreenState extends State<ExercisesListScreen> {
       value: getIt<ExerciseBloc>(),
       child: Scaffold(
         backgroundColor: const Color(0xFFF1F5F9),
+        drawer: const SideMenu(),
+        appBar: AppBar(
+          backgroundColor: Colors.white,
+          elevation: 0,
+          centerTitle: false,
+          iconTheme: const IconThemeData(color: Color(0xFF0F172A)),
+          title: const Text(
+            'Exercícios',
+            style: TextStyle(
+              color: Color(0xFF0F172A),
+              fontWeight: FontWeight.w800,
+              fontSize: 22,
+            ),
+          ),
+        ),
         body: BlocListener<ExerciseBloc, ExerciseState>(
           listener: (context, state) {
             if (state is ExerciseError) {

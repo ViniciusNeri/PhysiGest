@@ -262,15 +262,45 @@ class _CategoryDialogState extends State<_CategoryDialog> {
                 ],
               ),
               const SizedBox(height: 32),
+              if (isEditing && (widget.category!.userId.isEmpty || widget.category!.userId == 'null'))
+                Container(
+                  margin: const EdgeInsets.only(bottom: 24),
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.blue.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: Colors.blue.withValues(alpha: 0.2)),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.info_outline_rounded, color: Colors.blue, size: 20),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          'Esta é uma categoria padrão do sistema. '
+                          'As alterações de nome e duração são restritas.',
+                          style: TextStyle(
+                            color: Colors.blue.shade800,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               TextFormField(
                 controller: _nameController,
+                readOnly: isEditing && (widget.category!.userId.isEmpty || widget.category!.userId == 'null'),
                 style: const TextStyle(fontWeight: FontWeight.w600),
                 decoration: InputDecoration(
                   labelText: 'Nome da Categoria',
                   hintText: 'Ex: Fisioterapia Esportiva',
                   prefixIcon: const Icon(Icons.edit_note_rounded),
                   filled: true,
-                  fillColor: const Color(0xFFF8FAFC),
+                  fillColor: isEditing && (widget.category!.userId.isEmpty || widget.category!.userId == 'null') 
+                      ? Colors.grey.shade50 
+                      : const Color(0xFFF8FAFC),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(16),
                     borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
@@ -294,6 +324,7 @@ class _CategoryDialogState extends State<_CategoryDialog> {
               const SizedBox(height: 20),
               TextFormField(
                 controller: _durationController,
+                readOnly: isEditing && (widget.category!.userId.isEmpty || widget.category!.userId == 'null'),
                 keyboardType: TextInputType.number,
                 style: const TextStyle(fontWeight: FontWeight.w600),
                 decoration: InputDecoration(
@@ -301,7 +332,9 @@ class _CategoryDialogState extends State<_CategoryDialog> {
                   hintText: 'Ex: 45',
                   prefixIcon: const Icon(Icons.timer_outlined),
                   filled: true,
-                  fillColor: const Color(0xFFF8FAFC),
+                  fillColor: isEditing && (widget.category!.userId.isEmpty || widget.category!.userId == 'null') 
+                      ? Colors.grey.shade50 
+                      : const Color(0xFFF8FAFC),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(16),
                     borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
@@ -341,45 +374,47 @@ class _CategoryDialogState extends State<_CategoryDialog> {
                     ),
                   ),
                   const SizedBox(width: 8),
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppTheme.primaryColor,
-                      foregroundColor: Colors.white,
-                      elevation: 0,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 32,
-                        vertical: 16,
+                  if (!(isEditing && (widget.category!.userId.isEmpty || widget.category!.userId == 'null')))
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppTheme.primaryColor,
+                        foregroundColor: Colors.white,
+                        elevation: 0,
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 32,
+                          vertical: 16,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
                       ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                    ),
-                    onPressed: () {
-                      if (_formKey.currentState!.validate()) {
-                        final name = _nameController.text.trim();
-                        final duration = int.parse(_durationController.text);
-                        if (isEditing) {
-                          widget.blocContext.read<SettingsBloc>().add(
-                            UpdateAttendanceCategory(
-                              widget.category!.copyWith(
-                                name: name,
-                                duration: duration,
-                              ),
-                            ),
-                          );
-                        } else {
-                          widget.blocContext.read<SettingsBloc>().add(
-                            AddAttendanceCategory(
-                              name: name,
-                              duration: duration,
-                            ),
-                          );
+                      onPressed: () {
+                        if (_formKey.currentState!.validate()) {
+                          final name = _nameController.text.trim();
+                          final duration = int.parse(_durationController.text);
+                          if (isEditing) {
+                            widget.blocContext.read<SettingsBloc>().add(
+                                  UpdateAttendanceCategory(
+                                    widget.category!.copyWith(
+                                      name: name,
+                                      duration: duration,
+                                    ),
+                                  ),
+                                );
+                          } else {
+                            widget.blocContext.read<SettingsBloc>().add(
+                                  AddAttendanceCategory(
+                                    name: name,
+                                    duration: duration,
+                                  ),
+                                );
+                          }
+                          Navigator.of(context).pop();
                         }
-                        Navigator.of(context).pop();
-                      }
-                    },
-                    child: Text(isEditing ? 'Atualizar' : 'Criar Categoria', style: const TextStyle(fontWeight: FontWeight.bold)),
-                  ),
+                      },
+                      child: Text(isEditing ? 'Atualizar' : 'Criar Categoria',
+                          style: const TextStyle(fontWeight: FontWeight.bold)),
+                    ),
                 ],
               ),
             ],

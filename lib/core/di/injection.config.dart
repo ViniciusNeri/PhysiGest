@@ -59,6 +59,8 @@ import '../../features/patients/presentation/bloc/agenda_bloc.dart' as _i776;
 import '../../features/patients/presentation/bloc/anamnesis_bloc.dart' as _i834;
 import '../../features/patients/presentation/bloc/patient_activities_bloc.dart'
     as _i460;
+import '../../features/patients/presentation/bloc/patient_attachment_bloc.dart'
+    as _i821;
 import '../../features/patients/presentation/bloc/patient_bloc.dart' as _i1035;
 import '../../features/patients/presentation/bloc/patient_financial_bloc.dart'
     as _i220;
@@ -152,6 +154,9 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.factory<_i776.AgendaBloc>(
       () => _i776.AgendaBloc(gh<_i286.IPatientRemoteDataSource>()),
+    );
+    gh.factory<_i821.PatientAttachmentBloc>(
+      () => _i821.PatientAttachmentBloc(gh<_i286.IPatientRemoteDataSource>()),
     );
     gh.lazySingleton<_i657.ISettingsRepository>(
       () => _i955.SettingsRepositoryImpl(gh<_i140.ISettingsRemoteDataSource>()),

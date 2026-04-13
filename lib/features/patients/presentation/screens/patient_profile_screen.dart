@@ -13,9 +13,11 @@ import '../bloc/patient_activities_bloc.dart';
 import '../views/patient_agenda_view.dart';
 import '../views/patient_anamnesis_view.dart';
 import '../views/patient_finance_view.dart';
-import '../views/patient_gallery_view.dart';
+import '../views/patient_attachment_view.dart';
 import '../bloc/patient_financial_bloc.dart';
 import '../bloc/patient_financial_event.dart';
+import '../bloc/patient_attachment_bloc.dart';
+import '../bloc/patient_attachment_event.dart';
 import '../widgets/edit_patient_dialog.dart';
 import 'package:physigest/core/widgets/loading_overlay.dart';
 import 'package:physigest/core/utils/app_alerts.dart';
@@ -36,7 +38,7 @@ class _PatientProfileScreenState extends State<PatientProfileScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 6, vsync: this);
+    _tabController = TabController(length: 5, vsync: this);
     _patientBloc = getIt<PatientBloc>()..add(LoadPatients());
   }
 
@@ -102,8 +104,11 @@ class _PatientProfileScreenState extends State<PatientProfileScreen>
                       ..add(LoadFinancialSummary(p.id)),
                     child: PatientFinanceView(patient: p),
                   ),
-                  const Center(child: Text("Anexos em breve")),
-                  PatientGalleryView(patient: p),
+                  BlocProvider(
+                    create: (context) => getIt<PatientAttachmentBloc>()
+                      ..add(LoadAttachments(p.id)),
+                    child: PatientAttachmentView(patient: p),
+                  ),
                 ],
               ),
             ),
@@ -251,7 +256,6 @@ class _PatientProfileScreenState extends State<PatientProfileScreen>
             Tab(text: 'ANAMNESE'),
             Tab(text: 'FINANCEIRO'),
             Tab(text: 'ANEXOS'),
-            Tab(text: 'FOTOS'),
           ],
         ),
       ),
