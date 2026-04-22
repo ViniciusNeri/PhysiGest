@@ -901,7 +901,7 @@ class HomeView extends StatelessWidget {
             ),
           ),
           Text(
-            '${next.categoryName ?? next.categoryId ?? 'Consulta'} • ${DateFormat("dd/MM 'às' HH:mm").format(next.startDate)}',
+            '${next.categoryName?.isNotEmpty == true ? next.categoryName : (next.categoryId?.isNotEmpty == true ? next.categoryId : "Consulta")} • ${DateFormat("dd/MM 'às' HH:mm").format(next.startDate)}',
             style: const TextStyle(color: Colors.white70, fontSize: 12),
           ),
           const SizedBox(height: 10),
@@ -1107,7 +1107,7 @@ class HomeView extends StatelessWidget {
                         ),
                       ),
                       Text(
-                        '(${apt.categoryName ?? apt.categoryId ?? "Atendimento"})',
+                        '(${apt.categoryName?.isNotEmpty == true ? apt.categoryName : (apt.categoryId?.isNotEmpty == true ? apt.categoryId : "Atendimento")})',
                         style: const TextStyle(
                           fontSize: 11,
                           color: Colors.black54,
