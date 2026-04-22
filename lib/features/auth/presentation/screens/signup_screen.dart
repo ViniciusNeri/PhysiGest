@@ -7,6 +7,7 @@ import 'package:physigest/features/auth/presentation/bloc/signup/signup_bloc.dar
 import 'package:physigest/features/auth/presentation/bloc/signup/signup_event.dart';
 import 'package:physigest/features/auth/presentation/bloc/signup/signup_state.dart';
 import 'package:physigest/core/utils/app_alerts.dart';
+import 'package:physigest/core/utils/mask_formatters.dart';
 
 class SignUpScreen extends StatelessWidget {
   const SignUpScreen({super.key});
@@ -131,6 +132,26 @@ class SignUpView extends StatelessWidget {
                             decoration: _inputDecoration(
                               'seu@email.com',
                               Icons.mail_outline_rounded,
+                            ),
+                          );
+                        },
+                      ),
+                      const SizedBox(height: 16),
+
+                      // TELEFONE
+                      _buildLabel('Telefone'),
+                      BlocBuilder<SignUpBloc, SignUpState>(
+                        buildWhen: (p, c) => p.phone != c.phone,
+                        builder: (context, state) {
+                          return TextField(
+                            onChanged: (v) => context.read<SignUpBloc>().add(
+                              SignUpPhoneChanged(v),
+                            ),
+                            keyboardType: TextInputType.phone,
+                            inputFormatters: [PhoneInputFormatter()],
+                            decoration: _inputDecoration(
+                              '(11) 99999-9999',
+                              Icons.phone_outlined,
                             ),
                           );
                         },

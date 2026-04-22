@@ -135,7 +135,7 @@ class ScheduleRemoteDataSource implements IScheduleRemoteDataSource {
             return true; // fallback active
           })
           .map((e) => {
-            'id': e['_id']?.toString() ?? e['id']?.toString() ?? '',
+            'id': e['id']?.toString() ?? e['_id']?.toString() ?? '',
             'name': e['name']?.toString() ?? '',
           })
           .toList();

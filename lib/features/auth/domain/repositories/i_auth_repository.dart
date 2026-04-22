@@ -5,7 +5,7 @@ abstract class IAuthRepository {
   Future<void> forgotPassword(String email);
   Future<void> resetPassword(String token, String password);
   Future<void> logout();
-  Future<AuthUser> signUp(String name, String email, String password);
+  Future<AuthUser> signUp(String name, String email, String password, String phone);
   Future<AuthUser> confirmSignUp(String email, String confirmationCode);
   Future<AuthUser> signInWithGoogle();
   Future<AuthUser> signInWithApple();

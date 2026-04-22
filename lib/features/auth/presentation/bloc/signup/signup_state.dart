@@ -5,6 +5,7 @@ enum SignUpStatus { initial, loading, success, failure }
 class SignUpState extends Equatable {
   final String name;
   final String email;
+  final String phone;
   final String password;
   final String confirmPassword;
   final SignUpStatus status;
@@ -13,6 +14,7 @@ class SignUpState extends Equatable {
   const SignUpState({
     this.name = '',
     this.email = '',
+    this.phone = '',
     this.password = '',
     this.confirmPassword = '',
     this.status = SignUpStatus.initial,
@@ -24,12 +26,14 @@ class SignUpState extends Equatable {
   bool get isValid =>
       name.isNotEmpty &&
       email.isNotEmpty &&
+      phone.isNotEmpty &&
       isPasswordValid &&
       doPasswordsMatch;
 
   SignUpState copyWith({
     String? name,
     String? email,
+    String? phone,
     String? password,
     String? confirmPassword,
     SignUpStatus? status,
@@ -38,6 +42,7 @@ class SignUpState extends Equatable {
     return SignUpState(
       name: name ?? this.name,
       email: email ?? this.email,
+      phone: phone ?? this.phone,
       password: password ?? this.password,
       confirmPassword: confirmPassword ?? this.confirmPassword,
       status: status ?? this.status,
@@ -49,6 +54,7 @@ class SignUpState extends Equatable {
   List<Object?> get props => [
     name,
     email,
+    phone,
     password,
     confirmPassword,
     status,
