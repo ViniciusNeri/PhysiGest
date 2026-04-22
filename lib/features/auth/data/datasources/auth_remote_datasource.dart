@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:injectable/injectable.dart';
 import '../../../../core/network/api_client.dart';
+import '../../../../core/utils/mask_formatters.dart';
 import '../models/auth_user_model.dart';
 
 abstract class IAuthRemoteDataSource {
@@ -8,7 +9,7 @@ abstract class IAuthRemoteDataSource {
   Future<void> forgotPassword(String email);
   Future<void> resetPassword(String token, String password);
   Future<void> logout();
-  Future<AuthUserModel> signUp(String name, String email, String password);
+  Future<AuthUserModel> signUp(String name, String email, String password, String phone);
   Future<AuthUserModel> confirmSignUp(String email, String confirmationCode);
   Future<AuthUserModel> signInWithGoogle();
   Future<AuthUserModel> signInWithApple();
@@ -87,11 +88,17 @@ class AuthRemoteDataSource implements IAuthRemoteDataSource {
     String name,
     String email,
     String password,
+    String phone,
   ) async {
     try {
       final response = await apiClient.dio.post(
         '/auth/signup',
-        data: {'name': name, 'email': email, 'password': password},
+        data: {
+          'name': name,
+          'email': email,
+          'password': password,
+          'phone': formatPhoneForApi(phone),
+        },
       );
       return AuthUserModel.fromJson(response.data);
     } on DioException catch (e) {

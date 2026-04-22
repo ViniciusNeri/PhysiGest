@@ -10,6 +10,7 @@ import '../models/patient_financial_model.dart';
 import '../models/patient_activity_model.dart';
 import '../models/patient_attachment_model.dart';
 import 'package:physigest/core/storage/local_storage.dart';
+import 'package:physigest/core/utils/mask_formatters.dart';
 
 abstract class IPatientRemoteDataSource {
   Future<List<PatientModel>> getPatients();
@@ -72,7 +73,7 @@ class PatientRemoteDataSource implements IPatientRemoteDataSource {
         id: patient.id,
         name: patient.name,
         email: patient.email,
-        phone: patient.phone,
+        phone: formatPhoneForApi(patient.phone),
         birthDate: patient.birthDate,
         gender: patient.gender,
         profession: patient.profession,
@@ -105,7 +106,7 @@ class PatientRemoteDataSource implements IPatientRemoteDataSource {
         id: patient.id,
         name: patient.name,
         email: patient.email,
-        phone: patient.phone,
+        phone: formatPhoneForApi(patient.phone),
         birthDate: patient.birthDate,
         gender: patient.gender,
         profession: patient.profession,

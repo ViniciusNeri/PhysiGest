@@ -7,6 +7,7 @@ import 'package:physigest/features/patients/presentation/bloc/patient_bloc.dart'
 import 'package:physigest/features/patients/presentation/bloc/patient_event.dart';
 import 'package:physigest/features/patients/presentation/bloc/patient_state.dart';
 import 'package:physigest/core/utils/app_alerts.dart';
+import 'package:physigest/core/utils/mask_formatters.dart';
 
 class EditPatientDialog extends StatefulWidget {
   final Patient? patient;
@@ -435,63 +436,6 @@ class _EditPatientDialogState extends State<EditPatientDialog> {
             .map((e) => DropdownMenuItem(value: e, child: Text(_translateGender(e))))
             .toList(),
       ),
-    );
-  }
-}
-
-class PhoneInputFormatter extends TextInputFormatter {
-  @override
-  TextEditingValue formatEditUpdate(
-      TextEditingValue oldValue, TextEditingValue newValue) {
-    if (newValue.text.length > 15) return oldValue;
-    
-    var text = newValue.text.replaceAll(RegExp(r'\D'), '');
-    var formattedText = StringBuffer();
-    if (text.isNotEmpty) {
-      formattedText.write('(');
-      if (text.length > 2) {
-        formattedText.write('${text.substring(0, 2)}) ');
-        if (text.length > 7) {
-           formattedText.write('${text.substring(2, 7)}-${text.substring(7)}');
-        } else {
-           formattedText.write(text.substring(2));
-        }
-      } else {
-        formattedText.write(text);
-      }
-    }
-    
-    return TextEditingValue(
-      text: formattedText.toString(),
-      selection: TextSelection.collapsed(offset: formattedText.length),
-    );
-  }
-}
-
-class DateInputFormatter extends TextInputFormatter {
-  @override
-  TextEditingValue formatEditUpdate(
-      TextEditingValue oldValue, TextEditingValue newValue) {
-    if (newValue.text.length > 10) return oldValue;
-    
-    var text = newValue.text.replaceAll(RegExp(r'\D'), '');
-    var formattedText = StringBuffer();
-    if (text.isNotEmpty) {
-      if (text.length > 2) {
-        formattedText.write('${text.substring(0, 2)}/');
-        if (text.length > 4) {
-           formattedText.write('${text.substring(2, 4)}/${text.substring(4)}');
-        } else {
-           formattedText.write(text.substring(2));
-        }
-      } else {
-        formattedText.write(text);
-      }
-    }
-    
-    return TextEditingValue(
-      text: formattedText.toString(),
-      selection: TextSelection.collapsed(offset: formattedText.length),
     );
   }
 }

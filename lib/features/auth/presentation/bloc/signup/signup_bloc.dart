@@ -12,6 +12,7 @@ class SignUpBloc extends Bloc<SignUpEvent, SignUpState> {
   SignUpBloc(this._signUpUseCase) : super(const SignUpState()) {
     on<SignUpNameChanged>(_onNameChanged);
     on<SignUpEmailChanged>(_onEmailChanged);
+    on<SignUpPhoneChanged>(_onPhoneChanged);
     on<SignUpPasswordChanged>(_onPasswordChanged);
     on<SignUpConfirmPasswordChanged>(_onConfirmPasswordChanged);
     on<SignUpSubmitted>(_onSubmitted);
@@ -23,6 +24,10 @@ class SignUpBloc extends Bloc<SignUpEvent, SignUpState> {
 
   void _onEmailChanged(SignUpEmailChanged event, Emitter<SignUpState> emit) {
     emit(state.copyWith(email: event.email, status: SignUpStatus.initial));
+  }
+
+  void _onPhoneChanged(SignUpPhoneChanged event, Emitter<SignUpState> emit) {
+    emit(state.copyWith(phone: event.phone, status: SignUpStatus.initial));
   }
 
   void _onPasswordChanged(
@@ -59,6 +64,7 @@ class SignUpBloc extends Bloc<SignUpEvent, SignUpState> {
         state.name,
         state.email,
         state.password,
+        state.phone,
       );
 
       emit(state.copyWith(status: SignUpStatus.success));

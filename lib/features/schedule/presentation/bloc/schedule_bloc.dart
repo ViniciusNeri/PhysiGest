@@ -60,15 +60,10 @@ class ScheduleBloc extends Bloc<ScheduleEvent, ScheduleState> {
       final allAppointments = results[2] as List<Appointment>;
       final agendaLocks = results[3] as List<AgendaLock>;
 
-      // Filtrar agendamentos para excluir pacientes inativos
-      // (Se o patientId não estiver na lista de pacientes ativos, removemos).
-      // Mantemos agendamentos sem patientId (casos de bloqueio manual ou erro de dados)
-      // para não perder visibilidade de ocupação.
-      final activePatientIds = availablePatients.map((e) => e['id']).toSet();
-      final filteredAppointments = allAppointments.where((apt) {
-        if (apt.patientId == null || apt.patientId!.isEmpty) return true;
-        return activePatientIds.contains(apt.patientId);
-      }).toList();
+      // Exibe todos os agendamentos retornados pela API, sem filtragem por
+      // status de paciente. Agendamentos de qualquer origem (app, WhatsApp, etc.)
+      // e com qualquer status devem aparecer na agenda.
+      final filteredAppointments = allAppointments;
 
       emit(
         state.copyWith(
